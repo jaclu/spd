@@ -1,0 +1,33 @@
+'hwdrivers' needs non existent service 'dev'
+
+
+
+
+
+
+
+SPD_FILE_HOSTS	      	       hosts_file
+
+SPD_APKS_DEL		       sw_removed
+SPD_APKS_ADD		       sw_installed
+
+SPD_EXTRA_TASK		       extra_tasks
+SPD_FILE_REPOSITORIES  	       repositories_file
+SPD_ROOT_HOME_TGZ
+SPD_ROOT_UNPACKED_PTR
+SPD_ROOT_REPLACE
+SPD_UNAME			my_uname
+SPD_SHELL			my_shell
+SPD_HOME_DIR_TGZ			my_home_dir_tgz	
+SPD_HOME_DIR_UNPACKED_PTR	my_home_dir_unpacked_ptr
+
+SPD_LOCATION_SERVICE
+
+SPD_SSH_HOST_KEYS		ssh_host_keys
+SPD_SSHD_SERVICE			SPD_SERVIVE_SSHD	activate_sshd_service
+SPD_SSHD_PORT			SPD_PORT_SSHD	sshd_port
+
+SPD_TIME_ZONE			time_zone
+
+SPD_TASK_DISPLAY
+SPD_DISPLAY_NON_TASKS		display_non_tasks

@@ -1,0 +1,51 @@
+#!/bin/sh
+# ^^^ just a helper for editttors
+#
+#   sourced, so variables / functions in restore-ish can be used.
+#
+#   This is just a sample, comment out or replacee to fit your needs.
+#
+
+
+#
+#   Verifies IT_UNAME has been set, use if the username is needed in the tasks below
+#
+[ "$IT_UNAME" = "" ] && error_msg "This additonal-restore-tasks can not run without a IT_UNAME set!" 1
+
+
+#
+#   Set up some common softlinks, user home is already extracted
+#
+msg_2 "Creating common /usr/local soft-links"
+
+item_1=/home/${IT_UNAME}/git_repos/others/bash-git-prompt
+item_2=/home/${IT_UNAME}/git_repos/others/powerlevel10k
+
+[ -d "$item_1" ] && ln -sf "$item_1" /usr/local
+[ -d "$item_2" ] && ln -sf "$item_2" /usr/local
+echo
+
+#
+#   Adding some stuff to /usr/local/bin
+#
+msg_2 "Adding to /usr/local/bin"
+msg_3 "path_modify.sh"
+ln -sf /usr/local/shell_envs/scripts/path_modify.sh /usr/local/bin
+echo
+
+
+#
+#   Run additional-as-$IT_UNAME script, if found
+#
+my_additional_stuff=$DEPLOY_PATH/custom/additional-as-$IT_UNAME
+if ! test -f "$my_additional_stuff" ; then
+    error_msg "Not found: $my_additional_stuff"
+elif test -x "$my_additional_stuff" ; then
+    msg_1 "user-based extra script"
+    echo "Runnig:    $my_additional_stuff"
+    echo
+    /bin/su -c "$my_additional_stuff" - "$IT_UNAME"
+    echo "Completed: $my_additional_stuff"
+else
+    error_msg "$my_additional_stuff is not a runable script!"
+fi

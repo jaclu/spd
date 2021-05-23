@@ -1,0 +1,119 @@
+#!/bin/sh
+# Yes bash not required, works with the ash from busybox!
+#
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-01-31
+# License: MIT
+# Version: 0.1.0 2021-01-31
+#                Initial release, I am using it and it seems to do its thing
+#
+#
+# This script does the same as: brew leaves
+# Run with -h for more info.
+#
+# Any feedback / bug reports welcome!
+#
+
+prog_name="apk-leaves"
+prog_description="$prog_name - generates a lits of all apks with no dependencies."
+
+# defaults
+debug_flag=0
+out_file=""
+
+debug() {
+    output=$1
+    eol=${2:-"\n"}
+    if [ $debug_flag -eq 1 ]; then
+        printf "$output$eol"
+    fi
+}
+
+display_help() {
+    debug_flag=1
+    echo $prog_description
+    echo "Options:"
+    echo "  -d, --debug     Display status during processing."
+    echo "  -o, --out-file  If given, the list of apk leaves will be written to this file,"
+    echo "                  oterwise it is written to stdout"
+    echo "  -h, --help      Display this."
+    echo
+    echo "Recomended usage is one of the following:"
+    echo
+    echo "$prog_name -d -o filename"
+    echo "   To both get progress and the output saved in a file without any gunk"
+    echo
+    echo "$prog_name > filename"
+    echo "   Same end result, but no progress"
+    echo
+}
+
+#
+#  Param parsing
+#
+while [[ $# -gt 0 ]]; do
+    param=$1
+    case $param in
+        -h|--help)
+            display_help
+            exit 0
+            ;;
+        -d|--debug)
+            debug_flag=1
+            shift # past argument
+            ;;
+        -o|--out-file)
+            out_file=$2
+            shift # past argument
+            shift # past value
+            ;;
+        *)
+            echo "ERROR: Unrecognized param: $param"
+            echo "       try running with -h to see help"
+            exit 1
+    esac
+done
+
+#
+#  Main
+#
+debug "$prog_description"
+
+#
+# Clearing $out_file if it existed.
+#
+if [ "$out_file" != "" ] && [ -f $out_file ]; then
+    rm -i $out_file
+fi
+
+#
+# Gathering list of all installed apks.
+#
+debug "Gathering all installed apks ..." " "
+apk_list=$(apk list -I | sort | awk '{print $1}')
+debug "Done!"
+
+#
+# Handling the items in the list not as a list, 
+# in order for ash to be able to do this.
+#
+IFS="
+"
+for apk_long in $apk_list; do
+    #
+    # removing version and revision, ie foo-bar-1.3.4-r4 -> foo-bar
+    #
+    s=${apk_long%-*}  # removing last dash and after (revision)
+    apk_short=${s%-*} # removing last dash and after (version)
+
+    debug "    checking $apk_short"
+    #
+    # If there are any words after line two in the output of apk info -r apkname,
+    # it would indicate this apk has a dependency, so we skip those.
+    #
+    if [ $(apk info -r $apk_short | tail -n +2 | wc -w) -eq 0 ]; then
+        if [ "$out_file" != "" ]; then
+            echo $apk_short >> $out_file
+        fi
+        echo $apk_short
+    fi
+done

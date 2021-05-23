@@ -1,0 +1,237 @@
+#!/bin/sh
+#
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
+# License: MIT
+#
+# Version: 0.4.0 2021-04-30
+#                Reworked tasks into separate scripts, so that others can isolate
+#                parts of this more easily. Also added generic service handling.
+#                first call: ensure_runlevel_default
+#                This will install openrc if not present, and do some iSH related
+#                patches to remove distracting warnings that dont really matter.
+#                Finally it ensures that runlevel is default.
+#                After this you just need to install / config what is needed for
+#                the new service, if not included, copy a script into /etc/init.d
+#                to control the service, and finally call
+#                ensure_service_is_added [service-name] [restart]
+#                If the restart param is given, the service will be restarted,
+#                convenient if you have changed some config.
+#                see task_sshd and task_location_tracker to see usage.
+#          0.3.7 2021-04-13
+#                Second oops in the same day, unintentional removal of a space in
+#                 patch_rc_cgroup_sh() that caused the patch to fail
+#          0.3.6 2021-04-13
+#                  Ouch fixed embarrasing typo in task_sshd when sshd is disabled
+#          0.3.5 2021-04-13
+#                Refactored task_restore_root_home & task_restore_user
+#                to use a common function for restoring home_dir and
+#                extracting tarballs into a tmpdir, so that if extract fails
+#                it can be removed with no ill effect on the intended home_dir
+#          0.3.4 2021-04-09
+#                Refactored task_sshd with propper usage of openrc
+#                and possibility to select sshd port from config file.
+#                In addition patching /lib/rc/sh/rc-cgroup.sh
+#                to get rid of constant /proc/filesystems error messages
+#                any time a service is started or stopped
+#          0.3.3 2021-04-05
+#                Added error check for task_install_my_software
+#                if apk add fails
+#          0.3.2 2021-03-29
+#                Split update & upgrade and put remove in-between
+#          0.3.1 2021-03-26
+#                Creates user with uid/gid 501 in order to make
+#                iOS mounts writable
+#          0.3.0 2021-03-17
+#                Major cleanup, making everything modular
+#                expanding the README.md
+#
+# Dependency: This shell script expects a config file to be present at
+# ../custom/ishTols.cfg
+# There is a sample config file in ../samples/ishTols.cfg copy it into the
+# above location and modify it to match your preferences before running.
+#
+# When you run this all actions that will be done based on your config will
+# be displayed, and then this app holds for 5 seconds. You can
+# press Ctrl-C if you want to examine what will be done in more detail.
+#
+# This is a turn-key setup of a fresh iSH into a useable state
+# Even if you do not have any homedirs to restore, this can be used to
+# set the general environment up to your likings look at the settings bellow,
+# anything that you do now wan't to bother with, 
+# just comment that  out.
+#
+# Works both on AppStore and TestFlight iSH
+# and both with default and AOK filesystems
+#
+# Most output lines are kept short, in order to as much as possible
+# display without linebreaks on the iPhone.
+#
+# Copy it outside the iSH filesystem in order for it to survive a
+# delete - install cycle. I use: mount -t ios . /mnt
+# and then select a dir on iCloud, so I can get all my various devices
+# restored from the same source. But im sure there are other ways to do it.
+#
+# Any feedback / bug reports welcome!
+#
+
+
+#
+# Find where this package is deployed, then use this for relative locations
+#
+DEPLOY_PATH="$(dirname "$0")/.."             # relative
+DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
+test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PATH] !!" 1
+
+. "$DEPLOY_PATH/scripts/extras/utils.sh"
+
+
+#
+# Since sourced mode cant be detected in a practiacl way under ash, I use this
+# workaround: first script running sets SPD_INITIAL_SCRIPT=1,
+# any other detecting it is set will assume to be sourced.
+#
+[ ! -z "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: restore-ish can NOT be sourced!" 1
+SPD_INITIAL_SCRIPT=1
+
+
+#
+#  Include all dependencies
+#
+
+#. "$DEPLOY_PATH/scripts/extras/read_config.sh"
+. "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
+. "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
+. "$DEPLOY_PATH/scripts/task_run_in_background.sh"
+. "$DEPLOY_PATH/scripts/m_tasks_user.sh"
+. "$DEPLOY_PATH/scripts/task_timezone.sh"
+. "$DEPLOY_PATH/scripts/task_sshd.sh"
+. "$DEPLOY_PATH/scripts/task_do_extra.sh"
+. "$DEPLOY_PATH/scripts/task_sudo.sh"
+. "$DEPLOY_PATH/scripts/task_restore_root.sh"
+
+
+
+
+#==========================================================
+#
+#     Tasks not moved to separate scripts
+#
+#==========================================================
+
+
+not_task_aok_tweaks() {
+    prof_dbg=/tmp/profile.debug
+
+    if [ "$SPD_FILE_SYSTEM" = "AOK" ]; then
+        msg_2 "Some AOK tweaks"
+        # If this file isnt globaly writeable, you will get errors if you login
+        # as somebody else than the first one who logged in...
+        if [ "$prof_dbg" != "" ] && test -f $prof_dbg ; then
+            msg_3 "chmod 666 $prof_dbg"
+            chmod 666 "$prof_dbg"
+        fi
+    echo
+    fi
+}
+
+
+
+#==========================================================
+#
+#     Task selection
+#
+#==========================================================
+
+#
+# If SPD_TASK_DISPLAY=1 then what will be done is displayed
+# otherwise the tasks are performed
+#
+run_tasks() {
+    #
+    # For testing/debugging any of the tasks can be commented out
+    # It is probably not a good idea to reshuffle their order too much
+    # some of them depend on previous tasks
+    #
+    task_replace_some_etc_files
+
+    # Run as early as possible, so that one can switch away from iSH window
+    # during deploy.
+    task_run_in_background
+
+    task_timezone
+    
+    # do before upgrade to avoid time waste of upgrading
+    # only to then remove it
+    task_remove_software
+
+    task_update
+    task_upgrade
+
+    task_install_my_software
+
+    task_sshd
+    task_restore_root
+    task_nopasswd_sudo
+    task_restore_user
+    task_do_extra_task
+    task_user_pw_reminder
+}
+
+
+#
+#  Debug tasks, set condition as 
+#    false for normal operation
+#    true  to run the test case
+#
+if false; then
+    # Testing specific task(-s)
+    # only those listed below will be run
+    msg_1 "custom restore"
+    run_tasks() {
+        task_upgrade
+    }
+    # no need to wait if you are testing tasks...
+    wait_after_summary=5
+else
+    # Normal operation
+    wait_after_summary=5
+fi
+
+
+
+#==========================================================
+#
+#     Main
+#
+#==========================================================
+
+read_config
+
+#
+# Display all tasks
+#
+SPD_TASK_DISPLAY=1
+echo
+msg_1 "Displaying what tasks will be performed"
+run_tasks
+echo
+echo "Press Ctrl-C if you want to have more time"
+echo "to observe the changes that will be done."
+echo
+echo "Waiting $wait_after_summary secs, in case you want to abort..."
+echo
+sleep $wait_after_summary
+
+
+#
+# Do all tasks
+#
+SPD_TASK_DISPLAY=0
+msg_1 "Restore begins"
+run_tasks
+
+
+# Ensure tmp directory is gone
+clear_work_dir
+
+msg_2 "All tasks done, system restored!"
