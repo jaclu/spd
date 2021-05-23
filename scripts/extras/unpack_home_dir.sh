@@ -45,10 +45,10 @@ unpack_home_dir() {
     # ie just inforoming what will happen
     #
     [ "$username" = "" ] && error_msg "unpack_home_dir() no username given" 1
-    [ ! "$SPD_TASK_DISPLAY" -eq "1" ] && [ "$(grep -c ^"$username" /etc/passwd)" != "1" ] && error_msg "unpack_home_dir($username) - username not found in /etc/passwd" 1
+    [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ "$(grep -c ^"$username" /etc/passwd)" != "1" ] && error_msg "unpack_home_dir($username) - username not found in /etc/passwd" 1
     [ "$home_dir" = "" ] && error_msg "unpack_home_dir() no home_dir given" 1
-    [ ! "$SPD_TASK_DISPLAY" -eq 1 ] && [ ! -d "$home_dir" ] && error_msg "unpack_home_dir($username, $home_dir) - home_dir does not exist" 1
-    [ ! "$SPD_TASK_DISPLAY" -eq 1 ] && [ "$(find "$home_dir" -maxdepth 0 -user "$username")" = "" ] && error_msg "unpack_home_dir($username, $home_dir) - username does not own home_dir" 1
+    [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ ! -d "$home_dir" ] && error_msg "unpack_home_dir($username, $home_dir) - home_dir does not exist" 1
+    [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ "$(find "$home_dir" -maxdepth 0 -user "$username")" = "" ] && error_msg "unpack_home_dir($username, $home_dir) - username does not own home_dir" 1
     [ "$fname_tgz" = "" ] || [ "$fname_tgz" = "1" ] && error_msg "unpack_home_dir($username, $home_dir,) - No tar file to be extracted given" 1
     ! test -f "$fname_tgz" && error_msg "tar file not found:\n[$fname_tgz]" 1
     case "$unpacked_ptr" in
@@ -69,7 +69,7 @@ unpack_home_dir() {
     #  Actual work starts
     #
     msg_2 "$msg_txt"
-    if [ $save_current -eq 1 ]; then
+    if [ "$save_current" = "1" ]; then
         do_unpack=1 # always restore
     else
         if test -f "$unpacked_ptr" && [ "$unpacked_ptr" != "" ] ; then
@@ -80,11 +80,11 @@ unpack_home_dir() {
             do_unpack=1
         fi
     fi
-    if [ $do_unpack -eq 1 ]; then
-        if [ "$SPD_TASK_DISPLAY" -eq 1 ]; then
+    if [ "$do_unpack" = "1" ]; then
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             msg_3 "Will be restored"
              echo "Using: $fname_tgz"
-            if [ $save_current -eq 1 ]; then
+            if [ "$save_current" = "1" ]; then
                 msg_3 "Previous content will be moved to ${home_dir}-OLD"
             fi
         else
@@ -102,7 +102,7 @@ unpack_home_dir() {
             fi
             echo "Successfully extracted content"
 
-            if [ $save_current -eq 1 ]; then
+            if [ "$save_current" = "1" ]; then
                 rm "$home_dir"-OLD -rf
                 mv "$home_dir" "$home_dir}"-OLD
                 msg_3 "Previous content has been moved to ${home_dir}-OLD"

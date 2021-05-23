@@ -19,10 +19,12 @@
 #
 
 
+
 #
 # This should only be sourced...
 #
 [ "$(basename $0)" = "utils.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!" 1
+
 
 
 #==========================================================
@@ -55,9 +57,8 @@ warning_msg() {
 
 verbose_msg() {
     msg=$1
-    
     [ "$msg" = "" ] && error_msg "verbose_msg() no param" 1
-    [ $p_verbose -eq 1 ] && printf "VERBOSE: $msg\n"
+    [ "$p_verbose" = "1" ] && printf "VERBOSE: $msg\n"
 }
 
 
@@ -155,7 +156,7 @@ ensure_shell_is_installed() {
      
     [ "$SHELL_NAME" = "" ] && error_msg "ensure_shell_is_installed() - no shell paraam!" 1
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-        test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>> Make sure it gets installed!<<<\n"
+        test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed!<<<\n"
     else
         test -f "$SHELL_NAME" || error_msg "Shell not found: $SHELL_NAME" 1
         test -x "$SHELL_NAME" || error_msg "Shell not executable: $SHELL_NAME" 1
@@ -242,7 +243,7 @@ unpack_home_dir() {
     #  Actual work starts
     #
     msg_2 "$msg_txt"
-    if [ $save_current -eq 1 ]; then
+    if [ "$save_current" = "1" ]; then
         do_unpack=1 # always restore
     else
         if test -f "$unpacked_ptr" && [ "$unpacked_ptr" != "" ] ; then
@@ -253,11 +254,11 @@ unpack_home_dir() {
             do_unpack=1
         fi
     fi
-    if [ $do_unpack -eq 1 ]; then
+    if [ "$do_unpack" = "1" ]; then
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             msg_3 "Will be restored"
             echo "Using: $fname_tgz"
-            [ $save_current -eq 1 ] && msg_3 "Previous content will be moved to ${home_dir}-OLD"
+            [ "$save_current" = "1" ] && msg_3 "Previous content will be moved to ${home_dir}-OLD"
         else
             clear_work_dir 1
             msg_3 "Extracting"
@@ -271,7 +272,7 @@ unpack_home_dir() {
             fi
             echo "Successfully extracted content"
             
-            if [ $save_current -eq 1 ]; then
+            if [ "$save_current" = "1" ]; then
                 rm "$home_dir"-OLD -rf
                 mv "$home_dir" "$home_dir}"-OLD
                 msg_3 "Previous content has been moved to ${home_dir}-OLD"
@@ -289,22 +290,7 @@ unpack_home_dir() {
 }
 
 
-#==========================================================
-#
-#     Main
-#
-#==========================================================
-
-#
-#  Identify fiilesystem, a lot of other operations depend on it
-#
-test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH' 
-
-#
-# 
-#
-
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+function parse_command_line() {
     #
     # Only process cmd line for initial_script
     #
@@ -331,10 +317,36 @@ if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
          esac
          shift
     done
+}
+
+
+
+#==========================================================
+#
+#     Main
+#
+#==========================================================
+
+
+#
+#  Identify fiilesystem, a lot of other operations depend on it
+#
+test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH' 
+
+
+#
+# 
+#
+
+if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+    parse_command_line $@
+    echo ">> parsed_command_line p_cfg[$p_cfg] p_help[$p_help] p_vebose[$p_verbose]"
     if [ $p_help = 0 ]; then
+	[ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT detected. Will not run on this system." 1	
         _run_this
     else
         _display_help
-    fi    
+    fi
+
 fi
 

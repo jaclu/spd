@@ -34,29 +34,11 @@ _local_error_msg() {
 #
 #==========================================================
 
-read_cfg_file() {
-    cfg_file="$1"
-    [ -z "$cfg_file" ] && _local_error_msg "read_cfg_file() called with no param!"
-    cfg_file="$DEPLOY_PATH/custom/${cfg_file}.cfg"
-    verbose_msg "will read: [$cfg_file]"
-    #echo read_cfg_file($cfg_file)
-    if [ ! -f "$cfg_file" ]; then
-	warning_msg "Config file not found: [$cfg_file]"
-	return
-    fi
-    . "$cfg_file"
-    #verbose_msg "Parsed: $cfg_file"
-    ## [ $p_verbose -eq 1 ] echo "Parsed: $cfg_file"
-    [ $SPD_ABORT -eq 1 ] && error_msg "SPD_ABORT detected in $cfg_file" 1
-}
-
-
 read_config() {
     #
     #   Identify the local env, and parse config file
     #
  
-
     #
     # Set some defaults, in case they are not set in the config file
     # This prevents shellcheck from giving waarnings aboout unasigned variables
@@ -72,14 +54,14 @@ read_config() {
     #
     # Config files
     #
-    echo ">> os_type[$os_type] distro_family[$distro_family] distro[$distro] settings[$settings] hostname[$(hostname)]"
-    read_cfg_file $os_type
-    [ "$distro_family" != "" ] && read_cfg_file $distro_family
-    [ "$distro" != "" ] && read_cfg_file $distro
-    read_cfg_file settings  # gemeral user settings
-    read_cfg_file $(hostname)
+    #echo ">> os_type[$os_type] distro_family[$distro_family] distro[$distro] settings[$settings] hostname[$(hostname)]"
+    _read_cfg_file $os_type
+    [ "$distro_family" != "" ] && _read_cfg_file $distro_family
+    [ "$distro" != "" ] && _read_cfg_file $distro
+    _read_cfg_file settings  # gemeral user settings
+    _read_cfg_file $(hostname | sed 's/\./ /' | awk '{print $1}')
 
-    [ $p_verbose -eq 1 ] && echo  # Whitespace after listing config files parsed
+    [ "$p_verbose" = "1" ] && echo  # Whitespace after listing config files parsed
 
     # process path references in config file
     _expand_path_all_params
@@ -101,6 +83,7 @@ read_config() {
     #
     # Unset variables depending on others
     #
+
     
     # dont unpack user home without an username
     [ "$SPD_UNAME" = "" ] && SPD_HOME_DIR_TGZ=""
@@ -113,6 +96,25 @@ read_config() {
 #   Internals
 #
 #==========================================================
+
+_read_cfg_file() {
+    cfg_file="$1"
+    [ -z "$cfg_file" ] && _local_error_msg "_read_cfg_file() called with no param!"
+    cfg_file="$DEPLOY_PATH/custom/config/${cfg_file}.cfg"
+    verbose_msg "will read: [$cfg_file]"
+    #echo _read_cfg_file($cfg_file)
+
+    if [ ! -f "$cfg_file" ]; then
+	[ "$p_verbose" = "1" ] && warning_msg "Config file not found: [$cfg_file]"
+	return
+    fi
+    #echo ">> Will run:[$cfg_file]"
+    . "$cfg_file"
+    #echo ">> read cfg file"
+    #verbose_msg "Parsed: $cfg_file"
+    ## [ "$p_verbose" = "1" ] echo "Parsed: $cfg_file"
+}
+
 
 _expand_path() {
     #
