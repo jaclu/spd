@@ -307,7 +307,7 @@ function parse_command_line() {
 	    	p_verbose=1
 		;;
                 
-            "cfg")
+            "-c")
                 . "$DEPLOY_PATH/scripts/extras/read_config.sh"
                 read_config
                 ;;
@@ -317,6 +317,14 @@ function parse_command_line() {
          esac
          shift
     done
+    #
+    # This is checked after all config files are processed, so if you really want to, you can
+    # override this in a later config file....
+    # If help is requested we will continue despite SPD_ABORT=1
+    #
+    if [ "$SPD_ABORT" = "1" ] && [ $p_help = 0 ]; then
+	error_msg "SPD_ABORT=1 detected. Will not run on this system." 1
+    fi    
 }
 
 
@@ -340,9 +348,8 @@ test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH'
 
 if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
     parse_command_line $@
-    echo ">> parsed_command_line p_cfg[$p_cfg] p_help[$p_help] p_vebose[$p_verbose]"
+    #echo ">> parsed_command_line p_cfg[$p_cfg] p_help[$p_help] p_vebose[$p_verbose]"
     if [ $p_help = 0 ]; then
-	[ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT detected. Will not run on this system." 1	
         _run_this
     else
         _display_help

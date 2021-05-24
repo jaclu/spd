@@ -65,12 +65,16 @@ _run_this() {
 }
 
 _display_help() {
-    echo "task_timezone.sh [cfg] [-h|tz]"
-    echo " cfg Read configuration file"
-    echo " -h  Display help, and either describe or display content for environment"
-    echo " tz  Use this time zone."
+    echo "task_timezone.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
     echo
-    echo "Sets time-zone baesed on SPD_TIME_ZONE or command line param"
+    echo "Sets time-zone baesed on SPD_TIME_ZONE"
+    echo "Content should be in tz database format, so typically Continent/Major_City"
+    echo "or a two/three letter acronymn like UTC."
+    echo "If undefined/empty timezone will not be altered."
+    echo "If time_zone is not recgonized this will abort with an error."
     echo
     echo "Env paramas"
     echo "-----------"

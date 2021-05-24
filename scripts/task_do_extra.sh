@@ -62,10 +62,14 @@ _run_this() {
 
 
 _display_help() {
-    echo "task_do_extra.sh [script_to_be_run]"
+    echo "task_do_extra.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
     echo
-    echo "Runs additional script defined by SPD_EXTRA_TASK or command line param."
-    echo "Intended as part of ish-restore, not meaningful to run standalone."
+    echo "Runs additional script defined by SPD_EXTRA_TASK"
+    echo "Intended as part of ish-restore, not realy that meaningful"
+    echo "to run standalone."
     echo "This is mostly for describing and testing the script"
     echo
     echo "Env paramas"

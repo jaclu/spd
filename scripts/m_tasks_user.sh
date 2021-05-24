@@ -119,10 +119,10 @@ _run_this() {
 
 
 _display_help() {
-    echo "m_tasks_user.sh [-h|cfg]"
-    echo " cfg Read configuration file"
-    echo " -h   Display help, and either describe or display content for environment"
-    echo "      variables if defined"
+    echo "m_tasks_user.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
     echo
     echo "Tasks included:"
     echo " task_restore_user      - creates user according to env variables"
@@ -133,8 +133,8 @@ _display_help() {
     echo "Env variables used"
     echo "------------------"
     echo "SPD_UNAME$(test -z "$SPD_UNAME" && echo ' - username to ensure exists' || echo =$SPD_UNAME )"
-    echo "SPD_UID$(test -z "$SPD_UID" && echo ' - userid to be used, defaulting to 501' || echo =$SPD_UID )"
-    echo "SPD_GID$(test -z "$SPD_GID" && echo ' - groupid to be used, defaulting to 501' || echo =$SPD_GID )"
+    echo "SPD_UID$(test -z "$SPD_UID" && echo ' - userid to be used' || echo =$SPD_UID )"
+    echo "SPD_GID$(test -z "$SPD_GID" && echo ' - groupid to be used' || echo =$SPD_GID )"
     echo "SPD_SHELL$(test -z "$SPD_SHELL" && echo ' - shell for username' || echo =$SPD_SHELL )"
     echo "SPD_HOME_DIR_TGZ$(test -z "$SPD_HOME_DIR_TGZ" && echo ' - unpack this tgz file if found' || echo =$SPD_HOME_DIR_TGZ )"
     echo "SPD_HOME_DIR_UNPACKED_PTR$(test -z "$SPD_HOME_DIR_UNPACKED_PTR" && echo ' -  Indicates home.tgz is unpacked' || echo =$SPD_HOME_DIR_UNPACKED_PTR )"

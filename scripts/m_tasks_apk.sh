@@ -114,9 +114,10 @@ _run_this() {
 
 
 _display_help() {
-    echo "m_tasks_apk.sh [cfg] [-h]"
-    echo " cfg Read configuration file"
-    echo " -h  Display help, and either describe or display content for environment"
+    echo "m_tasks_apk.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
     echo
     echo "Tasks included:"
     echo " task_update              - updates repository"

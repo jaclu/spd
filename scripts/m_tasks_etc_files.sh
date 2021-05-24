@@ -99,7 +99,11 @@ _run_this() {
 
 
 _display_help() {
-    echo "m_tasks_etc_files.sh [cfg] [-h]"
+    echo "m_tasks_etc_files.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
+    echo
     echo "Some tasks to change /etc files"
     echo
     echo "Tasks included:"

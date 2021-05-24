@@ -139,24 +139,21 @@ _run_this() {
 
 
 _display_help() {
-   echo "task_sshd.sh [cfg] [-h|-1|0|1]"
-   echo "  cfg - reads config file for params"
-   echo "  If given service status should be one of"
-   echo "    -1 - disable"
-   echo "     0 - ignore/nochange"
-   echo "     1 - enable"
-   echo
-   echo "Activates or Disables sshd, status defined by"
-   echo "SPD_SSHD_SERVICE or command line param."
-   echo 
-   echo "Env paramas"
-   echo "-----------"
-   echo "SPD_SSHD_SERVICE$(test -z "$SPD_SSHD_SERVICE" && echo '  - sshd status (-1/0/1)' || echo =$SPD_SSHD_SERVICE )"
-   echo "SPD_SSHD_PORT$(test -z "$SPD_SSHD_PORT" && echo '     - what port sshd should use' || echo =$SPD_SSHD_PORT )"
-   echo "SPD_SSH_HOST_KEYS$(test -z "$SPD_SSH_HOST_KEYS" && echo ' - tgz file with host_keys' || echo =$SPD_SSH_HOST_KEYS )"
-   echo
-   echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
-   echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"
+    echo "task_sshd.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
+    echo
+    echo "Activates or Disables sshd."
+    echo 
+    echo "Env paramas"
+    echo "-----------"
+    echo "SPD_SSHD_SERVICE$(test -z "$SPD_SSHD_SERVICE" && echo '  - sshd status (-1/0/1)' || echo =$SPD_SSHD_SERVICE )"
+    echo "SPD_SSHD_PORT$(test -z "$SPD_SSHD_PORT" && echo '     - what port sshd should use' || echo =$SPD_SSHD_PORT )"
+    echo "SPD_SSH_HOST_KEYS$(test -z "$SPD_SSH_HOST_KEYS" && echo ' - tgz file with host_keys' || echo =$SPD_SSH_HOST_KEYS )"
+    echo
+    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
+    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"
 }
 
 

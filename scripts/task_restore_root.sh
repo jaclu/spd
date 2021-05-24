@@ -78,7 +78,11 @@ _run_this() {
 }
 
 _display_help() {
-    echo "task_restore_root.sh [cfg] [-h]"
+    echo "task_restore_root.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
+    echo
     echo "Restores root environment. currently shell and /root content can be modified."            
     echo "Can restore /root from a tgz file. Optional ptr to indicate if it has"
     echo "already been unpacked."
@@ -92,7 +96,7 @@ _display_help() {
     echo "SPD_ROOT_HOME_TGZ$(test -z "$SPD_ROOT_HOME_TGZ" && echo ' - unpack this into /root if found' || echo =$SPD_ROOT_HOME_TGZ )"
     echo
     echo "SPD_ROOT_UNPACKED_PTR$(test -z "$SPD_ROOT_UNPACKED_PTR" && echo ' - Indicates root.tgz is unpacked' || echo =$SPD_ROOT_UNPACKED_PTR )"
-    echo "SPD_ROOT_REPLACE$(test -z "$SPD_ROOT_REPLACE" && echo ' - move previous root and replace it' || echo =$SPD_ROOT_REPLACE )"
+    echo "SPD_ROOT_REPLACE$(test -z "$SPD_ROOT_REPLACE" && echo ' - if 1 move previous /root to /root-OLD and replace it' || echo =$SPD_ROOT_REPLACE )"
     echo
     echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
     echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"

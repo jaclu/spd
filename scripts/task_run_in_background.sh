@@ -36,14 +36,19 @@ service_fname="/etc/init.d/$service_name"
 #==========================================================
 
 task_run_in_background() {
-    if [ "$1" != "" ]; then
-        activate_bgrun=$1
-    elif [ "$SPD_BG_RUN" != "" ]; then
+    if [ "$SPD_BG_RUN" != "" ]; then
         activate_bgrun=$SPD_BG_RUN
     else
-        error_msg "SPD_BG_RUN not defined, asuming no action"
+        warning_msg "SPD_BG_RUN not defined, asuming no change"
         activate_bgrun=0
     fi
+    case $activate_bgrun in
+	"-1" | "0" | "1")
+	    ;;
+	*)
+	    error_msg "task_run_in_background($activate_bgrun) invalid option, must be one of -1, 0, 1" 1
+	    ;;
+    esac
     verbose_msg "task_run_in_background($activate_bgrun)"
 
     msg_txt="Run in background"
@@ -120,17 +125,16 @@ task_run_in_background() {
 #==========================================================
 
 _run_this() {
-    task_run_in_background $SPD_BG_RUN
+    task_run_in_background
     echo "Task Completed."
 }
 
 
 _display_help() {
-    echo "task_run_in_background.sh [cfg] [h|-1|0|1]"
-    echo "  If given service status should be one of"
-    echo "    -1 - disable"
-    echo "     0 - ignore/nochange"
-    echo "     1 - enable"
+    echo "task_run_in_background.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
     echo
     echo "Installs and Activates or Disables a service that monitors the iOS location"
     echo "this ensures that iSH will continue to run in the background."

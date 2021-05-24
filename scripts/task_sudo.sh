@@ -49,8 +49,13 @@ _run_this() {
 }
 
 _display_help() {
-    echo "task_sudo.sh [cfg] [-h]"
+    echo "task_sudo.sh [-v] [-c] [-h]"
+    echo "  -v  - verbose, display more progress info" 
+    echo "  -c  - reads config files for params"
+    echo "  -h  - Displays help about this task."
+    echo
     echo "Installs sudo and creates a no password sudo group wheel, if it does not allready exist."
+    echo "This task has no direct params, running this will create the group."
     echo
     echo "Env paramas"
     echo "-----------"
