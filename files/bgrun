@@ -23,7 +23,7 @@ pidfile="/run/$RC_SVCNAME.pid"
 
 #
 # The above is all that is needed to have cat /dev/location > /dev/null
-# run as a simple daemon with pid beaning monitored.
+# run as a simple daemon with pid being monitored.
 #
 # The below parts are just adding some additional sanity, not needed
 # in order for the daemon to work by itself.
