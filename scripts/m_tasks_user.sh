@@ -29,6 +29,14 @@ task_restore_user() {
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
     SPD_UID=${SPD_UID:-501}
     SPD_GID=${SPD_GID:-501}
+
+    #get_username 501
+    #exit 14
+
+    #echo "First id: [`_find_first_available_uid`]"
+    #exit 1
+    #echo "returned from _find_first_available_uid()"
+    #exit 1
     
     if [ "$SPD_UNAME" != "" ]; then
         #
@@ -110,6 +118,49 @@ task_user_pw_reminder() {
 #   Internals
 #
 #==========================================================
+
+get_username(){
+  uid="$1"
+
+  # First try using getent
+  if command -v getent > /dev/null 2>&1; then
+    echo ">> getent"
+    getent passwd "$uid" | cut -d: -f1
+
+  # Next try using the UID as an operand to id.
+  elif command -v id > /dev/null 2>&1 && \
+    echo ">> id"
+       id -nu "$uid" > /dev/null 2>&1; then
+    id -nu "$uid"
+
+  # Next try perl - perl's getpwuid just calls the system's C library getpwuid
+  elif command -v perl >/dev/null 2>&1; then
+    echo ">> perl"
+    perl -e '@u=getpwuid($ARGV[0]);
+             if ($u[0]) {print $u[0]} else {exit 2}' "$uid"
+
+  # As a last resort, parse `/etc/passwd`.
+  else
+      echo " parse passwd"
+      awk -v uid="$uid" -F: '
+         BEGIN {ec=2};
+         $3 == uid {print $1; ec=0; exit 0};
+         END {exit ec}' /etc/passwd
+  fi
+}
+
+_find_first_available_uid() {
+    i=501
+
+    until false; do
+	#echo ">> trying with $i"
+	[ "$(grep $i /etc/passwd)" == "" ] && break
+	i="$((i+1))"
+    done
+    verbose_msg "First available UID: $i"
+    echo $i
+}
+
 
 _run_this() {
     task_restore_user

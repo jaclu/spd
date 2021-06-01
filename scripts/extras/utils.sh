@@ -308,8 +308,7 @@ function parse_command_line() {
 		;;
                 
             "-c")
-                . "$DEPLOY_PATH/scripts/extras/read_config.sh"
-                read_config
+	        p_cfg=1
                 ;;
                 
 	    *)
@@ -317,13 +316,19 @@ function parse_command_line() {
          esac
          shift
     done
+    
+    if [ $p_cfg -eq 1 ]; then
+    	. "$DEPLOY_PATH/scripts/extras/read_config.sh"
+    	read_config
+    fi
+
     #
     # This is checked after all config files are processed, so if you really want to, you can
     # override this in a later config file....
     # If help is requested we will continue despite SPD_ABORT=1
     #
-    if [ "$SPD_ABORT" = "1" ] && [ $p_help = 0 ]; then
-	error_msg "SPD_ABORT=1 detected. Will not run on this system." 1
+    if [ "$SPD_TASK_DISPLAY" = "0" ] && [ $p_help = 0 ]; then
+	[ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system." 1
     fi    
 }
 

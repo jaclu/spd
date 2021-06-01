@@ -33,7 +33,7 @@ This way its simple to see what is needed to get all your stuff, and what you mi
 This is a subset of my extra_tasks, with any more private items filtered out :) Mostly to give you a general idea of how I use it.
 ### /custom
 Ignored by the repo, suggested location for your own local files
-### /custom/ishTools.cfg
+### /custom/config
 This is a hardcoded path. All other files you refer to in this file, so you can decide a good location for them if /custom does not fit your needs. Remember to store anything outside the local filesystem, in order for it to be available for other devices or after a reinstall.
 
 
