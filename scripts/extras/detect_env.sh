@@ -7,7 +7,7 @@
 #    Initial release
 #
 # Part of ishTools
-#
+
 
 #
 # No need to run more than once
@@ -62,7 +62,16 @@ case "$(uname)" in
 	
 esac
 
+
 #
-# Debug, show what was detected
+# show what was detected if verbose mode
 #
-#echo "Env: os_type:[$os_type] distro_family:[$distro_family] distro:[$distro]"
+if [ "$p_verbose" = "1" ]; then
+    echo
+    echo "Env detected"
+    echo "------------"
+    echo "      os_type: $os_type"
+    echo "distro_family: $distro_family"
+    echo "       distro: $distro"
+    echo
+fi
