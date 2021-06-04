@@ -27,8 +27,8 @@ fi
 task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
-    SPD_UID=${SPD_UID:-501}
-    SPD_GID=${SPD_GID:-501}
+    SPD_UID=${SPD_UID:-1000}
+    SPD_GID=${SPD_GID:-1000}
 
     #get_username 501
     #exit 14
@@ -119,6 +119,9 @@ task_user_pw_reminder() {
 #
 #==========================================================
 
+#
+# Returns a username, if one is assigned to the param uid
+#
 get_username(){
   uid="$1"
 

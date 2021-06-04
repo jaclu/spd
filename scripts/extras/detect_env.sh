@@ -43,9 +43,9 @@ distro_MacOS='MacOS'
 case "$(uname)" in
     $os_type_Linux)
         os_type=$os_type_Linux
-    	if [ "$(uname -r) | grep $distro_family_ish" != "" ]; then
+    	if [ "$(uname -r | grep $distro_family_ish)" != "" ]; then
 	    distro_family=$distro_family_ish
-	    if [ "$(uname -r) | grep $distro_ish_AOK" != "" ]; then
+	    if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
 	        distro=$distro_ish_AOK
 	    else
 	    	distro=$distro_ish
@@ -65,4 +65,4 @@ esac
 #
 # Debug, show what was detected
 #
-#echo "Env: os_type:[$os_type] distro_family:[$distro_family] distro:[$distro]"
+echo "Env: os_type:[$os_type] distro_family:[$distro_family] distro:[$distro]"
