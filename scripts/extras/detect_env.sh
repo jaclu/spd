@@ -65,4 +65,4 @@ esac
 #
 # Debug, show what was detected
 #
-echo "Env: os_type:[$os_type] distro_family:[$distro_family] distro:[$distro]"
+#echo "Env: os_type:[$os_type] distro_family:[$distro_family] distro:[$distro]"
