@@ -82,6 +82,7 @@ task_replace_some_etc_files() {
     task_etc_hosts
     task_etc_apk_repositories
     replace_default_fs_inittab
+    echo
 }
 
 
