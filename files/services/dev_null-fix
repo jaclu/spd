@@ -1,0 +1,57 @@
+#!/sbin/openrc-run
+
+#
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-06-05
+# License: MIT
+#
+# This service is intended to recreate /dev/null during bootup,
+# since it sometimes gets messed up, and recreating it should
+# be harmless in case it was still in a good state.
+# It should just be run as a one off rather than a service,
+# but I havent yet figured out how to do this in the iSH environ.
+# Not even @reboot /usr/local/sbin/dev_null-fix
+# works as intended.
+#
+# So for the time being, running it as a boot time service 
+# does the trick, even if not as elegant as it could be.
+#
+# In order for it to run on the next bootup, it reports
+# that the startup failed. This prints out an error,
+# however since it is not displayed during bootup, 
+# that error is not really a bother to the user.
+# If you run it manually, just know that the error is
+# expected and not signifying that this failed.
+#
+
+#
+# Use this to add it as a service
+#
+# rc-update add /etc/init.d/dev_null-fix sysinit
+#
+
+name="Ensure /dev/null exists"
+description="Recreates /dev/null, to ensure it is in expected state"
+
+start() {
+    # /dev/null gets screwed up at times.  Recreate it just in case.
+
+    # use this file to hide output during operation, 
+    # since /dev/null cant be used for this purpose
+    progress_file=/tmp/dev_null_restore
+
+    # remove previous instance, to ensure we can recreate it
+    rm /dev/null > $progress_file 2>&1
+
+    mknod /dev/null c 1 3 >> $progress_file 2>&1
+    chmod 666 /dev/null >> $progress_file 2>&1
+
+    # get rid of the temp output file
+    rm $progress_file
+
+    #
+    #  Debug, log each time this is run
+    #
+    # date >> /root/dev_null-fix.log
+
+    eend "this is a one off, simulate fail to ensure it runs on next boot"
+}
