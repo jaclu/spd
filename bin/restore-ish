@@ -160,6 +160,10 @@ run_tasks() {
     #
     task_replace_some_etc_files
 
+    # Do this early, so no risk of installation issues
+    # with tasks needing to install dependencies
+    task_update
+
     # Run as early as possible, so that one can switch away from iSH window
     # during deploy.
     task_run_in_background
@@ -170,7 +174,6 @@ run_tasks() {
     # only to then remove it
     task_remove_software
 
-    task_update
     task_upgrade
 
     task_install_my_software
