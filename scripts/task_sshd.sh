@@ -18,6 +18,13 @@ fi
 . "$DEPLOY_PATH/scripts/extras/openrc.sh"
 
 
+#
+# Name of service
+#
+service_name=sshd
+service_fname="/etc/init.d/$service_name"
+
+
 
 #==========================================================
 #
@@ -26,59 +33,74 @@ fi
 #==========================================================
 
 task_sshd() {
+    msg_2 "sshd service"
+    
     if [ "$1" != "" ]; then
         SPD_SSHD_SERVICE="$1"
     elif [ "$SPD_SSHD_SERVICE" = "" ]; then
         SPD_SSHD_SERVICE="0"
-        error_msg "SPD_SSHD_SERVICE not defined, asuming no action"
+        warning_msg "SPD_SSHD_SERVICE not defined, asuming no action"
     fi
-    msg_txt="sshd service"
+    verbose_msg "task_sshd($SPD_SSHD_SERVICE)"
+    
+    case "$SPD_SSHD_SERVICE" in
+	"-1" | "0" | "1")
+	    ;;
+	*)
+	    error_msg "task_sshd($SPD_SSHD_SERVICE) invalid option, must be one of -1, 0, 1" 1
+	    ;;
+    esac
+        
     case "$SPD_SSHD_SERVICE" in
         "-1" ) # disable
-            msg_2 "$msg_txt"
-            msg_3 "will be disabled"
-            if [ ! "$SPD_TASK_DISPLAY" = "1" ]; then                        
-                if [ "$(2> /dev/null rc-status |grep sshd)" != "" ]; then
-                    rc-service sshd stop
-                    rc-update del sshd
+	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+	        msg_3 "Will be disabled"
+	    else
+                service_installed="$(rc-service -l |grep $service_name )"
+                if [ "$service_installed"  != "" ]; then		    
+                    disable_service $service_name default
                     msg_3 "was disabled"
                 else
-                    echo "sshd not active, no action needed"
+                    echo "Service $service_name was not active, no action needed"
                 fi
+                rm $service_fname -f
             fi
             echo
             ;;
             
         "0" )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ $SPD_DISPLAY_NON_TASKS = "1" ]; then
-                msg_2 "$msg_txt"
                 echo "Will NOT be changed"
             fi
             ;;
         
         "1" )  # activate 
-            msg_txt_2=$msg_txt
-            _unpack_ssh_host_keys
+	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+                msg_3 "Will be enabled"
+                echo "port: $SPD_SSHD_PORT"
+            else
+                ensure_installed openrc openssh
+	    	#
+	    	#  Preparational steps
+	    	#
+	    	_unpack_ssh_host_keys
+	    
             msg_2 "$msg_txt_2"
             if [ "$SPD_SSHD_PORT" = "" ]; then
                 error_msg "Invalid setting: SPD_SSHD_PORT must be specified" 1
             fi
             # This will be run regardless if it was already running,
             # since the sshd_config might have changed
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                msg_3 "Will be enabled"
-                echo "port: $SPD_SSHD_PORT"
-                echo
-            else
+	    
+	    
                 msg_3 "Ensuring hostkeys exist"
                 ssh-keygen -A
                 echo "hostkeys ready"
                 echo
                 ensure_runlevel_default
-                ensure_installed openssh
                 # use requested port
                 sed -i "s/.*Port.*/Port $SPD_SSHD_PORT/" /etc/ssh/sshd_config
-                ensure_service_is_added sshd restart
+                ensure_service_is_added sshd default restart
                 # in case some config changes happened, make sure sshd is restarted
                 #rc-service sshd restart
                 msg_1 "sshd listening on port: $SPD_SSHD_PORT"

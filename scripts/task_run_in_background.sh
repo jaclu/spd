@@ -20,11 +20,10 @@ fi
 . "$DEPLOY_PATH/scripts/extras/openrc.sh"
 
 
-
 #
 # Name of service
 #
-service_name=bgrun
+service_name=runbg
 service_fname="/etc/init.d/$service_name"
 
 
@@ -35,35 +34,34 @@ service_fname="/etc/init.d/$service_name"
 #
 #==========================================================
 
-task_run_in_background() {
-    if [ "$SPD_BG_RUN" != "" ]; then
-        activate_bgrun=$SPD_BG_RUN
-    else
-        warning_msg "SPD_BG_RUN not defined, asuming no change"
-        activate_bgrun=0
+task_runbg() {
+    msg_2 "runbg service"
+    echo "  Ensuring iSH continues to run in the background."
+
+    if [ "$1" != "" ]; then
+        SPD_BG_RUN="$1"
+    elif [ "$SPD_BG_RUN" = "" ]; then
+        SPD_BG_RUN="0"
+        warning_msg "SPD_BG_RUN not defined, asuming no action"
     fi
-    case $activate_bgrun in
+    verbose_msg "task_runbg($SPD_BG_RUN)"
+
+    case "$SPD_BG_RUN" in
 	"-1" | "0" | "1")
 	    ;;
 	*)
-	    error_msg "task_run_in_background($activate_bgrun) invalid option, must be one of -1, 0, 1" 1
+	    error_msg "task_runbg($SPD_BG_RUN) invalid option, must be one of -1, 0, 1" 1
 	    ;;
     esac
-    verbose_msg "task_run_in_background($activate_bgrun)"
-
-    msg_txt="Run in background"
-    msg2_txt="  Ensuring iSH continues to run in the background."
     
-    case "$activate_bgrun" in
+    case "$SPD_BG_RUN" in
         -1 ) # disable
-            msg_2 "$msg_txt"
-            echo "$msg2_txt"
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
 	        msg_3 "Will be disabled"
 	    else
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then		    
-                    disable_service $service_name
+                    disable_service $service_name default
                     msg_3 "was disabled"
                 else
                     echo "Service $service_name was not active, no action needed"
@@ -74,18 +72,16 @@ task_run_in_background() {
     
         0 )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-                msg_2 "$msg_txt"
                 echo "Will NOT be changed"
             fi
             ;;
     
         1 )  # activate 
-            msg_2 "$msg_txt"
-            echo "$msg2_txt"
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
             else
                 ensure_installed openrc
+
                 if [ "$(rc-update -a |grep runbg)" != "" ]; then
                     msg_3 "Removing broken AOK service runbg"
                     # Handling broken AOK service, remove it if found, and kill its 
@@ -102,16 +98,16 @@ task_run_in_background() {
                     # openrc has been installed, thus creating the dest
                     # dir for the service_file being copied into place
                     msg_3 "Installing service"
-                    cp -av $DEPLOY_PATH/files/$service_name $service_fname
+                    cp -av $DEPLOY_PATH/files/services/$service_name $service_fname
                     chmod 755 $service_fname
                 fi
                 msg_3 "Activating service"
-                ensure_service_is_added $service_name restart
+                ensure_service_is_added $service_name default restart
             fi
             ;;
 
         *)
-            error_msg "Invalid setting: activate_bgrun=$activate_bgrun\nValid options: -1 0 1" 1
+            error_msg "Invalid setting: activate_bgrun=$SPD_BG_RUN\nValid options: -1 0 1" 1
     esac
     echo
 }
@@ -125,13 +121,13 @@ task_run_in_background() {
 #==========================================================
 
 _run_this() {
-    task_run_in_background
+    task_runbg
     echo "Task Completed."
 }
 
 
 _display_help() {
-    echo "task_run_in_background.sh [-v] [-c] [-h]"
+    echo "task_runbg.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
