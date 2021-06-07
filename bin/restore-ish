@@ -104,7 +104,7 @@ parse_command_line $@
 . "$DEPLOY_PATH/scripts/extras/read_config.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
-. "$DEPLOY_PATH/scripts/task_run_in_background.sh"
+. "$DEPLOY_PATH/scripts/task_runbg.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
 . "$DEPLOY_PATH/scripts/task_timezone.sh"
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
@@ -166,7 +166,7 @@ run_tasks() {
 
     # Run as early as possible, so that one can switch away from iSH window
     # during deploy.
-    task_run_in_background
+    task_runbg
 
     task_timezone
     

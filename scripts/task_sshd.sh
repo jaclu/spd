@@ -75,34 +75,29 @@ task_sshd() {
             ;;
         
         "1" )  # activate 
+            if [ "$SPD_SSHD_PORT" = "" ]; then
+                error_msg "Invalid setting: SPD_SSHD_PORT must be specified" 1
+            fi
 	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
                 echo "port: $SPD_SSHD_PORT"
             else
                 ensure_installed openrc openssh
+                ensure_runlevel_default
+
 	    	#
 	    	#  Preparational steps
 	    	#
 	    	_unpack_ssh_host_keys
 	    
-            msg_2 "$msg_txt_2"
-            if [ "$SPD_SSHD_PORT" = "" ]; then
-                error_msg "Invalid setting: SPD_SSHD_PORT must be specified" 1
-            fi
-            # This will be run regardless if it was already running,
-            # since the sshd_config might have changed
-	    
-	    
                 msg_3 "Ensuring hostkeys exist"
                 ssh-keygen -A
                 echo "hostkeys ready"
                 echo
-                ensure_runlevel_default
+        
                 # use requested port
-                sed -i "s/.*Port.*/Port $SPD_SSHD_PORT/" /etc/ssh/sshd_config
+                sed -i "s/.*Port .*/Port $SPD_SSHD_PORT/" /etc/ssh/sshd_config
                 ensure_service_is_added sshd default restart
-                # in case some config changes happened, make sure sshd is restarted
-                #rc-service sshd restart
                 msg_1 "sshd listening on port: $SPD_SSHD_PORT"
             fi
             ;;
