@@ -124,26 +124,6 @@ _problematic_service_hwdrivers() {
 }
 
 
-_problematic_service_runbg() {
-    $(rc-update -a | grep runbg)
-   
-    if [ "$SPD_FILE_SYSTEM" = "AOK" ]; then
-        activate_location_tracker=-1
-        echo "WARNING: Disabling AOK runbg service, it is not stable yet."
-        rc_runlevel=sysinit
-        disable_service runbg
-        rc_runlevel=default
-    fi
-}
-
-
-#
-#_remove_problematic_services() {
-    #problematic_service_hwdrivers
-    #problematic_service_runbg   
-#}
-
-
 
 #
 # This hack prevents all iSH service start and stops shoving an error
