@@ -117,32 +117,24 @@ task_sshd() {
 #==========================================================
 
 _unpack_ssh_host_keys() {
-    #
-    #  Even if you don't intend to activate sshd initially
-    #  it still makes senc to deploy any saved ssh host keys
-    #  A) they are there if you need them
-    #  B) you dont have to wait for host keys to be generated
-    #     when and if you want to run sshd
-    #
-    msg_txt="Device specific ssh host keys"
+    msg_3 "Device specific ssh host keys"
 
     if [ "$SPD_SSH_HOST_KEYS" != "" ]; then
-        msg_2 "$msg_txt"
+       	echo "$SPD_SSH_HOST_KEYS"
         if test -f "$SPD_SSH_HOST_KEYS" ; then
             msg_3 "Will be untared into /etc/ssh"
-            echo "$SPD_SSH_HOST_KEYS"
             if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-                ensure_installed openssh-client
                 cd /etc/ssh || error_msg "Failed to cd into /etc/ssh" 1
+		# remove any previous host keys
                 2>/dev/null rm /etc/ssh/ssh_host_*
+		
                 tar xvfz "$SPD_SSH_HOST_KEYS"
+		[ $? -ne 0 ] && error_msg "Untar failed!" 1
             fi
         else
             msg_3 "Not found"
-            echo "$SPD_SSH_HOST_KEYS"
         fi
     elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-        msg_2 "$msg_txt"
         echo "Will NOT be used"
     fi
     echo
