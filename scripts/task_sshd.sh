@@ -81,8 +81,9 @@ task_sshd() {
 	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
                 echo "port: $SPD_SSHD_PORT"
-            else
-                ensure_installed openrc openssh
+ 	    else
+                ensure_installed openrc
+		ensure_installed openssh
                 ensure_runlevel_default
 
 	    	#
@@ -142,6 +143,7 @@ _unpack_ssh_host_keys() {
 
 
 _run_this() {
+    echo ">> cmdline param: $1"
     task_sshd
     echo "Task Completed."
 }

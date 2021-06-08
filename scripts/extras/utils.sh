@@ -290,7 +290,7 @@ unpack_home_dir() {
 }
 
 
-function parse_command_line() {
+parse_command_line() {
     #
     # Only process cmd line for initial_script
     #

@@ -108,11 +108,6 @@ _display_help() {
     echo "Some tasks to change /etc files"
     echo
     echo "Tasks included:"
-    echo " task_update              - updates repository"
-    echo " task_upgrade             - upgrades all installed apks"
-    echo " task_remove_software     -  deletes all apks listed in SPD_APKS_DEL"
-    echo " task_install_my_software - adds all apks listed in SPD_APKS_ADD"
-    echo
     echo " task_replace_some_etc_files - "
     echo "   SPD_FILE_HOSTS will replace /etc/hots"
     echo "   SPD_FILE_REPOSITORIES will replace /etc/apk/repositories"
