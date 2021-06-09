@@ -49,7 +49,7 @@ _run_this() {
 }
 
 _display_help() {
-    echo "task_sudo.sh [-v] [-c] [-h]"
+    echo "task_nopasswd_sudo.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."

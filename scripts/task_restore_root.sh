@@ -15,7 +15,6 @@ if test -z "$DEPLOY_PATH" ; then
     DEPLOY_PATH="$(dirname "$0")/.."               # relative
     DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
 fi
-. "$DEPLOY_PATH/scripts/extras/unpack_home_dir.sh"
 
 
 
@@ -29,8 +28,8 @@ task_restore_root() {
     _update_root_shell
     msg_txt="Restoration of /root"
     if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
-        unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_HOME_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
-            echo
+        unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
+        echo
     fi
 }
 

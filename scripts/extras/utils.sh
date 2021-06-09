@@ -18,8 +18,6 @@
 #    Process this task, called when param -h is not present
 #
 
-
-
 #
 # This should only be sourced...
 #
@@ -125,6 +123,7 @@ msg_3() {
 #
 #==========================================================
 
+
 #
 # Installs listed apk if not already installed, 2nd optional param is
 # a message that is displayed if this is installed, default is to use
@@ -189,6 +188,7 @@ clear_work_dir() {
 }
 
 
+
 #
 #  Restore $home_dir unless $unpacked_ptr points to an existing file.
 #  If $save_current is 1, curent home dir is moved to $home_dir-OLD and
@@ -203,7 +203,7 @@ unpack_home_dir() {
     [ "$save_current" != "1" ] && save_current=0
 
     # (mostly) unverified params
-    #  echo ">>unpack_home_dir($username,$home_dir,$fname_tgz,$unpacked_ptr,$save_current)"
+    verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fname_tgz=$fname_tgz, unpacked_ptr=$unpacked_ptr, save_current=$save_current)"
 
     #
     #  Param checks
@@ -237,7 +237,7 @@ unpack_home_dir() {
     esac
     
     # Parsed, verified and in some cases shifted params
-    # echo ">>unpack_home_dir($username,$home_dir,$fname_tgz,$unpacked_ptr,$save_current) - verified params"
+    # verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fname_tgz=$fname_tgz, unpacked_ptr=$unpacked_ptr, save_current=$save_current) - verified params"
  
     #
     #  Actual work starts
@@ -333,7 +333,6 @@ parse_command_line() {
 }
 
 
-
 #==========================================================
 #
 #     Main
@@ -353,7 +352,6 @@ test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH'
 
 if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
     parse_command_line $@
-    #echo ">> parsed_command_line p_cfg[$p_cfg] p_help[$p_help] p_vebose[$p_verbose]"
     if [ $p_help = 0 ]; then
         _run_this
     else
@@ -361,4 +359,3 @@ if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
     fi
 
 fi
-

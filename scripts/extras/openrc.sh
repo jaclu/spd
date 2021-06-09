@@ -35,6 +35,8 @@ rc_runlevel=default
 #    the simple solution is to just remove the file for now.
 #
 ensure_runlevel_default() {
+    verbose_msg "ensure_runlevel_default()"
+    
     ensure_installed openrc
     
     _patch_rc_cgroup_sh
@@ -59,9 +61,11 @@ ensure_service_is_added() {
     srvc=$1
     runlevel=$2
     restart=$3
-    [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc" 1
+    
+    verbose_msg "ensure_service_is_added(srvc=$srvc, runlevel=$runlevel, restart=$restart)"
+
+        [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc" 1
     [ "$runlevel" = "" ] && error_msg "ensure_service_is_added() called without param runlevel" 1
-    verbose_msg "will add service [$srvc]"
     if [ "$(rc-status -u | grep $srvc)" != "" ]; then
         echo "assigning [$srvc] to runlvl: [$runlevel]"
         # activate service
@@ -77,9 +81,10 @@ ensure_service_is_added() {
 disable_service() {
     srvc=$1
     runlevel=$2
+    
+    verbose_msg "disable_service(srvc=$srvc, runlevel=$runlevel)"
     [ "$srvc" = "" ] && error_msg "disable_service() called without param" 1
     [ "$runlevel" = "" ] && error_msg "disable_service() called without param runlevel" 1
-    verbose_msg "will remove service: [$srvc]"
     if [ "$(rc-service -l | grep $srvc)" != "" ]; then
         rc-service $srvc stop
         rc-update del $srvc $rc_runlevel

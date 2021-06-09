@@ -15,7 +15,6 @@ if test -z "$DEPLOY_PATH" ; then
     DEPLOY_PATH="$(dirname "$0")/.."               # relative
     DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
 fi
-. "$DEPLOY_PATH/scripts/extras/unpack_home_dir.sh"
 
 
 #==========================================================
@@ -30,7 +29,7 @@ task_restore_user() {
     SPD_UID=${SPD_UID:-1000}
     SPD_GID=${SPD_GID:-1000}
 
-    #get_username 501
+    #_get_username 501
     #exit 14
 
     #echo "First id: [`_find_first_available_uid`]"
@@ -122,7 +121,7 @@ task_user_pw_reminder() {
 #
 # Returns a username, if one is assigned to the param uid
 #
-get_username(){
+_get_username(){
   uid="$1"
 
   # First try using getent

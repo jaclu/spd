@@ -24,7 +24,25 @@ fi
 #
 #==========================================================
 
-task_etc_hosts() {
+task_replace_some_etc_files() {
+    msg_2 "Copying some files to /etc"
+    # If the config file is not found, no action will be taken
+
+    _etc_hosts
+    _etc_apk_repositories
+    _replace_default_fs_inittab
+    echo
+}
+
+
+
+#==========================================================
+#
+#   Internals
+#
+#==========================================================
+
+_etc_hosts() {
     # Add my local hosts
     msg_txt="/etc/hosts"
     if [ "$SPD_FILE_HOSTS" != "" ]; then
@@ -41,7 +59,7 @@ task_etc_hosts() {
 }
 
 
-task_etc_apk_repositories() {
+_etc_apk_repositories() {
     msg_txt="/etc/apk/repositories"
     if  [ "$SPD_FILE_REPOSITORIES" != "" ]; then
         msg_3 "$msg_txt"
@@ -57,7 +75,7 @@ task_etc_apk_repositories() {
 }
 
 
-replace_default_fs_inittab() {
+_replace_default_fs_inittab() {
     #
     # The AOK inittab is more complex, and does not need to be modified
     # to hack sshd to run at boot, so we do not touch it.
@@ -74,24 +92,6 @@ replace_default_fs_inittab() {
     fi
 }
 
-
-task_replace_some_etc_files() {
-    msg_2 "Copying some files to /etc"
-    # If the config file is not found, no action will be taken
-
-    task_etc_hosts
-    task_etc_apk_repositories
-    replace_default_fs_inittab
-    echo
-}
-
-
-
-#==========================================================
-#
-#   Internals
-#
-#==========================================================
 
 _run_this() {
     task_replace_some_etc_files

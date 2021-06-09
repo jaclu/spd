@@ -20,13 +20,6 @@ fi
 . "$DEPLOY_PATH/scripts/extras/openrc.sh"
 
 
-#
-# Name of service
-#
-service_name=runbg
-
-source_fname="$DEPLOY_PATH/files/services/$service_name"
-service_fname="/etc/init.d/$service_name"
 
 
 #==========================================================
@@ -35,14 +28,19 @@ service_fname="/etc/init.d/$service_name"
 #
 #==========================================================
 
-task_runbg() {
-    if [ "$1" != "" ]; then
-        SPD_BG_RUN="$1"
-    elif [ "$SPD_BG_RUN" = "" ]; then
-        SPD_BG_RUN="0"
-        warning_msg "SPD_BG_RUN not defined, asuming no action"
-    fi
+task_runbg() { 
     verbose_msg "task_runbg($SPD_BG_RUN)"
+    #
+    # Name of service
+    #
+    service_name=runbg
+    source_fname="$DEPLOY_PATH/files/services/$service_name"
+    service_fname="/etc/init.d/$service_name"
+            
+    if [ "$SPD_BG_RUN" = "" ]; then
+        SPD_BG_RUN="0"
+        warning_msg "SPD_BG_RUN not defined, service runbg will not be modified"
+    fi
 
     case "$SPD_BG_RUN" in
 	"-1" | "0" | "1")
@@ -54,7 +52,7 @@ task_runbg() {
     
     case "$SPD_BG_RUN" in
         -1 ) # disable
-	    task_label	
+	    _runbg_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
 	        msg_3 "Will be disabled"
 	    else
@@ -67,21 +65,23 @@ task_runbg() {
                 fi
                 rm $service_fname -f
             fi
+	    echo
             ;;
     
         0 )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-	        task_label
+	        _runbg_label
                 echo "Will NOT be changed"
             fi
             ;;
     
         1 )  # activate 
-	    task_label
+	    _runbg_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
             else
                 msg_3 "Enabeling service"
+		
                 ensure_installed openrc
                 ensure_runlevel_default
 		
@@ -111,7 +111,7 @@ task_runbg() {
 #
 #==========================================================
 
-task_label() {
+_runbg_label() {
     msg_2 "runbg service"
     echo "  Ensuring iSH continues to run in the background."
 }

@@ -28,12 +28,12 @@
 #  Some constants
 #
 os_type_Linux='Linux'
-os_type_Darwin='Darwin'
 
-distro_family_ish='ish'
-
+distro_family_ish='ish-family'
 distro_ish='ish'
 distro_ish_AOK='ish-AOK'
+
+os_type_Darwin='Darwin'
 distro_MacOS='MacOS'
 
 
@@ -43,7 +43,7 @@ distro_MacOS='MacOS'
 case "$(uname)" in
     $os_type_Linux)
         os_type=$os_type_Linux
-    	if [ "$(uname -r | grep $distro_family_ish)" != "" ]; then
+    	if [ "$(uname -r | grep ish)" != "" ]; then
 	    distro_family=$distro_family_ish
 	    if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
 	        distro=$distro_ish_AOK

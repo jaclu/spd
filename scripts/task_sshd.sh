@@ -19,11 +19,10 @@ fi
 
 
 #
-# Name of service
+# service_name etc can not be set out here
+# on a global level, since any other service task
+# would override it during sourcing
 #
-service_name=sshd
-service_fname="/etc/init.d/$service_name"
-
 
 
 #==========================================================
@@ -33,15 +32,17 @@ service_fname="/etc/init.d/$service_name"
 #==========================================================
 
 task_sshd() {
-    msg_2 "sshd service"
-    
-    if [ "$1" != "" ]; then
-        SPD_SSHD_SERVICE="$1"
-    elif [ "$SPD_SSHD_SERVICE" = "" ]; then
-        SPD_SSHD_SERVICE="0"
-        warning_msg "SPD_SSHD_SERVICE not defined, asuming no action"
-    fi
     verbose_msg "task_sshd($SPD_SSHD_SERVICE)"
+    #
+    # Name of service
+    #
+    service_name=sshd
+    service_fname="/etc/init.d/$service_name"
+
+    if [ "$SPD_SSHD_SERVICE" = "" ]; then
+        SPD_SSHD_SERVICE="0"
+        warning_msg "SPD_SSHD_SERVICE not defined, service sshd will not be modified"
+   fi
     
     case "$SPD_SSHD_SERVICE" in
 	"-1" | "0" | "1")
@@ -53,6 +54,7 @@ task_sshd() {
         
     case "$SPD_SSHD_SERVICE" in
         "-1" ) # disable
+	    _sshd_label
 	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
 	        msg_3 "Will be disabled"
 	    else
@@ -63,18 +65,20 @@ task_sshd() {
                 else
                     echo "Service $service_name was not active, no action needed"
                 fi
-                rm $service_fname -f
             fi
-            echo
+	    echo
             ;;
             
         "0" )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ $SPD_DISPLAY_NON_TASKS = "1" ]; then
+		_sshd_label
                 echo "Will NOT be changed"
+		echo
             fi
             ;;
         
         "1" )  # activate 
+	    _sshd_label
             if [ "$SPD_SSHD_PORT" = "" ]; then
                 error_msg "Invalid setting: SPD_SSHD_PORT must be specified" 1
             fi
@@ -82,6 +86,8 @@ task_sshd() {
                 msg_3 "Will be enabled"
                 echo "port: $SPD_SSHD_PORT"
  	    else
+                msg_3 "Enabeling service"
+		
                 ensure_installed openrc
 		ensure_installed openssh
                 ensure_runlevel_default
@@ -96,8 +102,11 @@ task_sshd() {
                 echo "hostkeys ready"
                 echo
         
-                # use requested port
+                #
+		# use requested port
+		#
                 sed -i "s/.*Port .*/Port $SPD_SSHD_PORT/" /etc/ssh/sshd_config
+		
                 ensure_service_is_added sshd default restart
                 msg_1 "sshd listening on port: $SPD_SSHD_PORT"
             fi
@@ -116,6 +125,11 @@ task_sshd() {
 #   Internals
 #
 #==========================================================
+
+_sshd_label() {
+    msg_2 "sshd service"
+}
+
 
 _unpack_ssh_host_keys() {
     msg_3 "Device specific ssh host keys"
