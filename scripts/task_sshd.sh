@@ -85,6 +85,7 @@ task_sshd() {
 	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
                 echo "port: $SPD_SSHD_PORT"
+		echo
  	    else
                 msg_3 "Enabeling service"
 		
