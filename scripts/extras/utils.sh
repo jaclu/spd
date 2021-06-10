@@ -351,6 +351,7 @@ test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH'
 #
 
 if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+    [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this" 1
     parse_command_line $@
     if [ $p_help = 0 ]; then
         _run_this
