@@ -12,7 +12,7 @@
 
 if test -z "$DEPLOY_PATH" ; then
     # Most likely not sourced...
-    DEPLOY_PATH="$(dirname "$0")/.."               # relative
+    DEPLOY_PATH="$(dirname "$0")/.."             # relative
     DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
 fi
 
@@ -104,7 +104,26 @@ task_install_my_software() {
 #
 #==========================================================
 
-_run_this() {
+
+_expand_all_deploy_paths_apk() {
+    #
+    # Expanding path variables that are either absolute or relative
+    # related to the deploy-path
+    #
+    # Since all functions end up int the same namespace, eunsure
+    # that this one is unique for this module!
+    #
+    # SPD_PATH_PARAM=$(expand_deploy_path "$SPD_PATH_PARAM")
+					                   
+							   
+#
+
+							#
+							#
+														
+
+_run_this() {OCOD
+    # Only run in one off situations, so no risk that the wrong
     task_update
     [ "$SPD_APKS_DEL" != "" ] && task_remove_software
     task_upgrade
@@ -114,6 +133,8 @@ _run_this() {
 
 
 _display_help() {
+    _expand_all_deploy_paths_apk
+    
     echo "m_tasks_apk.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
