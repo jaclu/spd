@@ -241,6 +241,7 @@ unpack_home_dir() {
     fname_tgz=$3
     unpacked_ptr=$4
     save_current=$5
+    old_home_dir="$home_dir-OLD"
     [ "$save_current" != "1" ] && save_current=0
 
     # (mostly) unverified params
@@ -298,7 +299,7 @@ unpack_home_dir() {
     if [ "$do_unpack" = "1" ]; then
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             msg_3 "Will be restored"
-            [ "$save_current" = "1" ] && msg_3 "Previous content will be moved to ${home_dir}-OLD"
+            [ "$save_current" = "1" ] && msg_3 "Previous content will be moved to ${old_home_dir}"
         else
             clear_work_dir 1
             msg_3 "Extracting"
@@ -313,9 +314,9 @@ unpack_home_dir() {
             echo "Successfully extracted content"
             
             if [ "$save_current" = "1" ]; then
-                rm "$home_dir"-OLD -rf
-                mv "$home_dir" "$home_dir}"-OLD
-                msg_3 "Previous content has been moved to ${home_dir}-OLD"
+                rm "$old_home_dir" -rf
+                mv "$home_dir" "$old_home_dir"
+                msg_3 "Previous content has been moved to ${old_home_dir}"
                 mv "$username" "$home_dir"
             else
                 msg_3 "Overwriting into current $home_dir"

@@ -32,8 +32,6 @@ task_restore_root() {
     if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
         unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
         echo
-        # point to new home in case it was moved to a backup dir
-	cd /root
     fi
 }
 
