@@ -25,11 +25,15 @@ fi
 #==========================================================
 
 task_restore_root() {
+    _expand_all_root_deploy_paths
     _update_root_shell
+
     msg_txt="Restoration of /root"
     if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
         unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
         echo
+        # point to new home in case it was moved to a backup dir
+	cd /root
     fi
 }
 
@@ -40,6 +44,11 @@ task_restore_root() {
 #   Internals
 #
 #==========================================================
+
+_expand_all_root_deploy_paths() {
+    SPD_ROOT_HOME_TGZ=$(expand_deploy_path "$SPD_ROOT_HOME_TGZ")
+}
+
 
 _update_root_shell() {
     SPD_ROOT_SHELL="${SPD_ROOT_SHELL:-"/bin/ash"}"
@@ -77,6 +86,7 @@ _run_this() {
 }
 
 _display_help() {
+    _expand_all_root_deploy_paths
     echo "task_restore_root.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"

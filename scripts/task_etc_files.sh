@@ -25,12 +25,19 @@ fi
 #==========================================================
 
 task_replace_some_etc_files() {
+    _expand_all_etc_deploy_paths
     msg_2 "Copying some files to /etc"
     # If the config file is not found, no action will be taken
 
-    _etc_hosts
-    _etc_apk_repositories
-    _replace_default_fs_inittab
+    _copy_etc_file /etc/hosts "$SPD_FILE_HOSTS"
+    _copy_etc_file /etc/apk/repositories "$SPD_FILE_REPOSITORIES"
+    #
+    # The AOK inittab is more complex, and does not need to be modified
+    # to enablle openrc, so we do not touch it.
+    #
+    if [ "$SPD_FILE_SYSTEM" != "AOK" ]; then
+        _copy_etc_file /etc/inittab "$DEPLOY_PATH/files/inittab-default-FS"
+    fi
     echo
 }
 
@@ -42,54 +49,31 @@ task_replace_some_etc_files() {
 #
 #==========================================================
 
-_etc_hosts() {
-    # Add my local hosts
-    msg_txt="/etc/hosts"
-    if [ "$SPD_FILE_HOSTS" != "" ]; then
-        msg_3 "$msg_txt"
-        test -f "$SPD_FILE_HOSTS" || error_msg "SPD_FILE_HOSTS not found!\n$SPD_FILE_HOSTS" 1
-        echo "$SPD_FILE_HOSTS"
-        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            cp "$SPD_FILE_HOSTS"  /etc/hosts
-        fi
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-        msg_3 "$msg_txt"
-        echo "Will NOT be modified"
-    fi
+_expand_all_etc_deploy_paths() {
+    SPD_FILE_HOSTS=$(expand_deploy_path "$SPD_FILE_HOSTS")
+    SPD_FILE_REPOSITORIES=$(expand_deploy_path "$SPD_FILE_REPOSITORIES")
 }
 
 
-_etc_apk_repositories() {
-    msg_txt="/etc/apk/repositories"
-    if  [ "$SPD_FILE_REPOSITORIES" != "" ]; then
-        msg_3 "$msg_txt"
-        test -f "$SPD_FILE_REPOSITORIES" || error_msg "SPD_FILE_REPOSITORIES not found!\n$SPD_FILE_REPOSITORIES" 1
-        echo "$SPD_FILE_REPOSITORIES"
-        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            cp "$SPD_FILE_REPOSITORIES" /etc/apk/repositories
-        fi
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-        msg_3 "$msg_txt"
-        echo "Will NOT be modified"
+_copy_etc_file() {
+    dst_file="$1"
+    src_file="$2"
+    surplus_param="$3"
+    [ "$surplus_param" != "" ] && error_msg "_copy_etc_file("$dst_file","$src_file") more than 2 params given!" 1
+    [ "$dst_file" = "" ] && error_msg "_copy_etc_file() param 1 dst_file not supplied!" 1
+    if [ "$src_file" != "" ]; then
+    	msg_3 "$dst_file"
+    	[ -f "$src_file" ] || error_msg "_copy_etc_file() src_file NOT FOUND!\n$src_file\n" 1    
+    	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+            cp "$src_file" "$dst_file"
+   	    echo "$src_file"
+    	elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+            echo "Will NOT be modified"
+    	fi
     fi
-}
-
-
-_replace_default_fs_inittab() {
-    #
-    # The AOK inittab is more complex, and does not need to be modified
-    # to hack sshd to run at boot, so we do not touch it.
-    #
-    if [ "$SPD_FILE_SYSTEM" != "AOK" ]; then
-        msg_3 "/etc/inittab"
-        # Get rid of unused getty's
-        inittab=$DEPLOY_PATH/files/inittab-default-FS
-        echo "$inittab"
-        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            cp "$inittab" /etc/inittab
-        fi
-        unset inittab
-    fi
+    unset src_file
+    unset dst_file
+    unset surplus_param
 }
 
 
@@ -100,6 +84,7 @@ _run_this() {
 
 
 _display_help() {
+    _expand_all_etc_deploy_paths
     echo "m_tasks_etc_files.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"

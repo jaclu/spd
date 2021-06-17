@@ -25,6 +25,7 @@ fi
 #==========================================================
 
 task_do_extra_task() {
+    _expand_do_extra_all_deploy_paths
     msg_txt="Running custom task"
     if [ "$SPD_EXTRA_TASK" != "" ]; then
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
@@ -55,6 +56,11 @@ task_do_extra_task() {
 #
 #==========================================================
 
+_expand_do_extra_all_deploy_paths() {
+    SPD_EXTRA_TASK=$(expand_deploy_path "$SPD_EXTRA_TASK")
+}
+
+
 _run_this() {
     task_do_extra_task
     echo "Task Completed."
@@ -62,6 +68,7 @@ _run_this() {
 
 
 _display_help() {
+    _expand_do_extra_all_deploy_paths
     echo "task_do_extra.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"

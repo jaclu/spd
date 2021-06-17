@@ -102,7 +102,7 @@ SPD_INITIAL_SCRIPT=1
 parse_command_line $@
 . "$DEPLOY_PATH/scripts/extras/read_config.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
-. "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
+. "$DEPLOY_PATH/scripts/task_etc_files.sh"
 . "$DEPLOY_PATH/scripts/task_runbg.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
 . "$DEPLOY_PATH/scripts/task_timezone.sh"
@@ -174,9 +174,10 @@ run_tasks() {
 
     task_upgrade
 
+    task_sshd
+
     task_install_my_software
 
-    task_sshd
     task_restore_root
     task_nopasswd_sudo
     task_restore_user

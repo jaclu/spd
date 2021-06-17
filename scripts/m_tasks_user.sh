@@ -29,6 +29,11 @@ task_restore_user() {
     SPD_UID=${SPD_UID:-1000}
     SPD_GID=${SPD_GID:-1000}
 
+    _user_expand_all_deploy_paths
+
+    ## SPD_HOME_DIR_UNPACKED_PTR=""
+
+
     #_get_username 501
     #exit 14
 
@@ -118,6 +123,15 @@ task_user_pw_reminder() {
 #
 #==========================================================
 
+
+#
+#
+#
+_user_expand_all_deploy_paths() {
+    SPD_HOME_DIR_TGZ=$(expand_deploy_path "$SPD_HOME_DIR_TGZ")
+}
+
+
 #
 # Returns a username, if one is assigned to the param uid
 #
@@ -172,6 +186,8 @@ _run_this() {
 
 
 _display_help() {
+    _user_expand_all_deploy_paths
+    
     echo "m_tasks_user.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"

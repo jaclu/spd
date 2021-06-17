@@ -32,6 +32,8 @@ fi
 #==========================================================
 
 task_sshd() {
+    _expand_all_sshd_deploy_paths
+    
     verbose_msg "task_sshd($SPD_SSHD_SERVICE)"
     #
     # Name of service
@@ -127,6 +129,11 @@ task_sshd() {
 #
 #==========================================================
 
+_expand_all_sshd_deploy_paths() {
+    SPD_SSH_HOST_KEYS=$(expand_deploy_path "$SPD_SSH_HOST_KEYS")
+}
+
+
 _sshd_label() {
     msg_2 "sshd service"
 }
@@ -142,7 +149,7 @@ _unpack_ssh_host_keys() {
             if [ "$SPD_TASK_DISPLAY" != "1" ]; then
                 cd /etc/ssh || error_msg "Failed to cd into /etc/ssh" 1
 		# remove any previous host keys
-                2>/dev/null rm /etc/ssh/ssh_host_*
+                2> /dev/null rm /etc/ssh/ssh_host_*
 		
                 tar xvfz "$SPD_SSH_HOST_KEYS"
 		[ $? -ne 0 ] && error_msg "Untar failed!" 1
@@ -158,13 +165,13 @@ _unpack_ssh_host_keys() {
 
 
 _run_this() {
-    echo ">> cmdline param: $1"
     task_sshd
     echo "Task Completed."
 }
 
 
 _display_help() {
+    _expand_all_sshd_deploy_paths
     echo "task_sshd.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"

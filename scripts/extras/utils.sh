@@ -50,13 +50,17 @@ warning_msg() {
     
     [ "$msg" = "" ] && error_msg "warning_msg() no param" 1
     printf "\nWARNING: $msg\n"
+
+    unset msg
 }
 
 
 verbose_msg() {
     msg=$1
+    
     [ "$msg" = "" ] && error_msg "verbose_msg() no param" 1
     [ "$p_verbose" = "1" ] && printf "VERBOSE: $msg\n"
+    unset msg
 }
 
 
@@ -101,27 +105,54 @@ msg_1() {
     echo "|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
     echo "$border_line"
     echo
+    
+    unset msg
+    unset max_length
 }
 
 
 msg_2() {
     msg=$1
     echo "=== $msg ==="
+    unset msg
 }
 
 
 msg_3() {
     msg=$1
     echo "--- $msg ---"
+    unset msg
 }
 
 
 
 #==========================================================
 #
-#     Ungrouped
+#     General public functions
 #
 #==========================================================
+
+
+expand_deploy_path() {
+    #
+    #  Path not starting with / are asumed to be relative to
+    #  $DEPLOY_PATH
+    #
+    this_path="$1"
+    char_1=$(echo "$this_path" | head -c1)
+
+    if [ "$char_1" = "/" ]; then
+        echo "$this_path"
+    elif [ "$this_path" != "" ]; then
+        expanded_path="$DEPLOY_PATH/$this_path"
+        echo $expanded_path
+	>/dev/srderr verbose_msg "    expanded into: $expanded_path"
+    fi
+    
+    unset this_path
+    unset char_1
+    unset expanded_path
+}
 
 
 #
@@ -133,15 +164,24 @@ msg_3() {
 #     1 if package was installed now
 #
 ensure_installed() {
-    pk=$1
+    pkg=$1
     msg=$2
-    test -z "$pk" && error_msg "ensure_installed() called with no param!" 1
-    test -z "$msg" && msg="Installing dependency $pk"
-    if [ "$(apk info -e $pk)" = "" ]; then
+    ret_val=0
+    test -z "$pkg" && error_msg "ensure_installed() called with no param!" 1
+    test -z "$msg" && msg="Installing dependency $pkg"
+    if [ "$(apk info -e $pkg)" = "" ]; then
         msg_3 "$msg"
-        apk add $pk
-        return 1
+        apk add $pkg
+        ret_val=1
     fi
+    
+    unset pk
+    unset msg
+    if [ $ret_val -eq 1 ]; then
+        unset ret_val
+	return 1
+    fi
+    unset ret_val
     return 0
 }
 
@@ -155,11 +195,11 @@ ensure_shell_is_installed() {
      
     [ "$SHELL_NAME" = "" ] && error_msg "ensure_shell_is_installed() - no shell paraam!" 1
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-        test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed!<<<\n"
+        test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed! ><<\n"
     else
         test -f "$SHELL_NAME" || error_msg "Shell not found: $SHELL_NAME" 1
         test -x "$SHELL_NAME" || error_msg "Shell not executable: $SHELL_NAME" 1
-    fi   
+    fi
 }
 
 
@@ -185,6 +225,7 @@ clear_work_dir() {
             exit 1
             
     esac
+    unset new_space
 }
 
 
@@ -257,7 +298,6 @@ unpack_home_dir() {
     if [ "$do_unpack" = "1" ]; then
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             msg_3 "Will be restored"
-            echo "Using: $fname_tgz"
             [ "$save_current" = "1" ] && msg_3 "Previous content will be moved to ${home_dir}-OLD"
         else
             clear_work_dir 1
@@ -326,6 +366,7 @@ parse_command_line() {
     # This is checked after all config files are processed, so if you really want to, you can
     # override this in a later config file....
     # If help is requested we will continue despite SPD_ABORT=1
+    # Since nothing will be changed, and it helps testting scipts on non supported platforms. 
     #
     if [ "$SPD_TASK_DISPLAY" = "0" ] && [ $p_help = 0 ]; then
 	[ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system." 1

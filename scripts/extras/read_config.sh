@@ -11,9 +11,7 @@
 
 
 _local_error_msg() {
-    echo
-    echo "ERROR: $1"
-    echo
+    printf "\nERROR: $1\n"
     exit 1
 }
     
@@ -60,41 +58,28 @@ _local_error_msg() {
 
 read_config() {
     #
-    #   Identify the local env, and parse config file
+    # the config files are located in $DEPLOY_PATH/custom/config/
+    # and have the extention .cfg
+    # In order to lowercase the cfg file names when they depend
+    # on env variables we only give the basename of the
+    # config file below
     #
- 
-    #
-    # Set some defaults, in case they are not set in the config file
-    # This prevents shellcheck from giving waarnings aboout unasigned variables
-    # 
-    SPD_UNAME=""
-    SPD_APKS_DEL=""
-    SPD_APKS_ADD=""
-    SPD_TIME_ZONE=""
-    SPD_ROOT_UNPACKED_PTR=""
-    SPD_HOME_DIR_UNPACKED_PTR=""
-    SPD_EXTRA_TASK=""
-    
-    #
-    # Config files
-    #
-    #echo ">> os_type[$os_type] distro_family[$distro_family] distro[$distro] settings[$settings] hostname[$(hostname)]"
-
     _read_cfg_file defaults
     _read_cfg_file settings-pre
     
     [ "$os_type" != "" ] &&        _read_cfg_file "$os_type"
     [ "$distro_family" != "" ] &&  _read_cfg_file "$distro_family"
-    [ "$distro" != "" ] &&         _read_cfg_file $distro
+    [ "$distro" != "" ] &&         _read_cfg_file "$distro"
     
     _read_cfg_file settings-post  # general user settings
     _read_cfg_file $(hostname | sed 's/\./ /' | awk '{print $1}')
 
     [ "$p_verbose" = "1" ] && echo  # Whitespace after listing config files parsed
-
-    # process path references in config file
-    _expand_path_all_params
 }
+
+
+
+
 
 
 
@@ -106,69 +91,19 @@ read_config() {
 
 _read_cfg_file() {
     cfg_file="$(echo $1 | tr '[:upper:]' '[:lower:]')"
+
     [ -z "$cfg_file" ] && _local_error_msg "_read_cfg_file() called with no param!"
     cfg_file="$DEPLOY_PATH/custom/config/${cfg_file}.cfg"
-    verbose_msg "will read: [$cfg_file]"
 
     if [ ! -f "$cfg_file" ]; then
-	[ "$p_verbose" = "1" ] && warning_msg "Config file not found: [$cfg_file]"
+	verbose_msg "NOT found: $cfg_file"
+        unset cfg_file
 	return
     fi
+    verbose_msg "will read: $cfg_file"
     . "$cfg_file"
-}
-
-
-_expand_path() {
-    #
-    #  Path not starting with / are asumed to be relative to
-    #  $DEPLOY_PATH
-    #
-    this_path="$1"
-    char_1=$(echo "$this_path" | head -c1)
-
-    if [ "$char_1" = "/" ]; then
-        echo "$this_path"
-    else
-        echo "$DEPLOY_PATH/$this_path"
-    fi
-}
-
-
-_expand_path_all_params() {
-    #
-    # Expands all path params that might be relative
-    # to the deploy location into a full path
-    #
-    if [ "$SPD_FILE_REPOSITORIES" = "*** do not touch ***" ]; then
-        SPD_FILE_REPOSITORIES=""
-    elif [ "$SPD_FILE_REPOSITORIES" != "" ] ; then
-        SPD_FILE_REPOSITORIES=$(_expand_path "$SPD_FILE_REPOSITORIES")
-    else
-        # Use default Alpine repofile
-        SPD_FILE_REPOSITORIES="$DEPLOY_PATH/files/repositories-Alpine-v3.12"
-    fi
-    [ "$SPD_FILE_HOSTS" != "" ] && SPD_FILE_HOSTS=$(_expand_path "$SPD_FILE_HOSTS")
-    if [ "$SPD_SSH_HOST_KEYS" != "" ]; then
-        #echo "### expanding: [$SPD_SSH_HOST_KEYS]"        
-        SPD_SSH_HOST_KEYS=$(_expand_path "$SPD_SSH_HOST_KEYS")
-        #echo "    expanded into: [$SPD_SSH_HOST_KEYS]"
-    fi
-    if [ "$SPD_HOME_DIR_TGZ" != "" ]; then
-        #echo "### expanding: [$SPD_HOME_DIR_TGZ]"        
-        SPD_HOME_DIR_TGZ=$(_expand_path "$SPD_HOME_DIR_TGZ")
-        #echo "    expanded into: [$SPD_HOME_DIR_TGZ]"
-    fi
-    if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
-        #echo "### expanding: [$SPD_ROOT_HOME_TGZ]"        
-        SPD_ROOT_HOME_TGZ=$(_expand_path "$SPD_ROOT_HOME_TGZ")
-        #echo "    expanded into: [$SPD_ROOT_HOME_TGZ]"
-    fi
-    if [ "$SPD_EXTRA_TASK" != "" ]; then
-        SPD_EXTRA_TASK=$(_expand_path "$SPD_EXTRA_TASK")
-    fi
-    #
-    # switch to new params
-    #
+    
+    unset cfg_file
 }
 
 
