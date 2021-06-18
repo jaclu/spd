@@ -102,19 +102,26 @@ _display_help() {
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
     echo
-    echo "Installs sudo and creates a no password sudo group wheel, if it does not allready exist."
-    echo "This task has no direct params, running this will create the group."
-    echo
     echo "Tasks included:"
     echo " task_nopasswd_sudo"
+    echo
+    echo "Installs sudo and creates a no password sudo group wheel, if it does not allready exist."
+    echo "This task has no direct params, running this will create the group."
     echo
     echo "Env paramas"
     echo "-----------"
     #
     # If the variable is defined show it, otherwise explain it!
     #
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo
+    echo "SPD_TASK_DISPLAY$(
+        test -z "$SPD_TASK_DISPLAY" \
+        && echo '      - if 1 will only display what will be done' \
+        || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
@@ -125,7 +132,7 @@ _display_help() {
 #
 #=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
