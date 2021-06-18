@@ -205,7 +205,7 @@ expand_deploy_path() {
     elif [ -n "$this_path" ]; then
         expanded_path="$DEPLOY_PATH/$this_path"
         echo "$expanded_path"
-	>/dev/srderr verbose_msg "    expanded into: $expanded_path"
+	    >/dev/stderr verbose_msg "    expanded into: $expanded_path"
     fi
     
     unset this_path
