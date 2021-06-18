@@ -88,7 +88,9 @@ task_mtu_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
-                echo ">> Not E"
+                echo ">> Not Display"
+                tail /etc/group
+                echo "-----"
                 ensure_installed shadow "Adding shadow (provides useradd)"
                 # we need to ensure the group exists, before using it in
                 # useradd
