@@ -8,11 +8,19 @@
 #
 # Part of ishTools
 
-
 #
 # No need to run more than once
 #
-[ ! -z "$os_type" ] && return
+[ -n "$os_type" ] && return
+
+
+
+#
+#  diable if unset
+#
+[ -z ${p_verbose+x} ] && p_verbose=0
+
+
 
 #
 #  Will set the following variables
@@ -21,6 +29,8 @@
 # distro_family - General distro type, debian/ish etc
 # distro        - Specific distro Ubuntu/ish-AOK etc
 #
+
+
 
 
 
@@ -41,7 +51,7 @@ distro_MacOS='MacOS'
 #  Detect environ
 #
 case "$(uname)" in
-    $os_type_Linux)
+    "$os_type_Linux")
         os_type=$os_type_Linux
     	if [ "$(uname -r | grep ish)" != "" ]; then
 	    distro_family=$distro_family_ish
@@ -54,7 +64,7 @@ case "$(uname)" in
 	fi
     	;;
 	
-    $os_type_Darwin)
+    "$os_type_Darwin")
 	    os_type=$os_type_Darwin
 	    distro_family=""
 	    distro=$distro_MacOS

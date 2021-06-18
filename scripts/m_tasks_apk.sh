@@ -85,7 +85,7 @@ task_mta_remove_unwanted() {
     elif      [ "$SPD_TASK_DISPLAY" = "1" ] \
           &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
-        echo "Will NOT remove any listed software"
+        echo "nothing listed, no action to take"
         echo
     fi
 }
@@ -100,14 +100,14 @@ task_mta_install_requested() {
         else
             # TODO: see in task_mta_remove_unwanted() for description
             # about why this seems needed ATM
-            cmd="apk add $SPD_APKS_ADD"
+            cmd="apk add $SPD_APKS_ADD not defined "
             $cmd || error_msg "Failed to install requested software - network issue?"
 
         fi
         echo
     elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
-        echo "Will NOT install any listed software"
+        echo "nothing listed, no action to take"
         echo
     fi
 }

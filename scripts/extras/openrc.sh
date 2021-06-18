@@ -12,7 +12,7 @@
 #
 # This should only be sourced...
 #
-[ "$(basename $0)" = "openrc.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!"
+[ "$(basename "$0")" = "openrc.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!"
 
 
 # If you intend to work at a service in another runlevel change this variable
@@ -66,12 +66,12 @@ ensure_service_is_added() {
 
         [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc"
     [ "$runlevel" = "" ] && error_msg "ensure_service_is_added() called without param runlevel"
-    if [ "$(rc-status -u | grep $srvc)" != "" ]; then
+    if [ "$(rc-status -u | grep "$srvc")" != "" ]; then
         echo "assigning [$srvc] to runlvl: [$runlevel]"
         # activate service
-        rc-update add $srvc $runlevel
+        rc-update add "$srvc" "$runlevel"
     fi
-    [ "$restart" = "restart" ] && rc-service $srvc restart
+    [ "$restart" = "restart" ] && rc-service "$srvc" restart
 }
 
 
@@ -85,9 +85,9 @@ disable_service() {
     verbose_msg "disable_service(srvc=$srvc, runlevel=$runlevel)"
     [ "$srvc" = "" ] && error_msg "disable_service() called without param"
     [ "$runlevel" = "" ] && error_msg "disable_service() called without param runlevel"
-    if [ "$(rc-service -l | grep $srvc)" != "" ]; then
-        rc-service $srvc stop
-        rc-update del $srvc $rc_runlevel
+    if [ "$(rc-service -l | grep "$srvc")" != "" ]; then
+        rc-service "$srvc" stop
+        rc-update del "$srvc" "$rc_runlevel"
         return 0
     else
         verbose_msg "service not found, so nothing to remove"
