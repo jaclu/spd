@@ -134,7 +134,9 @@ task_mtu_restore_user() {
                 else
                     echo ">> DD"
                     ensure_shell_is_installed "$SPD_SHELL"
+                    echo ">> D5"
                     usermod -s "$SPD_SHELL" "$SPD_UNAME"
+                    echo ">> D9"
                     msg_3 "new shell: $SPD_SHELL"
                 fi
             fi
