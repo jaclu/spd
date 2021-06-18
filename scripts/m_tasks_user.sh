@@ -63,6 +63,7 @@ task_mtu_restore_user() {
         # Ensure user is created
         #
         msg_2 "$msg_txt"
+        ensure_installed shadow "Adding shadow (provides useradd & usrtmod)"
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
@@ -85,7 +86,6 @@ task_mtu_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
-                ensure_installed shadow "Adding shadow (provides useradd)"
                 # we need to ensure the group exists, before using it in
                 # useradd
                 # TODO: identify a 501 group by name and delete it
@@ -110,20 +110,22 @@ task_mtu_restore_user() {
             #
             if [ "$SPD_UID" != "" ]; then
                 msg_3 "Verifying UID"
-                if [ "$(id -u $SPD_UNAME)" != "$SPD_UID" ] ; then
+                if [ "$(id -u "$SPD_UNAME")" != "$SPD_UID" ] ; then
                     error_msg "Wrong UID for user:"
                 fi
             fi
             if [ "$SPD_GID" != "" ]; then
                 msg_3 "Verifying GID"
-                if [ "$(id -g $SPD_UNAME)" != "$SPD_GID" ] ; then
+                if [ "$(id -g "$SPD_UNAME")" != "$SPD_GID" ] ; then
                     error_msg "Wrong primary GID for user:"
                 fi
             fi
 
             msg_3 "Checking shell"
-            current_shell=$(grep "$SPD_UNAME" /etc/passwd | sed 's/:/ /g' \
-                |  awk '{ print $NF }')
+            # extracting part after last :
+            current_shell="$(
+                grep "^$SPD_UNAME:" /etc/passwd | sed 's/:/ /g' |  \
+                awk '{ print $NF }')"
             if [ "$current_shell" != "$SPD_SHELL" ]; then
                 if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                     echo "Will change shell $current_shell -> $SPD_SHELL"
