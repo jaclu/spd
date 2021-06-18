@@ -95,10 +95,6 @@ task_mtu_restore_user() {
                     #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                    error_msg "group id already in use: $SPD_GID"
                 fi
-                #  sets uid & gid to 501, to match apples uid/gid on iOS mounts
-                verbose_msg "$(
-                    printf "Will be created as %s:x:" "$SPD_UNAME"
-                    echo "$SPD_UID:$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL")"
                 if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m \
                               -s "$SPD_SHELL" "$SPD_UNAME") ; then
                     groupdel "$SPD_UNAME"
