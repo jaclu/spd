@@ -40,7 +40,7 @@ fi
 #
 
 task_sshd() {
-    _expand_all_sshd_deploy_paths
+    _ts_expand_all_deploy_paths
     
     verbose_msg "task_sshd($SPD_SSHD_SERVICE)"
     #
@@ -52,22 +52,15 @@ task_sshd() {
     if [ -z "$SPD_SSHD_SERVICE" ]; then
         SPD_SSHD_SERVICE="0"
         warning_msg "SPD_SSHD_SERVICE not defined, service sshd will not be modified"
-   fi
+    fi
     
     case "$SPD_SSHD_SERVICE" in
-	"-1" | "0" | "1")
-	    ;;
-	*)
-	    error_msg "task_sshd($SPD_SSHD_SERVICE) invalid option, must be one of -1, 0, 1" 1
-	    ;;
-    esac
-        
-    case "$SPD_SSHD_SERVICE" in
+
         "-1" ) # disable
-	    _sshd_label
-	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-	        msg_3 "Will be disabled"
-	    else
+            _ts_task_label
+            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+	           msg_3 "Will be disabled"
+            else
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then		    
                     disable_service $service_name default
@@ -76,55 +69,59 @@ task_sshd() {
                     echo "Service $service_name was not active, no action needed"
                 fi
             fi
-	    echo
+            echo
             ;;
-            
+
+
         "0" )  # unchanged
-            if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ $SPD_DISPLAY_NON_TASKS = "1" ]; then
-		_sshd_label
+            if [ "$SPD_TASK_DISPLAY" = "1" ] && \
+               [ "$SPD_DISPLAY_NON_TASKS" = "1" ]
+            then
+                _ts_task_label
                 echo "Will NOT be changed"
-		echo
+                echo
             fi
             ;;
         
         "1" )  # activate 
-	    _sshd_label
+            _ts_task_label
             if [ "$SPD_SSHD_PORT" = "" ]; then
-                error_msg "Invalid setting: SPD_SSHD_PORT must be specified" 1
+                error_msg "Invalid setting: SPD_SSHD_PORT must be specified"
             fi
-	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
                 echo "port: $SPD_SSHD_PORT"
-		echo
- 	    else
+                echo
+            else
                 msg_3 "Enabeling service"
-		
+
                 ensure_installed openrc
-		ensure_installed openssh
+                ensure_installed openssh
                 ensure_runlevel_default
 
-	    	#
-	    	#  Preparational steps
-	    	#
-	    	_unpack_ssh_host_keys
-	    
+                #
+                #  Preparational steps
+                #
+                _ts_unpack_ssh_host_keys
+
                 msg_3 "Ensuring hostkeys exist"
                 ssh-keygen -A
                 echo "hostkeys ready"
                 echo
-        
+
                 #
-		# use requested port
-		#
+                # use requested port
+                #
                 sed -i "s/.*Port .*/Port $SPD_SSHD_PORT/" /etc/ssh/sshd_config
-		
+
                 ensure_service_is_added sshd default restart
                 msg_1 "sshd listening on port: $SPD_SSHD_PORT"
             fi
             ;;
 
         *)
-            error_msg "Invalid setting: SPD_SSHD_SERVICE=$SPD_SSHD_SERVICE\nValid options: -1 0 1" 1
+            error_msg "Invalid setting: SPD_SSHD_SERVICE=$SPD_SSHD_SERVICE\nValid options: -1 0 1"
+
     esac
 }
 
@@ -137,7 +134,7 @@ task_sshd() {
 #
 #=====================================================================
 
-_expand_all_sshd_deploy_paths() {
+_ts_expand_all_deploy_paths() {
     #
     # Expanding path variables that are either absolute or relative
     # related to the deploy-path
@@ -147,12 +144,12 @@ _expand_all_sshd_deploy_paths() {
 }
 
 
-_sshd_label() {
+_ts_task_label() {
     msg_2 "sshd service"
 }
 
 
-_unpack_ssh_host_keys() {
+_ts_unpack_ssh_host_keys() {
     msg_3 "Device specific ssh host keys"
 
     if [ "$SPD_SSH_HOST_KEYS" != "" ]; then
@@ -160,12 +157,12 @@ _unpack_ssh_host_keys() {
         if test -f "$SPD_SSH_HOST_KEYS" ; then
             msg_3 "Will be untared into /etc/ssh"
             if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-                cd /etc/ssh || error_msg "Failed to cd into /etc/ssh" 1
+                cd /etc/ssh || error_msg "Failed to cd into /etc/ssh"
 		          # remove any previous host keys
                 2> /dev/null rm /etc/ssh/ssh_host_*
 		
                 if [ "$(tar xvfz "$SPD_SSH_HOST_KEYS")" != "0" ]; then
-                    error_msg "Untar failed!" 1
+                    error_msg "Untar failed!"
                 fi
             fi
         else
@@ -206,7 +203,8 @@ _run_this() {
 
 
 _display_help() {
-    _expand_all_sshd_deploy_paths
+    _ts_expand_all_deploy_paths
+
     echo "task_sshd.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
@@ -216,27 +214,40 @@ _display_help() {
     echo 
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_SSHD_SERVICE$(test -z "$SPD_SSHD_SERVICE" && echo '  - sshd status (-1/0/1)' || echo "=$SPD_SSHD_SERVICE")"
-    echo "SPD_SSHD_PORT$(test -z "$SPD_SSHD_PORT" && echo '     - what port sshd should use' || echo "=$SPD_SSHD_PORT")"
-    echo "SPD_SSH_HOST_KEYS$(test -z "$SPD_SSH_HOST_KEYS" && echo ' - tgz file with host_keys' || echo "=$SPD_SSH_HOST_KEYS")"
+    echo "SPD_SSHD_SERVICE$(
+        test -z "$SPD_SSHD_SERVICE" \
+        && echo '  - sshd status (-1/0/1)' \
+        || echo "=$SPD_SSHD_SERVICE")"
+    echo "SPD_SSHD_PORT$(
+        test -z "$SPD_SSHD_PORT" \
+        && echo '     - what port sshd should use' \
+        || echo "=$SPD_SSHD_PORT")"
+    echo "SPD_SSH_HOST_KEYS$(
+        test -z "$SPD_SSH_HOST_KEYS" \
+        && echo ' - tgz file with host_keys' \
+        || echo "=$SPD_SSH_HOST_KEYS")"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo "SPD_TASK_DISPLAY$(
+        test -z "$SPD_TASK_DISPLAY" \
+        && echo '      - if 1 will only display what will be done' \
+        || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
 
-#==========================================================
+#=====================================================================
 #
 #     main
 #
 #=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
-    echo ">> before utils"
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
-    echo ">> after utils"
 
     #
     # Since sourced mode cant be detected in a practical way under ash,

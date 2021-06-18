@@ -50,36 +50,11 @@ task_runbg() {
     #
     # source dependencies if not available
     #
-    # if [ -z ${ensure_service_is_added+x} ]; then
-    #if [ "$(command -v $FUNC_NAME)x" != "x" ]; then
-    #    echo " * INFO: Found function $FUNC_NAME"
-    #    return 0
-    #fi
-
-    msg_2 "load env test"
-
     if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
-        msg_2 "sourcing openrc"
+        verbose_msg "task_runbg needs to source openrc"
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
-    else
-        msg_2 "openrc was found!"
     fi
 
-    if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
-        msg_2 "sourcing openrc again"
-        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
-    else
-        msg_2 "on 2nd try openrc was found!"
-    fi
-    error_msg "Aborting for now"
-
-    # if [  "$(command -v $ensure_service_is_added)x" = "x" ]; then
-    #     msg_2 "sourincg it"
-    #     verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
-    #     . "$DEPLOY_PATH/scripts/extras/openrc.sh"
-    # else
-    #     verbose_msg "openrc seems sourced"
-    # fi
 
     service_name=runbg
     source_fname="$DEPLOY_PATH/files/services/$service_name"
@@ -140,7 +115,7 @@ task_runbg() {
             fi
             ;;
 
-       *) error_msg "task_runbg($SPD_BG_RUN) invalid option, must be one of -1, 0, 1" 1;;
+       *) error_msg "task_runbg($SPD_BG_RUN) invalid option, must be one of -1, 0, 1"
     esac
     echo
 }
@@ -226,7 +201,6 @@ _display_help() {
 #=====================================================================
 
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-    . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #

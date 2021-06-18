@@ -47,12 +47,20 @@ task_timezone.sh
 
 
 
-#  Splitting long params on separate lines
+#
+#   Sourcing dependency
+#
 
+if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+    verbose_msg "task_runbg needs to source openrc"
+    . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+fi
+
+
+#
+#  Splitting long params on separate lines
+#
 msg_3 "$(printf "Will be created as %s :x:%s" "$SPD_UNAME" "$SPD_UID"
          echo ":$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
         )"
 
-
-=========== Tested 17:14
-./m_tasks_apk.sh
