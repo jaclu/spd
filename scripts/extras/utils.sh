@@ -52,7 +52,7 @@
 # this main block, that triggers command line parsing, and stand alone
 # run mode.
 #
-# if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+# if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 #
 #     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 #
