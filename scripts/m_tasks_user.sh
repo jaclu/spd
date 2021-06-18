@@ -69,6 +69,7 @@ task_mtu_restore_user() {
             echo ">> D"
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" -eq 1 ]; then
+                echo ">> E"
                 # [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] \
                 # if find . | grep -q 'IMG[0-9]'
 
@@ -87,6 +88,7 @@ task_mtu_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
+                echo ">> Not E"
                 ensure_installed shadow "Adding shadow (provides useradd)"
                 # we need to ensure the group exists, before using it in
                 # useradd
