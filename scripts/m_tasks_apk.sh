@@ -98,7 +98,7 @@ task_apks_add() {
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             echo "$SPD_APKS_ADD"
         else
-            # TODO: see in task__remove_unwanted() for description
+            # TODO: see in task_apks_delete() for description
             # about why this seems needed ATM
             cmd="apk add $SPD_APKS_ADD not defined "
             $cmd || error_msg "Failed to install requested software - network issue?"
@@ -140,21 +140,17 @@ _run_this() {
     #
     [ -z "$SPD_APKS_DEL" ] && [ -z "$SPD_APKS_DEL" ] && \
         warning_msg "None of the task variables set"
-    task_update
+    task_apk_update
     if [ -n "$SPD_APKS_DEL" ]; then
-        task__remove_unwanted
+        task_apks_delete
     else
-        warning_msg "SPD_APKS_DEL not set, skipping task__remove_unwanted()"
+        warning_msg "SPD_APKS_DEL not set, skipping task_apks_delete()"
     fi
-    task__upgrade
+    task_apk_upgrade
     if [ -n "$SPD_APKS_ADD" ]; then
-        task_remove_unwanted_apks
-task_remove_unwanted_apks
-task_apks_add
+        task_apks_add
     else
-        warning_msg "SPD_APKS_ADD not set, skipping task_remove_unwanted_apks
-task_remove_unwanted_apks
-task_apks_add()"
+        warning_msg "SPD_APKS_ADD not set, skipping task_apks_add()"
     fi
 
     #
