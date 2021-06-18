@@ -105,6 +105,24 @@ task_mtu_restore_user() {
             fi
         else
             msg_3 "Already pressent"
+            #
+            # If given, ensure user has right UID & GID
+            #
+            if [ "$SPD_UID" != "" ]; then
+                if ! grep -q "^$SPD_UNAME:.*:SPD_UID" ; then
+                    echo
+                    grep "^$SPD_UNAME" /etc/passwd
+                    error_msg "Wrong UID for user:"
+                fi
+            fi
+            if [ "$SPD_GID" != "" ]; then
+                if ! grep -q "^$SPD_UNAME:.*:.*:SPD_GID" ; then
+                    echo
+                    grep "^$SPD_UNAME" /etc/passwd
+                    error_msg "Wrong primary GID for user:"
+                fi
+            fi
+
             current_shell=$(grep "$SPD_UNAME" /etc/passwd | sed 's/:/ /g' \
                 |  awk '{ print $NF }')
             if [ "$current_shell" != "$SPD_SHELL" ]; then
@@ -119,6 +137,7 @@ task_mtu_restore_user() {
         fi
         echo
 
+        error_msg "skipping home dir for now"
         #
         # Restore user home
         #
