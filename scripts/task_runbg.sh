@@ -56,19 +56,11 @@ task_runbg() {
     fi
 
     case "$SPD_BG_RUN" in
-	"-1" | "0" | "1")
-	    ;;
-	*)
-	    error_msg "task_runbg($SPD_BG_RUN) invalid option, must be one of -1, 0, 1" 1
-	    ;;
-    esac
-    
-    case "$SPD_BG_RUN" in
         -1 ) # disable
-	    _runbg_label
+            _runbg_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-	        msg_3 "Will be disabled"
-	    else
+	           msg_3 "Will be disabled"
+            else
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then		    
                     disable_service $service_name default
@@ -78,40 +70,42 @@ task_runbg() {
                 fi
                 rm $service_fname -f
             fi
-	    echo
+            echo
             ;;
     
         0 )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-	        _runbg_label
+                _runbg_label
                 echo "Will NOT be changed"
             fi
             ;;
     
         1 )  # activate 
-	    _runbg_label
+            _runbg_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
             else
                 msg_3 "Enabeling service"
-		
+
                 ensure_installed openrc
                 ensure_runlevel_default
-		
-		diff "$source_fname" "$service_fname" > /dev/null 2>&1
-		if [ $? -ne 0 ]; then
-		    #
-		    #  Ensure that the latest service is deployed
-		    #
-		    msg_3 "Deploying service file"
-		    cp "$source_fname" "$service_fname"
-                    chmod 755 "$service_fname"
-		fi
+
+                #diff "$source_fname" "$service_fname" > /dev/null 2>&1
+                #if [ $? -ne 0 ]; then
+
+                #
+                #  Ensure that the latest service is deployed
+                #
+                msg_3 "Deploying service file"
+                cp "$source_fname" "$service_fname"
+                chmod 755 "$service_fname"
+
                 msg_3 "Activating service"
                 ensure_service_is_added $service_name default restart
             fi
             ;;
 
+       *) error_msg "task_runbg($SPD_BG_RUN) invalid option, must be one of -1, 0, 1" 1;;
     esac
     echo
 }
@@ -173,21 +167,30 @@ _display_help() {
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_BG_RUN$(test -z "$SPD_BG_RUN" && echo ' -  location_tacker status (-1/0/1)' || echo "=$SPD_BG_RUN")"
+    echo "SPD_BG_RUN$(
+        test -z "$SPD_BG_RUN" \
+        && echo ' -  location_tacker status (-1/0/1)' \
+        || echo "=$SPD_BG_RUN")"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo "SPD_TASK_DISPLAY$(
+        test -z "$SPD_TASK_DISPLAY" \
+        && echo '      - if 1 will only display what will be done' \
+        || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
 
-#==========================================================
+#=====================================================================
 #
 #     main
 #
 #=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
