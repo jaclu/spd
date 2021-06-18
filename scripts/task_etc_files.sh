@@ -79,9 +79,9 @@ _copy_etc_file() {
     dst_file="$1"
     src_file="$2"
     surplus_param="$3"
-    [ "$surplus_param" != "" ] && error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!" 1
-    [ "$dst_file" = "" ] && error_msg "_copy_etc_file() param 1 dst_file not supplied!" 1
-    if [ "$src_file" != "" ]; then
+    [ -n "$surplus_param" ] && error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!" 1
+    [ -z "$dst_file" ] && error_msg "_copy_etc_file() param 1 dst_file not supplied!" 1
+    if [ -n "$src_file" ]; then
     	msg_3 "$dst_file"
     	[ -f "$src_file" ] || error_msg "_copy_etc_file() src_file NOT FOUND!\n$src_file\n" 1    
     	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
@@ -115,6 +115,7 @@ _run_this() {
     # and debugging.
     #
     _expand_all_deploy_paths_etc
+
     [ -z "$SPD_FILE_HOSTS" ] && [ -z "$SPD_FILE_REPOSITORIES" ] && warning_msg "None of the relevant variables set, nothing will be done"
     task_replace_some_etc_files
     #
@@ -128,6 +129,7 @@ _run_this() {
 
 _display_help() {
     _expand_all_deploy_paths_etc
+
     echo "m_tasks_etc_files.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
@@ -161,7 +163,7 @@ _display_help() {
 #
 #=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
