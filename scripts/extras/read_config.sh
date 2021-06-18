@@ -11,7 +11,7 @@
 
 
 _local_error_msg() {
-    printf "\nERROR: $1\n"
+    printf "\nERROR: %s\n" "$1"
     exit 1
 }
     
@@ -19,7 +19,7 @@ _local_error_msg() {
 #
 # This should only be sourced...
 #
-[ "$DEPLOY_PATH" = "" ] && _local_error_msg "Not meant to be run standalone: scripts/extras/read_config.sh"
+[ -z "$DEPLOY_PATH" ] && _local_error_msg "Not meant to be run standalone: scripts/extras/read_config.sh"
     
 . "$DEPLOY_PATH/scripts/extras/detect_env.sh"
 
@@ -67,14 +67,14 @@ read_config() {
     _read_cfg_file defaults
     _read_cfg_file settings-pre
     
-    [ "$os_type" != "" ] &&        _read_cfg_file "$os_type"
-    [ "$distro_family" != "" ] &&  _read_cfg_file "$distro_family"
-    [ "$distro" != "" ] &&         _read_cfg_file "$distro"
+    [ -n "$os_type" ] &&        _read_cfg_file "$os_type"
+    [ -n "$distro_family" ] &&  _read_cfg_file "$distro_family"
+    [ -n "$distro" ] &&         _read_cfg_file "$distro"
     
     _read_cfg_file settings-post  # general user settings
-    _read_cfg_file $(hostname | sed 's/\./ /' | awk '{print $1}')
+    _read_cfg_file "$(hostname | sed 's/\./ /' | awk '{print $1}')"
 
-    [ "$p_verbose" = "1" ] && echo  # Whitespace after listing config files parsed
+    [ -n "$p_verbose" ] && echo  # Whitespace after listing config files parsed
 }
 
 
@@ -90,7 +90,7 @@ read_config() {
 #==========================================================
 
 _read_cfg_file() {
-    cfg_file="$(echo $1 | tr '[:upper:]' '[:lower:]')"
+    cfg_file="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
 
     [ -z "$cfg_file" ] && _local_error_msg "_read_cfg_file() called with no param!"
     cfg_file="$DEPLOY_PATH/custom/config/${cfg_file}.cfg"
