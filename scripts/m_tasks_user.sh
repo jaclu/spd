@@ -45,7 +45,6 @@ task_mtu_restore_user() {
     SPD_UID=${SPD_UID:-1000}
     SPD_GID=${SPD_GID:-1000}
 
-    echo ">> B"
     _mtu_expand_all_deploy_paths
 
     ## SPD_HOME_DIR_UNPACKED_PTR=""
@@ -59,17 +58,14 @@ task_mtu_restore_user() {
     #echo "returned from _mtu_find_first_available_uid()"
     #exit 1
     
-    echo ">> C"
     if [ -n "$SPD_UNAME" ]; then
         #
         # Ensure user is created
         #
         msg_2 "$msg_txt"
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
-            echo ">> D display: $SPD_TASK_DISPLAY"
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                echo ">> E"
                 # [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] \
                 # if find . | grep -q 'IMG[0-9]'
 
@@ -81,27 +77,25 @@ task_mtu_restore_user() {
                     && error_msg "gid:$SPD_GID already used in /etc/group"
 
                 # Splitting long param on multiple lines
-                msg_3 "$(echo -n "Will be created as $SPD_UNAME:x:$SPD_UID"
-                         echo ":$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
-                        )"
+                msg_3 "$(
+                    printf "Will be created as %s:x:" "$SPD_UNAME"
+                    echo "$SPD_UID:$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
+                    )"
 
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
-                echo ">> Not Display"
                 ensure_installed shadow "Adding shadow (provides useradd)"
                 # we need to ensure the group exists, before using it in
                 # useradd
                 # TODO: identify a 501 group by name and delete it
                 #groupdel -g "$SPD_UNAME" 2> /dev/null
-                erorr_msg "stopping before groupadd"
-                #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
-                #   error_msg "group id already in use: $SPD_GID"
-                #fi
-                erorr_msg "stopping here"
+                if (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
+                    #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
+                   error_msg "group id already in use: $SPD_GID"
+                fi
                 #  sets uid & gid to 501, to match apples uid/gid on iOS mounts
-                if [ "$(useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel
-                                -m -s "$SPD_SHELL" "$SPD_UNAME")" ] ; then
+                if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m -s "$SPD_SHELL" "$SPD_UNAME") ; then
                     groupdel "$SPD_UNAME"
                     error_msg "task_mtu_restore_user() - useradd failed to complete."
                 fi
@@ -109,7 +103,6 @@ task_mtu_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
             fi
         else
-            echo ">> J"
             msg_3 "Already pressent"
             current_shell=$(grep "$SPD_UNAME" /etc/passwd | sed 's/:/ /g' \
                 |  awk '{ print $NF }')
