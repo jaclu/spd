@@ -56,7 +56,7 @@ task_runbg() {
     #    return 0
     #fi
 
-    if type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+    if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         msg_2 "openrc loaded"
     else
         msg_3 "openrc NOT FOUND"
