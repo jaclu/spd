@@ -113,7 +113,7 @@ task_mtu_restore_user() {
                 if [ "$(id -u "$SPD_UNAME")" != "$SPD_UID" ] ; then
                     error_msg "$(
                         printf "Wrong UID - expected %s found: " "$SPD_UID"
-                        id -u "SPD_UNAME")"
+                        (id -u "SPD_UNAME"))"
                 fi
             fi
             if [ "$SPD_GID" != "" ]; then
@@ -121,7 +121,7 @@ task_mtu_restore_user() {
                 if [ "$(id -g "$SPD_UNAME")" != "$SPD_GID" ] ; then
                     error_msg "$(
                         printf "Wrong GID - expected %s found: " "$SPD_GID"
-                        id -g "SPD_UNAME")"
+                        (id -g "SPD_UNAME"))"
                 fi
             fi
 
