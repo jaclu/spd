@@ -70,7 +70,7 @@
 #
 # This should only be sourced...
 #
-[ "$(basename "$0")" = "utils.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!" 1
+[ "$(basename "$0")" = "utils.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!"
 
 
 
@@ -88,13 +88,13 @@ error_msg() {
 
     case $err_code in
         ''|*[!0-9]*)
-            > /dev/stderr echo "Non numeric err_code given [$err_code] changed into 1"
+            printf "PARAM ERROR: error_msg() Non numeric err_code given "
+            echo "[$err_code] changed into 1"
             err_code=1
             ;;
     esac
 
     printf "\nERROR: %s\n\n" "$msg"
-
 
     clear_work_dir # clear tmp extract dir
     exit $err_code
@@ -253,6 +253,12 @@ ensure_installed() {
 ensure_shell_is_installed() {
     SHELL_NAME=$1
      
+     #  Splitting long params on separate lines
+
+msg_3 "$(echo "Will be created as $SPD_UNAME:x:$SPD_UID"
+         echo ":$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
+        )"
+
     [ -z "$SHELL_NAME" ] && error_msg "ensure_shell_is_installed() - no shell paraam!"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed! ><<\n"
@@ -311,7 +317,12 @@ unpack_home_dir() {
     [ "$save_current" != "1" ] && save_current=0
 
     # (mostly) unverified params
-    verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fname_tgz=$fname_tgz, unpacked_ptr=$unpacked_ptr, save_current=$save_current)"
+    #verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fname_tgz=$fname_tgz, unpacked_ptr=$unpacked_ptr, save_current=$save_current)"
+    # TODO: verify that this split param aproach displays as intended!
+    verbose_msg "$(
+        printf "unpack_home_dir(username=%s, home=" "$username"
+        printf "%s, fname_tgz=%s, , unpacked_ptr=" "$home_dir" "$fname_tgz"
+        echo "$unpacked_ptr, save_current=$save_current)")"
 
     #
     #  Param checks
@@ -344,9 +355,6 @@ unpack_home_dir() {
         
     esac
     
-    # Parsed, verified and in some cases shifted params
-    # verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fname_tgz=$fname_tgz, unpacked_ptr=$unpacked_ptr, save_current=$save_current) - verified params"
- 
     #
     #  Actual work starts
     #
@@ -462,7 +470,8 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     parse_command_line "$@"
 
     if [ $p_help = 0 ]; then
-       [ "$SPD_ABORT" = "1" ] && error_msg "Detected SPD_ABORT=1  Your platform is most likely not supported!"
+       [ "$SPD_ABORT" = "1" ] && \
+            error_msg "Detected SPD_ABORT=1  Your platform is most likely not supported!"
        [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
 	   [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
         _run_this

@@ -44,3 +44,12 @@ task_sshd.sh
 task_timezone.sh
 	_tz_
 	task_timezone
+
+
+
+#  Splitting long params on separate lines
+
+msg_3 "$(printf "Will be created as %s :x:%s" "$SPD_UNAME" "$SPD_UID"
+         echo ":$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
+        )"
+

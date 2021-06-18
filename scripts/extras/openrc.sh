@@ -12,7 +12,7 @@
 #
 # This should only be sourced...
 #
-[ "$(basename $0)" = "openrc.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!" 1
+[ "$(basename $0)" = "openrc.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!"
 
 
 # If you intend to work at a service in another runlevel change this variable
@@ -64,8 +64,8 @@ ensure_service_is_added() {
     
     verbose_msg "ensure_service_is_added(srvc=$srvc, runlevel=$runlevel, restart=$restart)"
 
-        [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc" 1
-    [ "$runlevel" = "" ] && error_msg "ensure_service_is_added() called without param runlevel" 1
+        [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc"
+    [ "$runlevel" = "" ] && error_msg "ensure_service_is_added() called without param runlevel"
     if [ "$(rc-status -u | grep $srvc)" != "" ]; then
         echo "assigning [$srvc] to runlvl: [$runlevel]"
         # activate service
@@ -83,8 +83,8 @@ disable_service() {
     runlevel=$2
     
     verbose_msg "disable_service(srvc=$srvc, runlevel=$runlevel)"
-    [ "$srvc" = "" ] && error_msg "disable_service() called without param" 1
-    [ "$runlevel" = "" ] && error_msg "disable_service() called without param runlevel" 1
+    [ "$srvc" = "" ] && error_msg "disable_service() called without param"
+    [ "$runlevel" = "" ] && error_msg "disable_service() called without param runlevel"
     if [ "$(rc-service -l | grep $srvc)" != "" ]; then
         rc-service $srvc stop
         rc-update del $srvc $rc_runlevel
@@ -180,7 +180,7 @@ _patch_rc_cgroup_sh() {
                 echo "First try:  mv $fn_backup $fname"
                 echo "And then run this again, after that double check $fname"
                 echo "To make sure cgroup2_find_path() returns 0"
-                error_msg "Found $fn_backup read the above for further suggestions" 1        
+                error_msg "Found $fn_backup read the above for further suggestions"
             fi
             echo "Making cgroup2_find_path() always return 0"
             echo "Saving original file to $fn_backup"
