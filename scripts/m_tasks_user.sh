@@ -94,7 +94,8 @@ task_mtu_restore_user() {
                 # useradd
                 # TODO: identify a 501 group by name and delete it
                 #groupdel -g "$SPD_UNAME" 2> /dev/null
-                if ! groupadd -g "$SPD_GID" "$SPD_UNAME" 2> /dev/null ; then
+                erorr_msg "stopping before groupadd"
+                if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                     error_msg "group id already in use: $SPD_GID"
                 fi
                 erorr_msg "stopping here"
