@@ -46,6 +46,15 @@ task_runbg() {
     #
     # Name of service
     #
+
+    #
+    # source dependencies if not available
+    #
+    if [ -z ${ensure_service_is_added+x} ]; then
+        verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
+        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    fi
+
     service_name=runbg
     source_fname="$DEPLOY_PATH/files/services/$service_name"
     service_fname="/etc/init.d/$service_name"
@@ -191,7 +200,6 @@ _display_help() {
 #=====================================================================
 
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-    . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #
