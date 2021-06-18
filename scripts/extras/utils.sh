@@ -94,7 +94,7 @@ error_msg() {
             ;;
     esac
 
-    printf "\nERROR: %s\n\n" "$msg"
+    printf '\nERROR: %b\n\n' "$msg"
 
     clear_work_dir # clear tmp extract dir
     exit $err_code
@@ -105,7 +105,7 @@ warning_msg() {
     msg=$1
     
     [ -z "$msg" ] && error_msg "warning_msg() with no param"
-    printf "\nWARNING: %s\n\n" "$msg"
+    printf '\nWARNING: %b\n\n' "$msg"
 
     unset msg
 }
@@ -118,7 +118,7 @@ verbose_msg() {
     msg=$1
     
     [ -z "$msg" ] && error_msg "verbose_msg() with no param"
-    [ "$p_verbose" = "1" ] && printf "VERBOSE: %s\n" "$msg"
+    [ "$p_verbose" = "1" ] && printf 'VERBOSE: %b\n' "$msg"
     unset msg
 }
 
@@ -171,16 +171,12 @@ msg_1() {
 
 
 msg_2() {
-    msg=$1
-    echo "=== $msg ==="
-    unset msg
+    echo "=== $1 ==="
 }
 
 
 msg_3() {
-    msg=$1
-    echo "--- $msg ---"
-    unset msg
+    echo "--- $1 ---"
 }
 
 
@@ -205,7 +201,7 @@ expand_deploy_path() {
     elif [ -n "$this_path" ]; then
         expanded_path="$DEPLOY_PATH/$this_path"
         echo "$expanded_path"
-	    >/dev/stderr verbose_msg "    expanded into: $expanded_path"
+	    >/dev/stderr verbose_msg "$this_path expanded into: $expanded_path"
     fi
     
     unset this_path

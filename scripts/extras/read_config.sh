@@ -11,7 +11,7 @@
 
 
 _local_error_msg() {
-    printf "\nERROR: %s\n" "$1"
+    printf '\n\nERROR: %b\n' "$1"
     exit 1
 }
     
