@@ -100,9 +100,8 @@ task_mta_install_requested() {
         else
             # TODO: see in task_mta_remove_unwanted() for description
             # about why this seems needed ATM
-            echo "$SPD_APKS_ADD"
-            apk add "$SPD_APKS_ADD" || \
-                error_msg "Failed to install requested software - network issue?"
+            cmd="apk add $SPD_APKS_ADD"
+            $cmd || error_msg "Failed to install requested software - network issue?"
 
         fi
         echo
