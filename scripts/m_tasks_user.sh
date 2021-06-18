@@ -110,7 +110,7 @@ task_mtu_restore_user() {
             #
             if [ "$SPD_UID" != "" ]; then
                 msg_3 "Verifying UID"
-                if ! grep -q "^$SPD_UNAME:.*:SPD_UID" /etc/passwd ; then
+                if grep -q "^$SPD_UNAME:.*:SPD_UID" /etc/passwd ; then
                     echo
                     grep "^$SPD_UNAME" /etc/passwd
                     error_msg "Wrong UID for user:"
