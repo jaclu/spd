@@ -94,15 +94,10 @@ task_mtu_restore_user() {
                 # useradd
                 # TODO: identify a 501 group by name and delete it
                 #groupdel -g "$SPD_UNAME" 2> /dev/null
-                tail /etc/group
-                echo "-----"
                 if ! groupadd -g "$SPD_GID" "$SPD_UNAME" 2> /dev/null ; then
-                    echo "Second tail"
-                    echo
-                    tail /etc/group
-                    echo "-----"
                     error_msg "group id already in use: $SPD_GID"
                 fi
+                erorr_msg "stopping here"
                 #  sets uid & gid to 501, to match apples uid/gid on iOS mounts
                 if [ "$(useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel
                                 -m -s "$SPD_SHELL" "$SPD_UNAME")" ] ; then
