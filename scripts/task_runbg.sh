@@ -191,7 +191,7 @@ _display_help() {
 #=====================================================================
 
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-
+    . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #
