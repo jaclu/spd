@@ -95,7 +95,8 @@ task_mtu_restore_user() {
                    error_msg "group id already in use: $SPD_GID"
                 fi
                 #  sets uid & gid to 501, to match apples uid/gid on iOS mounts
-                if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m -s "$SPD_SHELL" "$SPD_UNAME") ; then
+                if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m \
+                              -s "$SPD_SHELL" "$SPD_UNAME") ; then
                     groupdel "$SPD_UNAME"
                     error_msg "task_mtu_restore_user() - useradd failed to complete."
                 fi
