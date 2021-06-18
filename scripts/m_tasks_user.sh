@@ -127,9 +127,12 @@ task_mtu_restore_user() {
                 grep "^$SPD_UNAME:" /etc/passwd | sed 's/:/ /g' |  \
                 awk '{ print $NF }')"
             if [ "$current_shell" != "$SPD_SHELL" ]; then
+                echo ">> D1"
                 if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+                    echo ">> D2"
                     echo "Will change shell $current_shell -> $SPD_SHELL"
                 else
+                    echo ">> DD"
                     ensure_shell_is_installed "$SPD_SHELL"
                     usermod -s "$SPD_SHELL" "$SPD_UNAME"
                     msg_3 "new shell: $SPD_SHELL"
