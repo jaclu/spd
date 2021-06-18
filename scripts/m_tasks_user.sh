@@ -153,7 +153,6 @@ task_mtu_restore_user() {
     elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "Will NOT create any user"
     fi
-    echo ">> Y"
     echo
 }
 
