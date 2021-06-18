@@ -112,7 +112,7 @@ task_mtu_restore_user() {
                 msg_3 "Verifying UID"
                 if [ "$(id -u "$SPD_UNAME")" != "$SPD_UID" ] ; then
                     error_msg "$(
-                        printf "Wrong UID - expected %s found: " "$SPD_UID"
+                        printf "Wrong UID - expected: %s found: " "$SPD_UID"
                         id -u "$SPD_UNAME")"
                 fi
             fi
@@ -120,7 +120,7 @@ task_mtu_restore_user() {
                 msg_3 "Verifying GID"
                 if [ "$(id -g "$SPD_UNAME")" != "$SPD_GID" ] ; then
                     error_msg "$(
-                        printf "Wrong GID - expected %s found: " "$SPD_GID"
+                        printf "Wrong GID - expected: %s found: " "$SPD_GID"
                         (id -g "$SPD_UNAME"))"
                 fi
             fi
@@ -142,7 +142,6 @@ task_mtu_restore_user() {
         fi
         echo
 
-        error_msg "skipping home dir for now"
         #
         # Restore user home
         #
