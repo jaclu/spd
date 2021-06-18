@@ -100,9 +100,9 @@ _run_this() {
     # and debugging.
     #
     if [ -z "$SPD_EXTRA_TASK" ]; then
-        warning_msg "SPD_EXTRA_TASK not set, cant test task_tde_do_extra_task()"
+        warning_msg "SPD_EXTRA_TASK not set, cant test task_do_extra_task()"
     else
-        task_tde_do_extra_task
+        task_do_extra_task
     fi
     #
     # Always display this final message  in standalone,
@@ -121,7 +121,7 @@ _display_help() {
     echo "  -h  - Displays help about this task."
     echo
     echo "Tasks included:"
-    echo " task_tde_do_extra_task        - Runs user supplied script"
+    echo " task_do_extra_task        - Runs user supplied script"
     echo
     echo "Runs additional script defined by SPD_EXTRA_TASK"
     echo "Intended as part of ish-restore, not realy that meaningful"
