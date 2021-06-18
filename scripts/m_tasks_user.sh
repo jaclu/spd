@@ -58,7 +58,7 @@ task_mtu_restore_user() {
     #echo "returned from _mtu_find_first_available_uid()"
     #exit 1
     
-    if [ "$SPD_UNAME" != "" ]; then
+    if [ -n "$SPD_UNAME" ]; then
         #
         # Ensure user is created
         #
@@ -66,8 +66,8 @@ task_mtu_restore_user() {
         if ! grep ^"$SPD_UNAME" /etc/passwd > /dev/null ; then
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" -eq 1 ]; then
-                [ "$(grep "x:$SPD_UID:" /etc/passwd)" != "" ] && error_msg "uid:$SPD_UID already in use" 1
-                [ "$(grep "$SPD_GID" /etc/passwd)" != "" ] && error_msg "gid:$SPD_GID already in use" 1
+                [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] && error_msg "uid:$SPD_UID already in use" 1
+                [ -n "$(grep "$SPD_GID" /etc/passwd)" ] && error_msg "gid:$SPD_GID already in use" 1
                 msg_3 "Will be created as $SPD_UNAME:x:$SPD_UID:$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
@@ -105,7 +105,7 @@ task_mtu_restore_user() {
         #
         # Restore user home
         #
-        if [ "$SPD_HOME_DIR_TGZ" != "" ]; then
+        if [ -n "$SPD_HOME_DIR_TGZ" ]; then
             msg_txt="Restoration of /home/$SPD_UNAME"
             unpack_home_dir "$SPD_UNAME" /home/"$SPD_UNAME" "$SPD_HOME_DIR_TGZ" "$SPD_HOME_DIR_UNPACKED_PTR"
         fi
@@ -117,9 +117,7 @@ task_mtu_restore_user() {
 
 
 task_mtu_user_pw_reminder() {
-    [ "$SPD_TASK_DISPLAY" -eq 1 ] && return
-
-    if [ "$SPD_UNAME" != "" ] && [ "$(grep "$SPD_UNAME":\!: /etc/shadow)" != "" ]; then
+    if [ -n "$SPD_UNAME" ] && [ -n "$(grep "$SPD_UNAME":\!: /etc/shadow)" ]; then
         echo "+------------------------------+"
         echo "|                              |"
         echo "|  Remember to set a password  |"
@@ -153,18 +151,15 @@ _mtu_get_username(){
 
   # First try using getent
   if command -v getent > /dev/null 2>&1; then
-    echo ">> getent"
     getent passwd "$uid" | cut -d: -f1
 
   # Next try using the UID as an operand to id.
   elif command -v id > /dev/null 2>&1 && \
-    echo ">> id"
        id -nu "$uid" > /dev/null 2>&1; then
     id -nu "$uid"
 
   # Next try perl - perl's getpwuid just calls the system's C library getpwuid
   elif command -v perl >/dev/null 2>&1; then
-    echo ">> perl"
     perl -e '@u=getpwuid($ARGV[0]);
              if ($u[0]) {print $u[0]} else {exit 2}' "$uid"
 
@@ -184,8 +179,7 @@ _mtu_find_first_available_uid() {
     i=501
 
     until false; do
-	#echo ">> trying with $i"
-	[ "$(grep $i /etc/passwd)" = "" ] && break
+	[ -z "$(grep $i /etc/passwd)" ] && break
 	i="$((i+1))"
     done
     verbose_msg "First available UID: $i"
@@ -210,7 +204,8 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    task_mtu_restore_user
+    [ -z "$SPD_UNAME" ] && [ -z "$SPD_UID" ] && [ -z "$SPD_GID" ] && [ -z "$SPD_SHELL" ] && [ -z "$SPD_HOME_DIR_TGZ" ] && [ -z "$SPD_HOME_DIR_UNPACKED_PTR" ] && warning_msg "None of the variables set!"
+        task_mtu_restore_user
     task_mtu_user_pw_reminder
     #
     # Always display this final message  in standalone,
