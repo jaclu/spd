@@ -39,7 +39,7 @@ fi
 #  Use a short prefix unique for your module.
 #
 
-task_mtu_restore_user() {
+task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
     SPD_UID=${SPD_UID:-1000}
@@ -98,7 +98,7 @@ task_mtu_restore_user() {
                 if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m \
                               -s "$SPD_SHELL" "$SPD_UNAME") ; then
                     groupdel "$SPD_UNAME"
-                    error_msg "task_mtu_restore_user() - useradd failed to complete."
+                    error_msg "task_restore_user() - useradd failed to complete."
                 fi
                 msg_3 "added: $SPD_UNAME ($SPD_UID:$SPD_GID)"
                 msg_3 "shell: $SPD_SHELL"
@@ -157,7 +157,7 @@ task_mtu_restore_user() {
 }
 
 
-task_mtu_user_pw_reminder() {
+task_user_pw_reminder() {
     if [ -n "$SPD_UNAME" ] && [ -n "$(grep "$SPD_UNAME":\!: /etc/shadow)" ]; then
         echo "+------------------------------+"
         echo "|                              |"
@@ -255,8 +255,8 @@ _run_this() {
         && warning_msg "None of the params set!"
 
     if [ -n "$SPD_UNAME" ]; then
-        task_mtu_restore_user
-        task_mtu_user_pw_reminder
+        task_restore_user
+        task_user_pw_reminder
     else
         warning_msg "Without SPD_UNAME none of the tasks can do anything"
     fi
@@ -277,11 +277,11 @@ _display_help() {
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
     echo
-    echo "Creates a new user, ensuring it will not overwrite an existing one."
-    echo
     echo "Tasks included:"
-    echo " task_mtu_restore_user      - creates user according to env variables"
-    echo " task_mtu_user_pw_reminder  - displays a reminder if no password has been set"
+    echo " task_restore_user      - creates user according to env variables"
+    echo " task_user_pw_reminder  - displays a reminder if no password has been set"
+    echo
+    echo "Creates a new user, ensuring it will not overwrite an existing one."
     echo
     echo "Env variables used"
     echo "------------------"
