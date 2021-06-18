@@ -50,9 +50,17 @@ task_runbg() {
     #
     # source dependencies if not available
     #
-    if [ -z ${ensure_service_is_added+x} ]; then
+    # if [ -z ${ensure_service_is_added+x} ]; then
+    #if [ "$(command -v $FUNC_NAME)x" != "x" ]; then
+    #    echo " * INFO: Found function $FUNC_NAME"
+    #    return 0
+    #fi
+
+    if [ -z "$(command -v $ensure_service_is_added)" ]; then
         verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    else
+        verbose_msg "openrc seems sourced"
     fi
 
     service_name=runbg
