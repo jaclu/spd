@@ -42,15 +42,15 @@ fi
 task_tde_do_extra_task() {
     _expand_do_extra_all_deploy_paths
     msg_txt="Running custom task"
-    if [ "$SPD_EXTRA_TASK" != "" ]; then
+    if [ -n "$SPD_EXTRA_TASK" ]; then
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             msg_2 "$msg_txt"
             echo "$SPD_EXTRA_TASK"
         else
             msg_1 "$msg_txt"
         fi
-        test -f "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not found" 1
-        test -x "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not executable" 1
+        test -f "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not found"
+        test -x "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not executable"
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             echo "Running:   $SPD_EXTRA_TASK"
             echo
@@ -99,7 +99,11 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    task_tde_do_extra_task
+    if [ -z "$SPD_EXTRA_TASK" ]; then
+        warning_msg "SPD_EXTRA_TASK not set, cant test task_tde_do_extra_task()"
+    else
+        task_tde_do_extra_task
+    fi
     #
     # Always display this final message  in standalone,
     # to indicate process terminated successfully.
@@ -116,31 +120,40 @@ _display_help() {
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
     echo
+    echo "Tasks included:"
+    echo " task_tde_do_extra_task        - Runs user supplied script"
+    echo
     echo "Runs additional script defined by SPD_EXTRA_TASK"
     echo "Intended as part of ish-restore, not realy that meaningful"
     echo "to run standalone."
     echo "This is mostly for describing and testing the script"
-    echo
-    echo "Tasks included:"
-    echo " task_tde_do_extra_task        - Runs user supplied script"
+    echo "Script will be sourced to exiting functions and variables can be used"
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_EXTRA_TASK$(test -z "$SPD_EXTRA_TASK" && echo ' - script with additional task(-s) Will be sourced, so can use existing functions and variables' || echo "=$SPD_EXTRA_TASK")"
+    echo "SPD_EXTRA_TASK$(
+        test -z "$SPD_EXTRA_TASK" && echo ' - script with additional task' \
+        || echo "=$SPD_EXTRA_TASK")"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      -  if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo "SPD_TASK_DISPLAY$(
+        test -z "$SPD_TASK_DISPLAY" \
+        && echo '      - if 1 will only display what will be done' \
+        || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
 
-#==========================================================
+#=====================================================================
 #
 #     main
 #
-#==========================================================
+#=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
