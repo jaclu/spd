@@ -167,12 +167,10 @@ _ts_unpack_ssh_host_keys() {
             msg_3 "Will be untared into /etc/ssh"
             if [ "$SPD_TASK_DISPLAY" != "1" ]; then
                 cd /etc/ssh || error_msg "Failed to cd into /etc/ssh"
-		          # remove any previous host keys
+                # remove any previous host keys
                 2> /dev/null rm /etc/ssh/ssh_host_*
-		
-                if [ "$(tar xvfz "$SPD_SSH_HOST_KEYS")" != "0" ]; then
-                    error_msg "Untar failed!"
-                fi
+
+                2> /dev/null tar xfz "$SPD_SSH_HOST_KEYS" || error_msg "Untar failed!"
             fi
         else
             msg_3 "Not found"
