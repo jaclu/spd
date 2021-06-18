@@ -352,7 +352,7 @@ unpack_home_dir() {
     if [ "$save_current" = "1" ]; then
         do_unpack=1 # always restore
     else
-        if test -f "$unpacked_ptr" && [ -n "$unpacked_ptr" ] ; then
+        if test -f "$unpacked_ptr" ; then
             msg_3 "Already restored"
             echo "Found: $unpacked_ptr"
             do_unpack=0
