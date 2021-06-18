@@ -49,7 +49,7 @@ task_sshd() {
     service_name=sshd
     service_fname="/etc/init.d/$service_name"
 
-    if [ "$SPD_SSHD_SERVICE" = "" ]; then
+    if [ -z "$SPD_SSHD_SERVICE" ]; then
         SPD_SSHD_SERVICE="0"
         warning_msg "SPD_SSHD_SERVICE not defined, service sshd will not be modified"
    fi
@@ -234,7 +234,9 @@ _display_help() {
 
 if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
 
+    echo ">> before utils"
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
+    echo ">> after utils"
 
     #
     # Since sourced mode cant be detected in a practical way under ash,

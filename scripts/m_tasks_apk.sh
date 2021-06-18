@@ -44,7 +44,7 @@ task_mta_update() {
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
     elif ! apk update && apk fix ; then
-        error_msg "Failed to update repos - network issue?" 1
+        error_msg "Failed to update repos - network issue?"
     fi
     echo
 }
@@ -55,7 +55,7 @@ task_mta_upgrade() {
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
     else
-        apk upgrade ||  error_msg "Failed to upgrade apks - network issue?" 1
+        apk upgrade ||  error_msg "Failed to upgrade apks - network issue?"
     fi
     echo
 }
@@ -101,7 +101,7 @@ task_mta_install_requested() {
             # about why this seems needed ATM
             echo "$SPD_APKS_ADD"
             cmd="apk add $SPD_APKS_ADD"
-            $cmd || error_msg "Failed to install requested software - network issue?" 1
+            $cmd || error_msg "Failed to install requested software - network issue?"
         fi
         echo
     elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
@@ -176,7 +176,7 @@ _display_help() {
 
 
 
-#==========================================================
+#=====================================================================
 #
 #     main
 #

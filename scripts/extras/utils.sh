@@ -82,24 +82,29 @@
 
 error_msg() {
     msg=$1
-    err_code=$2
+    err_code=${2:-1}
 
-    [ -z "$msg" ] && error_msg "error_msg() with no param" 1
+    [ -z "$msg" ] && error_msg "error_msg() with no param"
+
+    case $err_code in
+        ''|*[!0-9]*)
+            > /dev/stderr echo "Non numeric err_code given [$err_code] changed into 1"
+            err_code=1
+            ;;
+    esac
 
     printf "\nERROR: %s\n\n" "$msg"
 
-    if [ -n "$err_code" ]; then
-        clear_work_dir # clear tmp extract dir
-        echo
-        exit "$err_code"
-    fi
+
+    clear_work_dir # clear tmp extract dir
+    exit $err_code
 }
 
 
 warning_msg() {
     msg=$1
     
-    [ -z "$msg" ] && error_msg "warning_msg() with no param" 1
+    [ -z "$msg" ] && error_msg "warning_msg() with no param"
     printf "\nWARNING: %s\n\n" "$msg"
 
     unset msg
@@ -112,7 +117,7 @@ warning_msg() {
 verbose_msg() {
     msg=$1
     
-    [ -z "$msg" ] && error_msg "verbose_msg() with no param" 1
+    [ -z "$msg" ] && error_msg "verbose_msg() with no param"
     [ "$p_verbose" = "1" ] && printf "VERBOSE: %s\n" "$msg"
     unset msg
 }
@@ -221,7 +226,7 @@ ensure_installed() {
     pkg=$1
     msg=$2
     ret_val=0
-    test -z "$pkg" && error_msg "ensure_installed() called with no param!" 1
+    test -z "$pkg" && error_msg "ensure_installed() called with no param!"
     test -z "$msg" && msg="Installing dependency $pkg"
     if [ -z "$(apk info -e "$pkg")" ]; then
         msg_3 "$msg"
@@ -248,12 +253,12 @@ ensure_installed() {
 ensure_shell_is_installed() {
     SHELL_NAME=$1
      
-    [ -z "$SHELL_NAME" ] && error_msg "ensure_shell_is_installed() - no shell paraam!" 1
+    [ -z "$SHELL_NAME" ] && error_msg "ensure_shell_is_installed() - no shell paraam!"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed! ><<\n"
     else
-        test -f "$SHELL_NAME" || error_msg "Shell not found: $SHELL_NAME" 1
-        test -x "$SHELL_NAME" || error_msg "Shell not executable: $SHELL_NAME" 1
+        test -f "$SHELL_NAME" || error_msg "Shell not found: $SHELL_NAME"
+        test -x "$SHELL_NAME" || error_msg "Shell not executable: $SHELL_NAME"
     fi
 }
 
@@ -274,7 +279,7 @@ clear_work_dir() {
     
         "1")
             mkdir -p $extract_location
-            cd $extract_location || error_msg "clear_work_dir() could not cd !" 1
+            cd $extract_location || error_msg "clear_work_dir() could not cd !"
             ;;
             
         "")
@@ -312,21 +317,21 @@ unpack_home_dir() {
     #  Param checks
     #
     # Some of the checks below are ignored when $SPD_TASK_DISPLAY is 1 ie just inforoming what will happen
-    [ -z "$username" ] && error_msg "unpack_home_dir() no username given" 1
+    [ -z "$username" ] && error_msg "unpack_home_dir() no username given"
     if [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ "$(grep -c ^"$username" /etc/passwd)" != "1" ]; then
-        error_msg "unpack_home_dir($username) - username not found in /etc/passwd" 1
+        error_msg "unpack_home_dir($username) - username not found in /etc/passwd"
     fi
-    [ -z "$home_dir" ] && error_msg "unpack_home_dir() no home_dir given" 1
+    [ -z "$home_dir" ] && error_msg "unpack_home_dir() no home_dir given"
     if [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ ! -d "$home_dir" ]; then
-        error_msg "unpack_home_dir($username, $home_dir) - home_dir does not exist" 1
+        error_msg "unpack_home_dir($username, $home_dir) - home_dir does not exist"
     fi
     if [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ -z "$(find "$home_dir" -maxdepth 0 -user "$username")" ]; then
-        error_msg "unpack_home_dir($username, $home_dir) - username does not own home_dir" 1
+        error_msg "unpack_home_dir($username, $home_dir) - username does not own home_dir"
     fi
     if [ -z "$fname_tgz" ] || [ "$fname_tgz" = "1" ]; then
-        error_msg "unpack_home_dir($username, $home_dir,) - No tar file to be extracted given" 1
+        error_msg "unpack_home_dir($username, $home_dir,) - No tar file to be extracted given"
     fi
-    ! test -f "$fname_tgz" && error_msg "tar file not found:\n[$fname_tgz]" 1
+    ! test -f "$fname_tgz" && error_msg "tar file not found:\n[$fname_tgz]"
 
     case "$unpacked_ptr" in
     
@@ -365,12 +370,12 @@ unpack_home_dir() {
             clear_work_dir 1
             msg_3 "Extracting"
             echo "$fname_tgz"
-            ! tar xfz "$fname_tgz" 2> /dev/null && error_msg "Failed to unpack tarball" 1
+            ! tar xfz "$fname_tgz" 2> /dev/null && error_msg "Failed to unpack tarball"
             if [ ! -d "$extract_location/$username" ]; then
-                error_msg "No $username top dir found in the tarfile!" 1
+                error_msg "No $username top dir found in the tarfile!"
             elif [ "$(find . -maxdepth 1 | wc -l)" != "2" ]; then
                 # suspicious
-                error_msg "Content outside intended destination found, check the tarfile!" 1
+                error_msg "Content outside intended destination found, check the tarfile!"
             fi
             echo "Successfully extracted content"
             
@@ -381,7 +386,7 @@ unpack_home_dir() {
                 mv "$username" "$home_dir"
             else
                 msg_3 "Overwriting into current $home_dir"
-                cd "$home_dir" || error_msg "Failed to cd into $home_dir" 1
+                cd "$home_dir" || error_msg "Failed to cd into $home_dir"
                 cd ..
                 cp -a "$extract_location/$username" .
             fi
@@ -431,7 +436,7 @@ parse_command_line() {
     # Since nothing will be changed, and it helps testting scipts on non supported platforms. 
     #
     if [ "$SPD_TASK_DISPLAY" = "0" ] && [ $p_help = 0 ]; then
-	[ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system." 1
+	[ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system."
     fi    
 }
 
@@ -457,12 +462,11 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     parse_command_line "$@"
 
     if [ $p_help = 0 ]; then
-       [ "$SPD_ABORT" = "1" ] && error_msg "Detected SPD_ABORT=1  Your platform is most likely not supported!" 1
+       [ "$SPD_ABORT" = "1" ] && error_msg "Detected SPD_ABORT=1  Your platform is most likely not supported!"
        [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
-	   [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this" 1
+	   [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
         _run_this
     else
         _display_help
     fi
-
 fi
