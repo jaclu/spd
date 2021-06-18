@@ -109,6 +109,7 @@ task_mtu_restore_user() {
             # If given, ensure user has right UID & GID
             #
             if [ "$SPD_UID" != "" ]; then
+                msg_3 "Verifying UID"
                 if ! grep -q "^$SPD_UNAME:.*:SPD_UID" ; then
                     echo
                     grep "^$SPD_UNAME" /etc/passwd
@@ -116,6 +117,7 @@ task_mtu_restore_user() {
                 fi
             fi
             if [ "$SPD_GID" != "" ]; then
+                msg_3 "Verifying GID"
                 if ! grep -q "^$SPD_UNAME:.*:.*:SPD_GID" ; then
                     echo
                     grep "^$SPD_UNAME" /etc/passwd
@@ -123,6 +125,7 @@ task_mtu_restore_user() {
                 fi
             fi
 
+            msg_3 "Checking shell"
             current_shell=$(grep "$SPD_UNAME" /etc/passwd | sed 's/:/ /g' \
                 |  awk '{ print $NF }')
             if [ "$current_shell" != "$SPD_SHELL" ]; then
