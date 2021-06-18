@@ -45,6 +45,7 @@ task_mtu_restore_user() {
     SPD_UID=${SPD_UID:-1000}
     SPD_GID=${SPD_GID:-1000}
 
+    echo ">> B"
     _mtu_expand_all_deploy_paths
 
     ## SPD_HOME_DIR_UNPACKED_PTR=""
@@ -58,12 +59,13 @@ task_mtu_restore_user() {
     #echo "returned from _mtu_find_first_available_uid()"
     #exit 1
     
+    echo ">> C"
     if [ -n "$SPD_UNAME" ]; then
         #
         # Ensure user is created
         #
         msg_2 "$msg_txt"
-        if ! grep ^"$SPD_UNAME" /etc/passwd > /dev/null ; then
+        if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" -eq 1 ]; then
                 # [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] \
@@ -128,6 +130,7 @@ task_mtu_restore_user() {
     elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "Will NOT create any user"
     fi
+    echo ">> Y"
     echo
 }
 
