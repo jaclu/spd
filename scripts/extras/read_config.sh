@@ -103,10 +103,10 @@ _read_cfg_file() {
     verbose_msg "will read: $cfg_file"
     . "$cfg_file"
     
-    msg_3 "After reading $cfg_file"
-    echo "Current state of SPD_APKS_DEL:"
-    echo "$SPD_APKS_DEL"
-    echo
+    #msg_3 "After reading $cfg_file"
+    #echo "Current state of SPD_APKS_DEL:"
+    #echo "$SPD_APKS_DEL"
+    #echo
     unset cfg_file
 }
 
