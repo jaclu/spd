@@ -56,21 +56,22 @@ task_runbg() {
     #    return 0
     #fi
 
-    if [  "$(command -v $ensure_service_is_added)x" = "x" ]; then
-        msg_2 "sourincg it"
-        verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
-        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    if type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+        msg_2 "openrc loaded"
     else
-        verbose_msg "openrc seems sourced"
+        msg_3 "openrc NOT FOUND"
     fi
 
-    if [  "$(command -v $ensure_service_is_added)x" = "x" ]; then
-        msg_2 "sourincg it 2"
-        verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
-        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
-    else
-        msg_2 "openrc seems sourced 2"
-    fi
+    error_msg "Aborting for now"
+
+    # if [  "$(command -v $ensure_service_is_added)x" = "x" ]; then
+    #     msg_2 "sourincg it"
+    #     verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
+    #     . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    # else
+    #     verbose_msg "openrc seems sourced"
+    # fi
+
     service_name=runbg
     source_fname="$DEPLOY_PATH/files/services/$service_name"
     service_fname="/etc/init.d/$service_name"
