@@ -227,6 +227,7 @@ _display_help() {
 
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
+    . "$DEPLOY_PATH/scripts/extras/openrc.sh"
 
     #
     # Since sourced mode cant be detected in a practical way under ash,
