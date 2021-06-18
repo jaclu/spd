@@ -111,13 +111,17 @@ task_mtu_restore_user() {
             if [ "$SPD_UID" != "" ]; then
                 msg_3 "Verifying UID"
                 if [ "$(id -u "$SPD_UNAME")" != "$SPD_UID" ] ; then
-                    error_msg "Wrong UID for user:"
+                    error_msg "$(
+                        printf "Wrong UID - expected %s found: " "$SPD_UID"
+                        id -u "SPD_UNAME")"
                 fi
             fi
             if [ "$SPD_GID" != "" ]; then
                 msg_3 "Verifying GID"
                 if [ "$(id -g "$SPD_UNAME")" != "$SPD_GID" ] ; then
-                    error_msg "Wrong primary GID for user:"
+                    error_msg "$(
+                        printf "Wrong GID - expected %s found: " "$SPD_GID"
+                        id -g "SPD_UNAME")"
                 fi
             fi
 
@@ -127,17 +131,12 @@ task_mtu_restore_user() {
                 grep "^$SPD_UNAME:" /etc/passwd | sed 's/:/ /g' |  \
                 awk '{ print $NF }')"
             if [ "$current_shell" != "$SPD_SHELL" ]; then
-                echo ">> D1"
                 if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                    echo ">> D2"
                     echo "Will change shell $current_shell -> $SPD_SHELL"
                 else
-                    echo ">> DD"
                     ensure_shell_is_installed "$SPD_SHELL"
-                    echo ">> D5"
                     usermod -s "$SPD_SHELL" "$SPD_UNAME"
-                    echo ">> D9"
-                    msg_3 "new shell: $SPD_SHELL"
+                    echo "new shell: $SPD_SHELL"
                 fi
             fi
         fi
