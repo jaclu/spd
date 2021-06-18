@@ -45,7 +45,8 @@ task_restore_root() {
 
     msg_txt="Restoration of /root"
     if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
-        unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
+        unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" \
+                "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
         echo
     fi
 }
@@ -91,7 +92,8 @@ _update_root_shell() {
         fi
         echo
  
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif       [ "$SPD_TASK_DISPLAY" = "1" ] \
+            && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_3 "root shell unchanged"
         echo "$current_shell"
         echo
@@ -142,14 +144,32 @@ _display_help() {
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_ROOT_SHELL$(test -z "$SPD_ROOT_SHELL" && echo '        - switch to this shell' || echo "=$SPD_ROOT_SHELL")"
-    echo "SPD_ROOT_HOME_TGZ$(test -z "$SPD_ROOT_HOME_TGZ" && echo '     - unpack this into /root if found' || echo "=$SPD_ROOT_HOME_TGZ")"
+    echo "SPD_ROOT_SHELL$(
+        test -z "$SPD_ROOT_SHELL" \
+        && echo '        - switch to this shell' \
+        || echo "=$SPD_ROOT_SHELL")"
+    echo "SPD_ROOT_HOME_TGZ$(
+        test -z "$SPD_ROOT_HOME_TGZ" \
+        && echo '     - unpack this into /root if found' \
+        || echo "=$SPD_ROOT_HOME_TGZ")"
     echo
-    echo "SPD_ROOT_UNPACKED_PTR$(test -z "$SPD_ROOT_UNPACKED_PTR" && echo ' - Indicates root.tgz is unpacked' || echo "=$SPD_ROOT_UNPACKED_PTR")"
-    echo "SPD_ROOT_REPLACE$(test -z "$SPD_ROOT_REPLACE" && echo '      - if 1 move previous /root to /root-OLD and replace it' || echo "=$SPD_ROOT_REPLACE")"
+    echo "SPD_ROOT_UNPACKED_PTR$(
+        test -z "$SPD_ROOT_UNPACKED_PTR" \
+        && echo ' - Indicates root.tgz is unpacked' \
+        || echo "=$SPD_ROOT_UNPACKED_PTR")"
+    echo "SPD_ROOT_REPLACE$(
+        test -z "$SPD_ROOT_REPLACE" \
+        && echo '      - if 1 move previous /root to /root-OLD and replace it' \
+        || echo "=$SPD_ROOT_REPLACE")"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo "SPD_TASK_DISPLAY$(
+        test -z "$SPD_TASK_DISPLAY" \
+        && echo '      - if 1 will only display what will be done' \
+        || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
@@ -160,7 +180,7 @@ _display_help() {
 #
 #=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
