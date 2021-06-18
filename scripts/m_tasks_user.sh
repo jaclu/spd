@@ -26,11 +26,18 @@ fi
 
 
 
-#==========================================================
+#=====================================================================
 #
 #   Public functions
 #
-#==========================================================
+#=====================================================================
+
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
+#
 
 task_mtu_restore_user() {
     msg_txt="Username: $SPD_UNAME"
@@ -126,12 +133,12 @@ task_mtu_user_pw_reminder() {
 
 
 
-#==========================================================
+#=====================================================================
 #
-#   Internals
+#   Internals, start with _ to make it obvious they should not be
+#   called by other modules.
 #
-#==========================================================
-
+#=====================================================================
 
 _mtu_expand_all_deploy_paths() {
     SPD_HOME_DIR_TGZ=$(expand_deploy_path "$SPD_HOME_DIR_TGZ")
@@ -190,8 +197,8 @@ _mtu_find_first_available_uid() {
 #=====================================================================
 #
 # _run_this() & _display_help()
-# are only run in standalone mode, so no risk for wrong same named
-# function being called...
+# are only run in standalone mode, so no risk for wrong same named function
+# being called...
 #
 # In standlone mode, this will be run from See "main" part at end of
 # extras/utils.sh, it first expands parameters,
@@ -211,7 +218,7 @@ _run_this() {
     # And did not die in the middle of things...
     #
     echo "Task Completed."
-}      
+}
 
 
 _display_help() {
@@ -236,27 +243,27 @@ _display_help() {
     echo "SPD_SHELL$(test -z "$SPD_SHELL" && echo ' - shell for username' || echo "=$SPD_SHELL" )"
     echo "SPD_HOME_DIR_TGZ$(test -z "$SPD_HOME_DIR_TGZ" && echo '          - unpack this tgz file if found' || echo "=$SPD_HOME_DIR_TGZ" )"
     echo "SPD_HOME_DIR_UNPACKED_PTR$(test -z "$SPD_HOME_DIR_UNPACKED_PTR" && echo ' -  Indicates home.tgz is unpacked' || echo "=$SPD_HOME_DIR_UNPACKED_PTR" )"
-    
     echo
     echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
     echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
-#==========================================================
+
+#=====================================================================
 #
 #     main
 #
-#==========================================================
+#=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #
-    # Since sourced mode cant be detected in a practiacl way under ash,
+    # Since sourced mode cant be detected in a practical way under ash,
     # I use this workaround, first script is expected to set it, if set
-    # script can assume to be sourced
+    # all other modules can assume to be sourced
     #
-    SPD_INITIAL_SCRIPT=1    
+    SPD_INITIAL_SCRIPT=1
 fi
