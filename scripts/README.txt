@@ -1,0 +1,46 @@
+
+m_tasks_apk.sh
+	_mta_
+
+	_task_install_my_software	->	_mta_task_install_my_software
+	_expand_all_deploy_paths_apk	->	_mta_expand_all_deploy_paths
+	task_update			->	task_mta_update
+	task_upgrade			->	task_mta_upgrade
+	task_remove_software		->	task_mta_remove_unwanted
+	task_install_my_software	->	task_mta_install_requested
+
+m_tasks_user.sh
+	_mtu_
+
+	task_restore_user	->	task_mtu_restore_user
+	task_user_pw_reminder	->	task_mtu_user_pw_reminder
+
+task_do_extra.sh
+	_tde_
+
+	task_do_extra_task	->	task_tde_do_extra_task
+
+task_etc_files.sh
+	_tef_
+	
+	task_replace_some_etc_files ->	task_tef_replace_etc_files
+
+task_nopasswd_sudo.sh
+	_tns_
+
+	task_nopasswd_sudo	->	task_tef_nopasswd_sudo
+
+task_restore_root.sh
+	_trr_
+	task_restore_root	->	task_trr_restore_root
+
+task_runbg.sh
+	_trb_
+	task_runbg	->	task_trb_runbg
+
+task_sshd.sh
+	_ts_
+	task_sshd	->	task_ts_sshd
+task_timezone.sh
+	_tz_
+	task_timezone

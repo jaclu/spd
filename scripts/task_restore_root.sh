@@ -8,24 +8,39 @@
 #
 # Part of ishTools
 #
-
+# See explaination in the top of extras/utils.sh
+# for some recomendations on how to set up your modules!
+#
 
 if test -z "$DEPLOY_PATH" ; then
-    # Most likely not sourced...
-    DEPLOY_PATH="$(dirname "$0")/.."               # relative
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
+    #
+    # This was most likely not sourced, define DEPLOY_PATH based
+    # on location of this script. This variable is used to find config
+    # files etc, so should always be set!
+    #
+    # First define it relative based on this scripts location
+    DEPLOY_PATH="$(dirname "$0")/.."
+    # Make it absolutized and normalized
+    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
 fi
 
 
 
-#==========================================================
+#=====================================================================
 #
 #   Public functions
 #
-#==========================================================
+#=====================================================================
+
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
+#
 
 task_restore_root() {
-    _expand_all_root_deploy_paths
+    _expand_all_deploy_paths_restore_root
     _update_root_shell
 
     msg_txt="Restoration of /root"
@@ -37,13 +52,18 @@ task_restore_root() {
 
 
 
-#==========================================================
+#=====================================================================
 #
-#   Internals
+#   Internals, start with _ to make it obvious they should not be
+#   called by other modules.
 #
-#==========================================================
+#=====================================================================
 
-_expand_all_root_deploy_paths() {
+_expand_all_deploy_paths_restore_root() {
+    #
+    # Expanding path variables that are either absolute or relative
+    # related to the deploy-path
+    #
     SPD_ROOT_HOME_TGZ=$(expand_deploy_path "$SPD_ROOT_HOME_TGZ")
 }
 
@@ -78,13 +98,36 @@ _update_root_shell() {
     fi
 }
 
+
+
+#=====================================================================
+#
+# _run_this() & _display_help()
+# are only run in standalone mode, so no risk for wrong same named function
+# being called...
+#
+# In standlone mode, this will be run from See "main" part at end of
+# extras/utils.sh, it first expands parameters,
+# then either displays help or runs the task(-s)
+#
+
 _run_this() {
+    #
+    # Perform the task / tasks independently, convenient for testing
+    # and debugging.
+    #
     task_restore_root
+    #
+    # Always display this final message  in standalone,
+    # to indicate process terminated successfully.
+    # And did not die in the middle of things...
+    #
     echo "Task Completed."
 }
 
+
 _display_help() {
-    _expand_all_root_deploy_paths
+    _expand_all_deploy_paths_restore_root
     echo "task_restore_root.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
@@ -99,32 +142,32 @@ _display_help() {
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_ROOT_SHELL$(test -z "$SPD_ROOT_SHELL" && echo ' - switch to this shell' || echo =$SPD_ROOT_SHELL )"
-    echo "SPD_ROOT_HOME_TGZ$(test -z "$SPD_ROOT_HOME_TGZ" && echo ' - unpack this into /root if found' || echo =$SPD_ROOT_HOME_TGZ )"
+    echo "SPD_ROOT_SHELL$(test -z "$SPD_ROOT_SHELL" && echo '        - switch to this shell' || echo "=$SPD_ROOT_SHELL")"
+    echo "SPD_ROOT_HOME_TGZ$(test -z "$SPD_ROOT_HOME_TGZ" && echo '     - unpack this into /root if found' || echo "=$SPD_ROOT_HOME_TGZ")"
     echo
-    echo "SPD_ROOT_UNPACKED_PTR$(test -z "$SPD_ROOT_UNPACKED_PTR" && echo ' - Indicates root.tgz is unpacked' || echo =$SPD_ROOT_UNPACKED_PTR )"
-    echo "SPD_ROOT_REPLACE$(test -z "$SPD_ROOT_REPLACE" && echo ' - if 1 move previous /root to /root-OLD and replace it' || echo =$SPD_ROOT_REPLACE )"
+    echo "SPD_ROOT_UNPACKED_PTR$(test -z "$SPD_ROOT_UNPACKED_PTR" && echo ' - Indicates root.tgz is unpacked' || echo "=$SPD_ROOT_UNPACKED_PTR")"
+    echo "SPD_ROOT_REPLACE$(test -z "$SPD_ROOT_REPLACE" && echo '      - if 1 move previous /root to /root-OLD and replace it' || echo "=$SPD_ROOT_REPLACE")"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"
+    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
-#==========================================================
+
+#=====================================================================
 #
 #     main
 #
-#==========================================================
+#=====================================================================
 
 if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
-    
+
     #
-    # Since sourced mode cant be detected in a practiacl way under ash,
+    # Since sourced mode cant be detected in a practical way under ash,
     # I use this workaround, first script is expected to set it, if set
-    # script can assume to be sourced
+    # all other modules can assume to be sourced
     #
     SPD_INITIAL_SCRIPT=1
 fi
-

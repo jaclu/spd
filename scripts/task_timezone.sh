@@ -53,16 +53,31 @@ task_timezone() {
 
 
 
-#==========================================================
+#=====================================================================
 #
-#   Internals
+# _run_this() & _display_help()
+# are only run in standalone mode, so no risk for wrong same named function
+# being called...
 #
-#==========================================================
+# In standlone mode, this will be run from See "main" part at end of
+# extras/utils.sh, it first expands parameters,
+# then either displays help or runs the task(-s)
+#
 
 _run_this() {
+    #
+    # Perform the task / tasks independently, convenient for testing
+    # and debugging.
+    #
     task_timezone
+    #
+    # Always display this final message  in standalone,
+    # to indicate process terminated successfully.
+    # And did not die in the middle of things...
+    #
     echo "Task Completed."
 }
+
 
 _display_help() {
     echo "task_timezone.sh [-v] [-c] [-h]"
@@ -80,25 +95,26 @@ _display_help() {
     echo "-----------"
     echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo =$SPD_TIME_ZONE )"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"
+    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
+
 
 
 #==========================================================
 #
 #     main
 #
-#==========================================================
+#=====================================================================
 
 if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
- 
+
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #
-    # Since sourced mode cant be detected in a practiacl way under ash,
+    # Since sourced mode cant be detected in a practical way under ash,
     # I use this workaround, first script is expected to set it, if set
-    # script can assume to be sourced
+    # all other modules can assume to be sourced
     #
     SPD_INITIAL_SCRIPT=1
 fi

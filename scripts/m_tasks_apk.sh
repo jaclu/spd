@@ -8,23 +8,38 @@
 #
 # Part of ishTools
 #
-
+# See explaination in the top of extras/utils.sh
+# for some recomendations on how to set up your modules!
+#
 
 if test -z "$DEPLOY_PATH" ; then
-    # Most likely not sourced...
-    DEPLOY_PATH="$(dirname "$0")/.."             # relative
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
+    #
+    # This was most likely not sourced, define DEPLOY_PATH based
+    # on location of this script. This variable is used to find config
+    # files etc, so should always be set!
+    #
+    # First define it relative based on this scripts location
+    DEPLOY_PATH="$(dirname "$0")/.."
+    # Make it absolutized and normalized
+    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
 fi
 
 
 
-#==========================================================
+#=====================================================================
 #
 #   Public functions
 #
-#==========================================================
+#=====================================================================
 
-task_update() {
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
+#
+
+task_mta_update() {
     msg_2 "update & fix apk index"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
@@ -35,7 +50,7 @@ task_update() {
 }
 
 
-task_upgrade() {
+task_mta_upgrade() {
     msg_2 "upgrade installed apks"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
@@ -46,10 +61,10 @@ task_upgrade() {
 }
 
 
-task_remove_software() {
+task_mta_remove_unwanted() {
     msg_txt="Removing unwanted software"
-    
-    if [ "$SPD_APKS_DEL" != "" ]; then
+
+    if [ -n "$SPD_APKS_DEL" ]; then
         msg_2 "$msg_txt"
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             echo "$SPD_APKS_DEL"
@@ -75,21 +90,21 @@ task_remove_software() {
 }
 
 
-task_install_my_software() {
+task_mta_install_requested() {
     msg_txt="Installing my selection of software"
-    if [ "$SPD_APKS_ADD" != "" ]; then
+    if [ -n "$SPD_APKS_ADD" ]; then
         msg_2 "$msg_txt"
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             echo "$SPD_APKS_ADD"
         else
-            # TODO: see in task_remove_software() for description
+            # TODO: see in task_mta_remove_unwanted() for description
             # about why this seems needed ATM
             echo "$SPD_APKS_ADD"
             cmd="apk add $SPD_APKS_ADD"
             $cmd || error_msg "Failed to install requested software - network issue?" 1
         fi
         echo
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
         echo "Will NOT install any listed software"
         echo
@@ -98,79 +113,83 @@ task_install_my_software() {
 
 
 
-#==========================================================
+#=====================================================================
 #
-#   Internals
+#   Internals, start with _ to make it obvious they should not be
+#   called by other modules.
 #
-#==========================================================
+#=====================================================================
 
 
-_expand_all_deploy_paths_apk() {
-    #
-    # Expanding path variables that are either absolute or relative
-    # related to the deploy-path
-    #
-    # Since all functions end up int the same namespace, eunsure
-    # that this one is unique for this module!
-    #
-    # SPD_PATH_PARAM=$(expand_deploy_path "$SPD_PATH_PARAM")
-					                   
-							   
+#=====================================================================
+#
+# _run_this() & _display_help()
+# are only run in standalone mode, so no risk for wrong same named function
+# being called...
+#
+# In standlone mode, this will be run from See "main" part at end of
+# extras/utils.sh, it first expands parameters,
+# then either displays help or runs the task(-s)
 #
 
-							#
-							#
-														
-
-_run_this() {OCOD
-    # Only run in one off situations, so no risk that the wrong
-    task_update
-    [ "$SPD_APKS_DEL" != "" ] && task_remove_software
-    task_upgrade
-    [ "$SPD_APKS_ADD" != "" ] && task_install_my_software
+_run_this() {
+    #
+    # Perform the task / tasks independently, convenient for testing
+    # and debugging.
+    #
+    task_mta_update
+    [ -n "$SPD_APKS_DEL" ] && task_mta_remove_unwanted
+    task_mta_upgrade
+    [ -n "$SPD_APKS_ADD" ] && task_mta_install_requested
+    #
+    # Always display this final message  in standalone,
+    # to indicate process terminated successfully.
+    # And did not die in the middle of things...
+    #
     echo "Task Completed."
 }
 
 
 _display_help() {
-    _expand_all_deploy_paths_apk
-    
     echo "m_tasks_apk.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
+    echo "  -v  - verbose, display more progress info"
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
     echo
     echo "Tasks included:"
-    echo " task_update              - updates repository"
-    echo " task_upgrade             - upgrades all installed apks"
-    echo " task_remove_software     -  deletes all apks listed in SPD_APKS_DEL"
-    echo " task_install_my_software - adds all apks listed in SPD_APKS_ADD"
+    echo " task_mta_update            - updates repository"
+    echo " task_mta_upgrade           - upgrades all installed apks"
+    echo " task_mta_remove_unwanted   - deletes all apks listed in SPD_APKS_DEL"
+    echo " task_mta_install_requested - adds all apks listed in SPD_APKS_ADD"
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_APKS_DEL$(test -z "$SPD_APKS_DEL" && echo ' - packages to remove, comma separated' || echo =$SPD_APKS_DEL )"
-    echo "SPD_APKS_ADD$(test -z "$SPD_APKS_ADD" && echo ' - packages to add, comma separated' || echo =$SPD_APKS_ADD )"
+    #
+    # If the variable is defined show it, otherwise explain it!
+    #
+    echo "SPD_APKS_DEL$(test -z "$SPD_APKS_DEL" && echo ' - packages to remove, comma separated' || echo "='$SPD_APKS_DEL'")"
+    echo "SPD_APKS_ADD$(test -z "$SPD_APKS_ADD" && echo ' - packages to add, comma separated' || echo "='$SPD_APKS_ADD'")"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"
+    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
+
 
 
 #==========================================================
 #
 #     main
 #
-#==========================================================
+#=====================================================================
 
-
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
+if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #
-    # Since sourced mode cant be detected in a practiacl way under ash,
+    # Since sourced mode cant be detected in a practical way under ash,
     # I use this workaround, first script is expected to set it, if set
-    # script can assume to be sourced
+    # all other modules can assume to be sourced
     #
     SPD_INITIAL_SCRIPT=1
 fi

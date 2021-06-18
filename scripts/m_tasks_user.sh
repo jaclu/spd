@@ -8,13 +8,22 @@
 #
 # Part of ishTools
 #
-
+# See explaination in the top of extras/utils.sh
+# for some recomendations on how to set up your modules!
+#
 
 if test -z "$DEPLOY_PATH" ; then
-    # Most likely not sourced...
-    DEPLOY_PATH="$(dirname "$0")/.."               # relative
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
+    #
+    # This was most likely not sourced, define DEPLOY_PATH based
+    # on location of this script. This variable is used to find config
+    # files etc, so should always be set!
+    #
+    # First define it relative based on this scripts location
+    DEPLOY_PATH="$(dirname "$0")/.."
+    # Make it absolutized and normalized
+    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
 fi
+
 
 
 #==========================================================
@@ -23,23 +32,23 @@ fi
 #
 #==========================================================
 
-task_restore_user() {
+task_mtu_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
     SPD_UID=${SPD_UID:-1000}
     SPD_GID=${SPD_GID:-1000}
 
-    _user_expand_all_deploy_paths
+    _mtu_expand_all_deploy_paths
 
     ## SPD_HOME_DIR_UNPACKED_PTR=""
 
 
-    #_get_username 501
+    #_mtu_get_username 501
     #exit 14
 
-    #echo "First id: [`_find_first_available_uid`]"
+    #echo "First id: [`_mtu_find_first_available_uid`]"
     #exit 1
-    #echo "returned from _find_first_available_uid()"
+    #echo "returned from _mtu_find_first_available_uid()"
     #exit 1
     
     if [ "$SPD_UNAME" != "" ]; then
@@ -51,35 +60,35 @@ task_restore_user() {
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" -eq 1 ]; then
                 [ "$(grep "x:$SPD_UID:" /etc/passwd)" != "" ] && error_msg "uid:$SPD_UID already in use" 1
-                [ "$(grep $SPD_GID /etc/passwd)" != "" ] && error_msg "gid:$SPD_GID already in use" 1
+                [ "$(grep "$SPD_GID" /etc/passwd)" != "" ] && error_msg "gid:$SPD_GID already in use" 1
                 msg_3 "Will be created as $SPD_UNAME:x:$SPD_UID:$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
                 msg_3 "shell: $SPD_SHELL"
-                ensure_shell_is_installed $SPD_SHELL
+                ensure_shell_is_installed "$SPD_SHELL"
             else
                 ensure_installed shadow "Adding shadow (provides useradd)"
                 # we need to ensure the group exists, before using it in useradd
                 # TODO: identidy a 501 group by name and delete it
                 #groupdel -g "$SPD_UNAME" 2> /dev/null
-                groupadd -g $SPD_GID "$SPD_UNAME"
-                [ $? != 0 ] && error_msg "group id already in use: $SPD_GID" 1
+                if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "0" ]; then
+                    error_msg "group id already in use: $SPD_GID" 1
+                fi
                 #  sets uid & gid to 501, to match apples uid/gid on iOS mounts
-                useradd -u $SPD_UID -g $SPD_GID -G wheel -m -s "$SPD_SHELL" "$SPD_UNAME"
-                if [ $? != 0 ]; then
-                    groupdel $SPD_UNAME
-                    error_msg "task_restore_user() - useradd failed to complete." 1
+                if [ "$(useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m -s "$SPD_SHELL" "$SPD_UNAME")" ] ; then
+                    groupdel "$SPD_UNAME"
+                    error_msg "task_mtu_restore_user() - useradd failed to complete." 1
                 fi
                 msg_3 "added: $SPD_UNAME ($SPD_UID:$SPD_GID)"
                 msg_3 "shell: $SPD_SHELL"
             fi
         else
             msg_3 "Already pressent"
-            current_shell=$(grep $SPD_UNAME /etc/passwd | sed 's/:/ /g'|  awk '{ print $NF }')
+            current_shell=$(grep "$SPD_UNAME" /etc/passwd | sed 's/:/ /g'|  awk '{ print $NF }')
             if [ "$current_shell" != "$SPD_SHELL" ]; then
                 if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                     echo "Will change shell $current_shell -> $SPD_SHELL"
                 else
-                    ensure_shell_is_installed $SPD_SHELL
-                    usermod -s $SPD_SHELL $SPD_UNAME
+                    ensure_shell_is_installed "$SPD_SHELL"
+                    usermod -s "$SPD_SHELL" "$SPD_UNAME"
                     msg_3 "new shell: $SPD_SHELL"
                 fi
             fi
@@ -100,7 +109,7 @@ task_restore_user() {
 }
 
 
-task_user_pw_reminder() {
+task_mtu_user_pw_reminder() {
     [ "$SPD_TASK_DISPLAY" -eq 1 ] && return
 
     if [ "$SPD_UNAME" != "" ] && [ "$(grep "$SPD_UNAME":\!: /etc/shadow)" != "" ]; then
@@ -124,10 +133,7 @@ task_user_pw_reminder() {
 #==========================================================
 
 
-#
-#
-#
-_user_expand_all_deploy_paths() {
+_mtu_expand_all_deploy_paths() {
     SPD_HOME_DIR_TGZ=$(expand_deploy_path "$SPD_HOME_DIR_TGZ")
 }
 
@@ -135,7 +141,7 @@ _user_expand_all_deploy_paths() {
 #
 # Returns a username, if one is assigned to the param uid
 #
-_get_username(){
+_mtu_get_username(){
   uid="$1"
 
   # First try using getent
@@ -165,12 +171,14 @@ _get_username(){
   fi
 }
 
-_find_first_available_uid() {
+
+
+_mtu_find_first_available_uid() {
     i=501
 
     until false; do
 	#echo ">> trying with $i"
-	[ "$(grep $i /etc/passwd)" == "" ] && break
+	[ "$(grep $i /etc/passwd)" = "" ] && break
 	i="$((i+1))"
     done
     verbose_msg "First available UID: $i"
@@ -178,15 +186,36 @@ _find_first_available_uid() {
 }
 
 
+
+#=====================================================================
+#
+# _run_this() & _display_help()
+# are only run in standalone mode, so no risk for wrong same named
+# function being called...
+#
+# In standlone mode, this will be run from See "main" part at end of
+# extras/utils.sh, it first expands parameters,
+# then either displays help or runs the task(-s)
+#
+
 _run_this() {
-    task_restore_user
-    task_user_pw_reminder
+    #
+    # Perform the task / tasks independently, convenient for testing
+    # and debugging.
+    #
+    task_mtu_restore_user
+    task_mtu_user_pw_reminder
+    #
+    # Always display this final message  in standalone,
+    # to indicate process terminated successfully.
+    # And did not die in the middle of things...
+    #
     echo "Task Completed."
 }      
 
 
 _display_help() {
-    _user_expand_all_deploy_paths
+    _mtu_expand_all_deploy_paths
     
     echo "m_tasks_user.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
@@ -194,23 +223,23 @@ _display_help() {
     echo "  -h  - Displays help about this task."
     echo
     echo "Tasks included:"
-    echo " task_restore_user      - creates user according to env variables"
-    echo " task_user_pw_reminder  - displays a reminder if no password has been set"
+    echo " task_mtu_restore_user      - creates user according to env variables"
+    echo " task_mtu_user_pw_reminder  - displays a reminder if no password has been set"
     echo 
     echo "Creates a new user, ensuring it will not overwrite an existing one."
     echo
     echo "Env variables used"
     echo "------------------"
-    echo "SPD_UNAME$(test -z "$SPD_UNAME" && echo ' - username to ensure exists' || echo =$SPD_UNAME )"
-    echo "SPD_UID$(test -z "$SPD_UID" && echo ' - userid to be used' || echo =$SPD_UID )"
-    echo "SPD_GID$(test -z "$SPD_GID" && echo ' - groupid to be used' || echo =$SPD_GID )"
-    echo "SPD_SHELL$(test -z "$SPD_SHELL" && echo ' - shell for username' || echo =$SPD_SHELL )"
-    echo "SPD_HOME_DIR_TGZ$(test -z "$SPD_HOME_DIR_TGZ" && echo ' - unpack this tgz file if found' || echo =$SPD_HOME_DIR_TGZ )"
-    echo "SPD_HOME_DIR_UNPACKED_PTR$(test -z "$SPD_HOME_DIR_UNPACKED_PTR" && echo ' -  Indicates home.tgz is unpacked' || echo =$SPD_HOME_DIR_UNPACKED_PTR )"
+    echo "SPD_UNAME$(test -z "$SPD_UNAME" && echo ' - username to ensure exists' || echo "=$SPD_UNAME" )"
+    echo "SPD_UID$(test -z "$SPD_UID" && echo '   - userid to be used' || echo "=$SPD_UID" )"
+    echo "SPD_GID$(test -z "$SPD_GID" && echo '   - groupid to be used' || echo "=$SPD_GID" )"
+    echo "SPD_SHELL$(test -z "$SPD_SHELL" && echo ' - shell for username' || echo "=$SPD_SHELL" )"
+    echo "SPD_HOME_DIR_TGZ$(test -z "$SPD_HOME_DIR_TGZ" && echo '          - unpack this tgz file if found' || echo "=$SPD_HOME_DIR_TGZ" )"
+    echo "SPD_HOME_DIR_UNPACKED_PTR$(test -z "$SPD_HOME_DIR_UNPACKED_PTR" && echo ' -  Indicates home.tgz is unpacked' || echo "=$SPD_HOME_DIR_UNPACKED_PTR" )"
     
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"
+    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 

@@ -8,24 +8,39 @@
 #
 # Part of ishTools
 #
-
+# See explaination in the top of extras/utils.sh
+# for some recomendations on how to set up your modules!
+#
 
 if test -z "$DEPLOY_PATH" ; then
-    # Most likely not sourced...
-    DEPLOY_PATH="$(dirname "$0")/.."               # relative
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
+    #
+    # This was most likely not sourced, define DEPLOY_PATH based
+    # on location of this script. This variable is used to find config
+    # files etc, so should always be set!
+    #
+    # First define it relative based on this scripts location
+    DEPLOY_PATH="$(dirname "$0")/.."
+    # Make it absolutized and normalized
+    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
 fi
 
 
 
-#==========================================================
+#=====================================================================
 #
 #   Public functions
 #
-#==========================================================
+#=====================================================================
+
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
+#
 
 task_replace_some_etc_files() {
-    _expand_all_etc_deploy_paths
+    _expand_all_deploy_paths_etc
     msg_2 "Copying some files to /etc"
     # If the config file is not found, no action will be taken
 
@@ -43,13 +58,18 @@ task_replace_some_etc_files() {
 
 
 
-#==========================================================
+#=====================================================================
 #
-#   Internals
+#   Internals, start with _ to make it obvious they should not be
+#   called by other modules.
 #
-#==========================================================
+#=====================================================================
 
-_expand_all_etc_deploy_paths() {
+_expand_all_deploy_paths_etc() {
+    #
+    # Expanding path variables that are either absolute or relative
+    # related to the deploy-path
+    #
     SPD_FILE_HOSTS=$(expand_deploy_path "$SPD_FILE_HOSTS")
     SPD_FILE_REPOSITORIES=$(expand_deploy_path "$SPD_FILE_REPOSITORIES")
 }
@@ -59,7 +79,7 @@ _copy_etc_file() {
     dst_file="$1"
     src_file="$2"
     surplus_param="$3"
-    [ "$surplus_param" != "" ] && error_msg "_copy_etc_file("$dst_file","$src_file") more than 2 params given!" 1
+    [ "$surplus_param" != "" ] && error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!" 1
     [ "$dst_file" = "" ] && error_msg "_copy_etc_file() param 1 dst_file not supplied!" 1
     if [ "$src_file" != "" ]; then
     	msg_3 "$dst_file"
@@ -77,14 +97,37 @@ _copy_etc_file() {
 }
 
 
+
+#=====================================================================
+#
+# _run_this() & _display_help()
+# are only run in standalone mode, so no risk for wrong same named function
+# being called...
+#
+# In standlone mode, this will be run from See "main" part at end of
+# extras/utils.sh, it first expands parameters,
+# then either displays help or runs the task(-s)
+#
+
 _run_this() {
+    #
+    # Perform the task / tasks independently, convenient for testing
+    # and debugging.
+    #
+    _expand_all_deploy_paths_etc
+    [ -z "$SPD_FILE_HOSTS" ] && [ -z "$SPD_FILE_REPOSITORIES" ] && warning_msg "None of the relevant variables set, nothing will be done"
     task_replace_some_etc_files
-    echo "Tasks Completed."
+    #
+    # Always display this final message  in standalone,
+    # to indicate process terminated successfully.
+    # And did not die in the middle of things...
+    #
+    echo "Task Completed."
 }
 
 
 _display_help() {
-    _expand_all_etc_deploy_paths
+    _expand_all_deploy_paths_etc
     echo "m_tasks_etc_files.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
@@ -103,29 +146,29 @@ _display_help() {
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_FILE_HOSTS$(test -z "$SPD_FILE_HOSTS" && echo ' - custom /etc/hosts' || echo =$SPD_FILE_HOSTS )"
-    echo "SPD_FILE_REPOSITORIES$(test -z "$SPD_FILE_REPOSITORIES" && echo ' - repository_file_to_use' || echo =$SPD_FILE_REPOSITORIES )"
+    echo "SPD_FILE_HOSTS$(test -z "$SPD_FILE_HOSTS" && echo '        - custom /etc/hosts' || echo "=$SPD_FILE_HOSTS" )"
+    echo "SPD_FILE_REPOSITORIES$(test -z "$SPD_FILE_REPOSITORIES" && echo ' - repository_file_to_use' || echo "=$SPD_FILE_REPOSITORIES" )"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo ' -  if 1 will only display what will be done' || echo =$SPD_TASK_DISPLAY)"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' -  if 1 will show what will NOT happen' || echo =$SPD_DISPLAY_NON_TASKS)"
+    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
 
-#==========================================================
+#=====================================================================
 #
 #     main
 #
-#==========================================================
+#=====================================================================
 
 if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
 
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #
-    # Since sourced mode cant be detected in a practiacl way under ash,
+    # Since sourced mode cant be detected in a practical way under ash,
     # I use this workaround, first script is expected to set it, if set
-    # script can assume to be sourced
+    # all other modules can assume to be sourced
     #
     SPD_INITIAL_SCRIPT=1
 fi
