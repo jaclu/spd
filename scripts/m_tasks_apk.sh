@@ -137,6 +137,8 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
+    [ -z "$SPD_APKS_DEL" ] && [ -z "$SPD_APKS_DEL" ] && \
+        warning_msg "None of the task variables set"
     task_mta_update
     [ -n "$SPD_APKS_DEL" ] && task_mta_remove_unwanted
     task_mta_upgrade
