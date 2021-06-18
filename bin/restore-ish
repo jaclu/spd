@@ -160,7 +160,7 @@ run_tasks() {
 
     # Do this early, so no risk of installation issues
     # with tasks needing to install dependencies
-    task_update
+    task_apk_update
 
     # Run as early as possible, so that one can switch away from iSH window
     # during deploy.
@@ -170,13 +170,13 @@ run_tasks() {
     
     # do before upgrade to avoid time waste of upgrading
     # only to then remove it
-    task_remove_unwanted_apks
+    task_apks_delete
 
-    task_upgrade
+    task_apk_upgrade
 
     task_sshd
 
-    task_install_requested_apks
+    task_apks_add
 
     task_restore_root
     task_nopasswd_sudo

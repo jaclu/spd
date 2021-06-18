@@ -6,7 +6,9 @@ m_tasks_apk.sh
 	_expand_all_deploy_paths_apk	->	_mta_expand_all_deploy_paths
 	task_update			->	task_update
 	task_upgrade			->	task_upgrade
-	task_remove_software		->	task_remove_unwanted
+	task_remove_software		->	task_remove_unwanted_apks
+task_remove_unwanted_apks
+task_remove_unwanted_apks
 	task_install_my_software	->	task_install_requested
 
 m_tasks_user.sh
