@@ -138,7 +138,7 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    [ -z "$SPD_APKS_DEL" ] && [ -z "$SPD_APKS_DEL" ] && \
+    [ -z "$SPD_APKS_DEL" ] && [ -z "$SPD_APKS_ADD" ] && \
         warning_msg "None of the task variables set"
     task_apk_update
     if [ -n "$SPD_APKS_DEL" ]; then
