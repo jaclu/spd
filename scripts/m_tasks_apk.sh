@@ -100,7 +100,8 @@ task_apks_add() {
         else
             # TODO: see in task_apks_delete() for description
             # about why this seems needed ATM
-            cmd="apk add $SPD_APKS_ADD not defined "
+            cmd="apk add $SPD_APKS_ADD"
+            verbose_msg "Will run: $cmd"
             $cmd || error_msg "Failed to install requested software - network issue?"
 
         fi
