@@ -56,7 +56,16 @@ task_runbg() {
     #    return 0
     #fi
 
-    if [ -z "$(command -v $ensure_service_is_added)" ]; then
+    if [  "$(command -v $ensure_service_is_added)x" != "x" ]; then
+        msg_2 "sourincg it"
+        verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
+        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    else
+        verbose_msg "openrc seems sourced"
+    fi
+
+    if [  "$(command -v $ensure_service_is_added)x" != "x" ]; then
+        msg_2 "sourincg it again!"
         verbose_msg "task_runbbg() sourcing scripts/extras/openrc.sh"
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     else
