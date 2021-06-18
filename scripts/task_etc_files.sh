@@ -40,7 +40,8 @@ fi
 #
 
 task_replace_some_etc_files() {
-    _expand_all_deploy_paths_etc
+    _tef_expand_all_deploy_paths
+
     msg_2 "Copying some files to /etc"
     # If the config file is not found, no action will be taken
 
@@ -65,7 +66,7 @@ task_replace_some_etc_files() {
 #
 #=====================================================================
 
-_expand_all_deploy_paths_etc() {
+_tef_expand_all_deploy_paths() {
     #
     # Expanding path variables that are either absolute or relative
     # related to the deploy-path
@@ -75,19 +76,26 @@ _expand_all_deploy_paths_etc() {
 }
 
 
-_copy_etc_file() {
+_tef_copy_etc_file() {
     dst_file="$1"
     src_file="$2"
     surplus_param="$3"
-    [ -n "$surplus_param" ] && error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!" 1
-    [ -z "$dst_file" ] && error_msg "_copy_etc_file() param 1 dst_file not supplied!" 1
+    if [ -n "$surplus_param" ]; then
+        error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!"
+    fi
+    if [ -z "$dst_file" ]; then
+        error_msg "_copy_etc_file() param 1 dst_file not supplied!"
+    fi
     if [ -n "$src_file" ]; then
     	msg_3 "$dst_file"
-    	[ -f "$src_file" ] || error_msg "_copy_etc_file() src_file NOT FOUND!\n$src_file\n" 1    
+        if [ -f "$src_file" ]; then
+            error_msg "_copy_etc_file() src_file NOT FOUND!\n$src_file\n"
+        fi
     	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             cp "$src_file" "$dst_file"
    	    echo "$src_file"
-    	elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    	elif [ "$SPD_TASK_DISPLAY" = "1" ] \
+                && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
             echo "Will NOT be modified"
     	fi
     fi
@@ -114,9 +122,10 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    _expand_all_deploy_paths_etc
+    _tef_expand_all_deploy_paths
 
-    [ -z "$SPD_FILE_HOSTS" ] && [ -z "$SPD_FILE_REPOSITORIES" ] && warning_msg "None of the relevant variables set, nothing will be done"
+    [ -z "$SPD_FILE_HOSTS" ] && [ -z "$SPD_FILE_REPOSITORIES" ] \
+        && warning_msg "None of the relevant variables set, nothing will be done"
     task_replace_some_etc_files
     #
     # Always display this final message  in standalone,
@@ -128,7 +137,7 @@ _run_this() {
 
 
 _display_help() {
-    _expand_all_deploy_paths_etc
+    _tef_expand_all_deploy_paths
 
     echo "m_tasks_etc_files.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
@@ -148,11 +157,23 @@ _display_help() {
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_FILE_HOSTS$(test -z "$SPD_FILE_HOSTS" && echo '        - custom /etc/hosts' || echo "=$SPD_FILE_HOSTS" )"
-    echo "SPD_FILE_REPOSITORIES$(test -z "$SPD_FILE_REPOSITORIES" && echo ' - repository_file_to_use' || echo "=$SPD_FILE_REPOSITORIES" )"
+    echo "SPD_FILE_HOSTS$(
+        test -z "$SPD_FILE_HOSTS" \
+        && echo '        - custom /etc/hosts' \
+        || echo "=$SPD_FILE_HOSTS" )"
+    echo "SPD_FILE_REPOSITORIES$(
+        test -z "$SPD_FILE_REPOSITORIES"
+        && echo ' - repository_file_to_use' \
+        || echo "=$SPD_FILE_REPOSITORIES" )"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo "SPD_TASK_DISPLAY$(
+        test -z "$SPD_TASK_DISPLAY" \
+        && echo '      - if 1 will only display what will be done' \
+        || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
