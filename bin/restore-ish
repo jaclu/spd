@@ -170,13 +170,13 @@ run_tasks() {
     
     # do before upgrade to avoid time waste of upgrading
     # only to then remove it
-    task_remove_software
+    task_remove_unwanted_apks
 
     task_upgrade
 
     task_sshd
 
-    task_install_my_software
+    task_install_requested_apks
 
     task_restore_root
     task_nopasswd_sudo

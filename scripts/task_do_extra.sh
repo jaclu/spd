@@ -39,7 +39,7 @@ fi
 #  Use a short prefix unique for your module.
 #
 
-task_tde_do_extra_task() {
+task_do_extra_task() {
     _expand_do_extra_all_deploy_paths
     msg_txt="Running custom task"
     if [ -n "$SPD_EXTRA_TASK" ]; then

@@ -39,7 +39,7 @@ fi
 #  Use a short prefix unique for your module.
 #
 
-task_mta_update() {
+task_update() {
     msg_2 "update & fix apk index"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
@@ -50,7 +50,7 @@ task_mta_update() {
 }
 
 
-task_mta_upgrade() {
+task_upgrade() {
     msg_2 "upgrade installed apks"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
@@ -61,7 +61,7 @@ task_mta_upgrade() {
 }
 
 
-task_mta_remove_unwanted() {
+task_remove_unwanted_apks() {
     msg_txt="Removing unwanted software"
 
     if [ -n "$SPD_APKS_DEL" ]; then
@@ -91,7 +91,7 @@ task_mta_remove_unwanted() {
 }
 
 
-task_mta_install_requested() {
+task_install_requested_apks() {
     msg_txt="Installing my selection of software"
     if [ -n "$SPD_APKS_ADD" ]; then
         msg_2 "$msg_txt"
@@ -140,7 +140,7 @@ _run_this() {
     #
     [ -z "$SPD_APKS_DEL" ] && [ -z "$SPD_APKS_DEL" ] && \
         warning_msg "None of the task variables set"
-    task_mta_update
+    task_update
     if [ -n "$SPD_APKS_DEL" ]; then
         task_mta_remove_unwanted
     else
@@ -169,7 +169,7 @@ _display_help() {
     echo "  -h  - Displays help about this task."
     echo
     echo "Tasks included:"
-    echo " task_mta_update            - updates repository"
+    echo " task_update            - updates repository"
     echo " task_mta_upgrade           - upgrades all installed apks"
     echo " task_mta_remove_unwanted   - deletes all apks listed in SPD_APKS_DEL"
     echo " task_mta_install_requested - adds all apks listed in SPD_APKS_ADD"
