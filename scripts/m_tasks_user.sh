@@ -96,7 +96,7 @@ task_mtu_restore_user() {
                 #groupdel -g "$SPD_UNAME" 2> /dev/null
                 tail /etc/group
                 echo "-----"
-                if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "0" ]; then
+                if ! groupadd -g "$SPD_GID" "$SPD_UNAME" 2> /dev/null ; then
                     echo "Second tail"
                     echo
                     tail /etc/group
