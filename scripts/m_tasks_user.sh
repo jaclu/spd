@@ -144,6 +144,10 @@ task_mtu_user_pw_reminder() {
 #=====================================================================
 
 _mtu_expand_all_deploy_paths() {
+    #
+    # Expanding path variables that are either absolute or relative
+    # related to the deploy-path
+    #
     SPD_HOME_DIR_TGZ=$(expand_deploy_path "$SPD_HOME_DIR_TGZ")
 }
 
