@@ -89,14 +89,18 @@ task_mtu_restore_user() {
                 ensure_shell_is_installed "$SPD_SHELL"
             else
                 echo ">> Not Display"
-                tail /etc/group
-                echo "-----"
                 ensure_installed shadow "Adding shadow (provides useradd)"
                 # we need to ensure the group exists, before using it in
                 # useradd
                 # TODO: identify a 501 group by name and delete it
                 #groupdel -g "$SPD_UNAME" 2> /dev/null
+                tail /etc/group
+                echo "-----"
                 if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "0" ]; then
+                    echo "Second tail"
+                    echo
+                    tail /etc/group
+                    echo "-----"
                     error_msg "group id already in use: $SPD_GID"
                 fi
                 #  sets uid & gid to 501, to match apples uid/gid on iOS mounts
