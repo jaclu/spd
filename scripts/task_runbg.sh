@@ -57,11 +57,14 @@ task_runbg() {
     #fi
 
     if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
-        msg_2 "openrc loaded"
-    else
-        msg_3 "openrc NOT FOUND"
+        msg_2 "sourcing openrc"
+        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
 
+    if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+        msg_2 "sourcing openrc 2"
+        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    fi
     error_msg "Aborting for now"
 
     # if [  "$(command -v $ensure_service_is_added)x" = "x" ]; then
