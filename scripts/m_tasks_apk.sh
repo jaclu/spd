@@ -98,7 +98,7 @@ task_install_requested_apks() {
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             echo "$SPD_APKS_ADD"
         else
-            # TODO: see in task__remove_unwanted() for description
+            # TODO: see in task_remove_unwanted() for description
             # about why this seems needed ATM
             cmd="apk add $SPD_APKS_ADD not defined "
             $cmd || error_msg "Failed to install requested software - network issue?"
@@ -142,15 +142,15 @@ _run_this() {
         warning_msg "None of the task variables set"
     task_update
     if [ -n "$SPD_APKS_DEL" ]; then
-        task__remove_unwanted
+        task_remove_unwanted
     else
-        warning_msg "SPD_APKS_DEL not set, skipping task__remove_unwanted()"
+        warning_msg "SPD_APKS_DEL not set, skipping task_remove_unwanted()"
     fi
-    task__upgrade
+    task_upgrade
     if [ -n "$SPD_APKS_ADD" ]; then
-        task__install_requested
+        task_install_requested
     else
-        warning_msg "SPD_APKS_ADD not set, skipping task__install_requested()"
+        warning_msg "SPD_APKS_ADD not set, skipping task_install_requested()"
     fi
 
     #
@@ -170,9 +170,9 @@ _display_help() {
     echo
     echo "Tasks included:"
     echo " task_update            - updates repository"
-    echo " task__upgrade           - upgrades all installed apks"
-    echo " task__remove_unwanted   - deletes all apks listed in SPD_APKS_DEL"
-    echo " task__install_requested - adds all apks listed in SPD_APKS_ADD"
+    echo " task_upgrade           - upgrades all installed apks"
+    echo " task_remove_unwanted   - deletes all apks listed in SPD_APKS_DEL"
+    echo " task_install_requested - adds all apks listed in SPD_APKS_ADD"
     echo
     echo "Env paramas"
     echo "-----------"
