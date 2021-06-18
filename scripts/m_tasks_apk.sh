@@ -82,7 +82,8 @@ task_mta_remove_unwanted() {
             $cmd
         fi
         echo
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif      [ "$SPD_TASK_DISPLAY" = "1" ] \
+          &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
         echo "Will NOT remove any listed software"
         echo
@@ -140,9 +141,18 @@ _run_this() {
     [ -z "$SPD_APKS_DEL" ] && [ -z "$SPD_APKS_DEL" ] && \
         warning_msg "None of the task variables set"
     task_mta_update
-    [ -n "$SPD_APKS_DEL" ] && task_mta_remove_unwanted
+    if [ -n "$SPD_APKS_DEL" ]; then
+        task_mta_remove_unwanted
+    else
+        warning_msg "SPD_APKS_DEL not set, skipping task_mta_remove_unwanted()"
+    fi
     task_mta_upgrade
-    [ -n "$SPD_APKS_ADD" ] && task_mta_install_requested
+    if [ -n "$SPD_APKS_ADD" ]; then
+        task_mta_install_requested
+    else
+        warning_msg "SPD_APKS_ADD not set, skipping task_mta_install_requested()"
+    fi
+
     #
     # Always display this final message  in standalone,
     # to indicate process terminated successfully.
@@ -169,11 +179,23 @@ _display_help() {
     #
     # If the variable is defined show it, otherwise explain it!
     #
-    echo "SPD_APKS_DEL$(test -z "$SPD_APKS_DEL" && echo ' - packages to remove, comma separated' || echo "='$SPD_APKS_DEL'")"
-    echo "SPD_APKS_ADD$(test -z "$SPD_APKS_ADD" && echo ' - packages to add, comma separated' || echo "='$SPD_APKS_ADD'")"
+    echo "SPD_APKS_DEL$(
+        test -z "$SPD_APKS_DEL" \
+        && echo ' - packages to remove, comma separated' \
+        || echo "='$SPD_APKS_DEL'")"
+    echo "SPD_APKS_ADD$(
+        test -z "$SPD_APKS_ADD" \
+        && echo ' - packages to add, comma separated' \
+        || echo "='$SPD_APKS_ADD'")"
     echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo "SPD_TASK_DISPLAY$(
+        test -z "$SPD_TASK_DISPLAY" \
+        && echo '      - if 1 will only display what will be done' \
+        || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
 }
 
 
