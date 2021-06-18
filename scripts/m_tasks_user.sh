@@ -110,7 +110,7 @@ task_mtu_restore_user() {
             #
             if [ "$SPD_UID" != "" ]; then
                 msg_3 "Verifying UID"
-                if ! grep -q "^$SPD_UNAME:.*:SPD_UID" ; then
+                if ! grep -q "^$SPD_UNAME:.*:SPD_UID" /etc/passwd ; then
                     echo
                     grep "^$SPD_UNAME" /etc/passwd
                     error_msg "Wrong UID for user:"
@@ -118,7 +118,7 @@ task_mtu_restore_user() {
             fi
             if [ "$SPD_GID" != "" ]; then
                 msg_3 "Verifying GID"
-                if ! grep -q "^$SPD_UNAME:.*:.*:SPD_GID" ; then
+                if ! grep -q "^$SPD_UNAME:.*:.*:SPD_GID" /etc/passwd ; then
                     echo
                     grep "^$SPD_UNAME" /etc/passwd
                     error_msg "Wrong primary GID for user:"
