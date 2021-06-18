@@ -66,7 +66,7 @@ task_mtu_restore_user() {
         #
         msg_2 "$msg_txt"
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
-            echo ">> D"
+            echo ">> D display: $SPD_TASK_DISPLAY"
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" -eq 1 ]; then
                 echo ">> E"
