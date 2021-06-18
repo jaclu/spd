@@ -56,14 +56,20 @@ task_runbg() {
     #    return 0
     #fi
 
+    msg_2 "load env test"
+
     if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         msg_2 "sourcing openrc"
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    else
+        msg_2 "openrc was found!"
     fi
 
     if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
-        msg_2 "sourcing openrc 2"
+        msg_2 "sourcing openrc again"
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    else
+        msg_2 "on 2nd try openrc was found!"
     fi
     error_msg "Aborting for now"
 
