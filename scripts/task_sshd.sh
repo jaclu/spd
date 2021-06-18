@@ -43,6 +43,15 @@ task_sshd() {
     _ts_expand_all_deploy_paths
     
     verbose_msg "task_sshd($SPD_SSHD_SERVICE)"
+
+    #
+    # source dependencies if not available
+    #
+    if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+        verbose_msg "task_sshd needs to source openrc"
+        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+    fi
+
     #
     # Name of service
     #

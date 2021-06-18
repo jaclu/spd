@@ -43,9 +43,6 @@ fi
 
 task_runbg() { 
     verbose_msg "task_runbg($SPD_BG_RUN)"
-    #
-    # Name of service
-    #
 
     #
     # source dependencies if not available
@@ -56,6 +53,9 @@ task_runbg() {
     fi
 
 
+    #
+    # Name of service
+    #
     service_name=runbg
     source_fname="$DEPLOY_PATH/files/services/$service_name"
     service_fname="/etc/init.d/$service_name"
