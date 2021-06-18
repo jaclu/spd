@@ -163,7 +163,7 @@ _display_help() {
         && echo '        - custom /etc/hosts' \
         || echo "=$SPD_FILE_HOSTS" )"
     echo "SPD_FILE_REPOSITORIES$(
-        test -z "$SPD_FILE_REPOSITORIES"
+        test -z "$SPD_FILE_REPOSITORIES" \
         && echo ' - repository_file_to_use' \
         || echo "=$SPD_FILE_REPOSITORIES" )"
     echo
