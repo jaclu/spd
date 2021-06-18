@@ -86,6 +86,7 @@ task_mtu_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
+
                 # we need to ensure the group exists, before using it in
                 # useradd
                 # TODO: identify a 501 group by name and delete it
@@ -95,6 +96,9 @@ task_mtu_restore_user() {
                    error_msg "group id already in use: $SPD_GID"
                 fi
                 #  sets uid & gid to 501, to match apples uid/gid on iOS mounts
+                verbose_msg "$(
+                    printf "Will be created as %s:x:" "$SPD_UNAME"
+                    echo "$SPD_UID:$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL")"
                 if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m \
                               -s "$SPD_SHELL" "$SPD_UNAME") ; then
                     groupdel "$SPD_UNAME"

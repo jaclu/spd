@@ -253,12 +253,6 @@ ensure_installed() {
 ensure_shell_is_installed() {
     SHELL_NAME=$1
      
-     #  Splitting long params on separate lines
-
-msg_3 "$(echo "Will be created as $SPD_UNAME:x:$SPD_UID"
-         echo ":$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
-        )"
-
     [ -z "$SHELL_NAME" ] && error_msg "ensure_shell_is_installed() - no shell paraam!"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed! ><<\n"
