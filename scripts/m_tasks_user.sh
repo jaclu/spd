@@ -241,11 +241,11 @@ _display_help() {
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
     echo
+    echo "Creates a new user, ensuring it will not overwrite an existing one."
+    echo
     echo "Tasks included:"
     echo " task_mtu_restore_user      - creates user according to env variables"
     echo " task_mtu_user_pw_reminder  - displays a reminder if no password has been set"
-    echo 
-    echo "Creates a new user, ensuring it will not overwrite an existing one."
     echo
     echo "Env variables used"
     echo "------------------"
