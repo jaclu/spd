@@ -79,6 +79,7 @@ task_apks_delete() {
             # this seems to be a useable workarround
             #
             cmd="apk del $SPD_APKS_DEL"
+            verbose_msg "Will run: $cmd"
             $cmd
         fi
         echo

@@ -464,7 +464,7 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
         # its safe to run regarless of plattform or privs
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             [ "$SPD_ABORT" = "1" ] && \
-                error_msg "Detected SPD_ABORT=1  Your platform is most likely not supported!"
+                error_msg "Detected SPD_ABORT=1  Your settings prevent this device to be modified"
             [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
             [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
         fi

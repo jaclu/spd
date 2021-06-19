@@ -65,6 +65,7 @@ read_config() {
     # config file below
     #
     _read_cfg_file defaults
+
     _read_cfg_file settings-pre
     
     [ -n "$os_type" ] &&        _read_cfg_file "$os_type"
@@ -72,6 +73,7 @@ read_config() {
     [ -n "$distro" ] &&         _read_cfg_file "$distro"
     
     _read_cfg_file settings-post  # general user settings
+
     _read_cfg_file "$(hostname | sed 's/\./ /' | awk '{print $1}')"
 
     [ -n "$p_verbose" ] && echo  # Whitespace after listing config files parsed
