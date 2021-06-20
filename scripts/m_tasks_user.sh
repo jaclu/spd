@@ -197,7 +197,7 @@ _mtu_make_available_uid_gid() {
         # no change needed so we can leave
         return
     fi
-    verbose_msg('Freeing desired uid & gid')
+    verbose_msg 'Freeing desired uid & gid'
     #
     # getting the first id free in both users and groups
     #
