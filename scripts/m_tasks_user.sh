@@ -50,8 +50,6 @@ task_restore_user() {
 
     _mtu_expand_all_deploy_paths
 
-    _mtu_make_available_uid_gid
-
     if [ -n "$SPD_UNAME" ]; then
         #
         # Ensure user is created
@@ -81,10 +79,7 @@ task_restore_user() {
                 ensure_shell_is_installed "$SPD_SHELL"
             else
 
-                # we need to ensure the group exists, before using it in
-                # useradd
-                # TODO: identify a 501 group by name and delete it
-                #groupdel -g "$SPD_UNAME" 2> /dev/null
+                _mtu_make_available_uid_gid
                 if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
                     #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                    error_msg "group id already in use: $SPD_GID"
