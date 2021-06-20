@@ -26,6 +26,10 @@ fi
 
 
 
+
+
+
+
 #=====================================================================
 #
 #   Public functions
@@ -38,7 +42,6 @@ fi
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
 #
-
 task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
@@ -47,17 +50,8 @@ task_restore_user() {
 
     _mtu_expand_all_deploy_paths
 
-    ## SPD_HOME_DIR_UNPACKED_PTR=""
+    _mtu_make_available_uid_gid
 
-
-    #_mtu_get_username 501
-    #exit 14
-
-    #echo "First id: [`_mtu_find_first_available_uid`]"
-    #exit 1
-    #echo "returned from _mtu_find_first_available_uid()"
-    #exit 1
-    
     if [ -n "$SPD_UNAME" ]; then
         #
         # Ensure user is created
@@ -188,48 +182,40 @@ _mtu_expand_all_deploy_paths() {
 }
 
 
+
 #
-# Returns a username, if one is assigned to the param uid
+#  Try to make the SPD_UID SPD_GID available
+#  by trying to move curren occupants to other ids
+#  If not possible change SPD_UID / SPD_GID to
+#  an available pair and print out warning
 #
-_mtu_get_username(){
-  uid="$1"
+_mtu_make_available_uid_gid() {
 
-  # First try using getent
-  if command -v getent > /dev/null 2>&1; then
-    getent passwd "$uid" | cut -d: -f1
-
-  # Next try using the UID as an operand to id.
-  elif command -v id > /dev/null 2>&1 && \
-       id -nu "$uid" > /dev/null 2>&1; then
-    id -nu "$uid"
-
-  # Next try perl - perl's getpwuid just calls the system's C library getpwuid
-  elif command -v perl >/dev/null 2>&1; then
-    perl -e '@u=getpwuid($ARGV[0]);
-             if ($u[0]) {print $u[0]} else {exit 2}' "$uid"
-
-  # As a last resort, parse `/etc/passwd`.
-  else
-      echo " parse passwd"
-      awk -v uid="$uid" -F: '
-         BEGIN {ec=2};
-         $3 == uid {print $1; ec=0; exit 0};
-         END {exit ec}' /etc/passwd
-  fi
-}
-
-
-
-_mtu_find_first_available_uid() {
-    i=501
-
-    until false; do
-	[ -z "$(grep $i /etc/passwd)" ] && break
-	i="$((i+1))"
-    done
-    verbose_msg "First available UID: $i"
-    echo $i
-}
+    user_name=$(sed 's/:/ /g' /etc/passwd | awk '{print $1 " " $3}' |grep $SPD_UID | awk '{print $1}')
+    group_name=$(grep "$SPD_GID" /etc/group | sed 's/:/ /' | awk '{print $1}')
+    if [ -z "$user_name" ] && [ -z "$group_name" ]; then
+        # no change needed so we can leave
+        return
+    fi
+    verbose_msg('Freeing desired uid & gid')
+    #
+    # getting the first id free in both users and groups
+    #
+    id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | grep "^1...$" \
+                    | sort -n | tail -n 1 | awk '{ print $1+1 }')"
+    if test -n "$user_name" ; then
+        usermod -u "$id_available" "$user_name"
+    fi
+    if test -n "$group_name" ; then
+        groupmod -g "$id_available" "group_name"
+    fi
+    #
+    # Even if the GID of the offending user wasnt the offending GID
+    # this is still a safe action
+    #
+    chown "$user_name":"$user_name" /home/"$user_name" -R
+    chown "$user_name":"$user_name" /var/mail/"$user_name" -R
+ }
 
 
 
