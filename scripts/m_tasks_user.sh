@@ -26,10 +26,6 @@ fi
 
 
 
-
-
-
-
 #=====================================================================
 #
 #   Public functions
@@ -42,6 +38,7 @@ fi
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
 #
+
 task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
@@ -186,32 +183,37 @@ _mtu_expand_all_deploy_paths() {
 #
 _mtu_make_available_uid_gid() {
 
-    user_name=$(sed 's/:/ /g' /etc/passwd | awk '{print $1 " " $3}' |grep $SPD_UID | awk '{print $1}')
-    group_name=$(grep "$SPD_GID" /etc/group | sed 's/:/ /' | awk '{print $1}')
+    user_name=$(sed 's/:/ /g' /etc/passwd | awk '{print $1 " " $3}' | \
+                grep "$SPD_UID" | awk '{print $1}')
+    group_name=$(grep "$SPD_GID" /etc/group | sed 's/:/ /' | \
+                 awk '{print $1}')
     if [ -z "$user_name" ] && [ -z "$group_name" ]; then
         # no change needed so we can leave
         return
     fi
-    verbose_msg '1 Freeing desired uid & gid'
+    verbose_msg 'Freeing desired uid & gid'
     #
     # getting the first id free in both users and groups
     #
-    id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | grep "^1...$" \
-                    | sort -n | tail -n 1 | awk '{ print $1+1 }')"
+    id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | \
+                    grep "^1...$" | sort -n | tail -n 1 | \
+                    awk '{ print $1+1 }')"
     if test -n "$user_name" ; then
-        verbose_msg "Changing UID for "$user_name" into "$id_available""
+        verbose_msg "Changing uid for $user_name into $id_available"
         usermod -u "$id_available" "$user_name"
     fi
     if test -n "$group_name" ; then
-        verbose_msg "Changing GID for "$user_name" into "$id_available""
+        verbose_msg "Changing gid for $user_name into $id_available"
         groupmod -g "$id_available" "group_name"
     fi
     #
     # Even if the GID of the offending user wasnt the offending GID
     # this is still a safe action
     #
-    test -f /home/"$user_name" && chown "$user_name":"$user_name" /home/"$user_name" -R
-    test -f /var/mail/"$user_name" && chown "$user_name":"$user_name" /var/mail/"$user_name" -R
+    test -f /home/"$user_name" && \
+        chown "$user_name":"$user_name" /home/"$user_name" -R
+    test -f /var/mail/"$user_name" && \
+        chown "$user_name":"$user_name" /var/mail/"$user_name" -R
  }
 
 
