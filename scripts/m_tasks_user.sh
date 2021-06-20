@@ -191,20 +191,24 @@ _mtu_make_available_uid_gid() {
         # no change needed so we can leave
         return
     fi
-    verbose_msg 'Freeing desired uid & gid'
+    msg_3 "Intended uid/gid was used"
+    echo "Will try to free up desired uid & gid"
     #
     # getting the first id free in both users and groups
     #
     id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | \
-                    grep "^1...$" | sort -n | tail -n 1 | \
-                    awk '{ print $1+1 }')"
+    	            grep "^1...$" | sort -n | tail -n 1 | \
+		    awk '{ print $1+1 }')"
+    # If no ids were in the 1xxx range nothing was found, so pick 1000
+    test -z "$id_available" && id_available=1000
+
     if test -n "$user_name" ; then
-        verbose_msg "Changing uid for $user_name into $id_available"
+        echo "Changing uid for $user_name into $id_available"
         usermod -u "$id_available" "$user_name"
     fi
     if test -n "$group_name" ; then
-        verbose_msg "Changing gid for $user_name into $id_available"
-        groupmod -g "$id_available" "group_name"
+        echo "Changing gid for $user_name into $id_available"
+        groupmod -g "$id_available" "$group_name"
     fi
     #
     # Even if the GID of the offending user wasnt the offending GID
