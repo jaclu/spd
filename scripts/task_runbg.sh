@@ -42,7 +42,7 @@ fi
 #
 
 task_runbg() { 
-    verbose_msg "task_runbg($SPD_BG_RUN)"
+    verbose_msg "task_runbg($SPD_RUN_BG)"
 
     #
     # source dependencies if not available
@@ -60,12 +60,12 @@ task_runbg() {
     source_fname="$DEPLOY_PATH/files/services/$service_name"
     service_fname="/etc/init.d/$service_name"
             
-    if [ "$SPD_BG_RUN" = "" ]; then
-        SPD_BG_RUN="0"
-        warning_msg "SPD_BG_RUN not defined, service runbg will not be modified"
+    if [ "$SPD_RUN_BG" = "" ]; then
+        SPD_RUN_BG="0"
+        warning_msg "SPD_RUN_BG not defined, service runbg will not be modified"
     fi
 
-    case "$SPD_BG_RUN" in
+    case "$SPD_RUN_BG" in
         -1 ) # disable
             _runbg_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
@@ -115,7 +115,7 @@ task_runbg() {
             fi
             ;;
 
-       *) error_msg "task_runbg($SPD_BG_RUN) invalid option, must be one of -1, 0, 1"
+       *) error_msg "task_runbg($SPD_RUN_BG) invalid option, must be one of -1, 0, 1"
     esac
     echo
 }
@@ -170,17 +170,17 @@ _display_help() {
     echo
     echo "Installs and Activates or Disables a service that monitors the iOS location"
     echo "this ensures that iSH will continue to run in the background."
-    echo "defined by SPD_BG_RUN or command line param."
+    echo "defined by SPD_RUN_BG or command line param."
     echo
     echo "Tasks included:"
     echo " task_runbg"
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_BG_RUN$(
-        test -z "$SPD_BG_RUN" \
+    echo "SPD_RUN_BG$(
+        test -z "$SPD_RUN_BG" \
         && echo ' -  location_tacker status (-1/0/1)' \
-        || echo "=$SPD_BG_RUN")"
+        || echo "=$SPD_RUN_BG")"
     echo
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
