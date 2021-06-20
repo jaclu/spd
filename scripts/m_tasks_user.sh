@@ -208,8 +208,8 @@ _mtu_make_available_uid_gid() {
     # Even if the GID of the offending user wasnt the offending GID
     # this is still a safe action
     #
-    chown "$user_name":"$user_name" /home/"$user_name" -R
-    chown "$user_name":"$user_name" /var/mail/"$user_name" -R
+    test -f /home/"$user_name" && chown "$user_name":"$user_name" /home/"$user_name" -R
+    test -f /var/mail/"$user_name" && chown "$user_name":"$user_name" /var/mail/"$user_name" -R
  }
 
 
