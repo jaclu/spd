@@ -56,18 +56,19 @@ task_restore_user() {
         #
         msg_2 "$msg_txt"
         ensure_installed shadow "Adding shadow (provides useradd & usrtmod)"
+
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 # [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] \
                 # if find . | grep -q 'IMG[0-9]'
 
-                grep -q "$SPD_UID:$SPD_GID" /etc/passwd \
-                    && error_msg "uid:group already used in /etc/passwd"
-                grep -q "$SPD_UID:" /etc/passwd \
-                    && error_msg "uid:$SPD_UID already used in /etc/passwd"
-                grep -q ":$SPD_GID:" /etc/group \
-                    && error_msg "gid:$SPD_GID already used in /etc/group"
+                # grep -q "$SPD_UID:$SPD_GID" /etc/passwd \
+                #     && error_msg "uid:group already used in /etc/passwd"
+                # grep -q "$SPD_UID:" /etc/passwd \
+                #     && error_msg "uid:$SPD_UID already used in /etc/passwd"
+                # grep -q ":$SPD_GID:" /etc/group \
+                #     && error_msg "gid:$SPD_GID already used in /etc/group"
 
                 # Splitting long param on multiple lines
                 msg_3 "$(
@@ -78,7 +79,6 @@ task_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
-
                 _mtu_make_available_uid_gid
                 if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
                     #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
