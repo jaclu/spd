@@ -191,7 +191,7 @@ _mtu_make_available_uid_gid() {
         # no change needed so we can leave
         return
     fi
-    msg_3 "Intended uid/gid was used"
+    msg_3 "Intended uid/gid is beeing used"
     echo "Will try to free up desired uid & gid"
     #
     # getting the first id free in both users and groups
