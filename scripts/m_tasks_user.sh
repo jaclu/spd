@@ -199,9 +199,11 @@ _mtu_make_available_uid_gid() {
     id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | grep "^1...$" \
                     | sort -n | tail -n 1 | awk '{ print $1+1 }')"
     if test -n "$user_name" ; then
+        verbose_msg "Changing UID for "$user_name" into "$id_available""
         usermod -u "$id_available" "$user_name"
     fi
     if test -n "$group_name" ; then
+        verbose_msg "Changing GID for "$user_name" into "$id_available""
         groupmod -g "$id_available" "group_name"
     fi
     #
