@@ -88,17 +88,25 @@ _tef_copy_etc_file() {
         error_msg "_copy_etc_file() param 1 dst_file not supplied!"
     fi
     if [ -n "$src_file" ]; then
+        echo ">> $src_file $dst_file"
     	msg_3 "$dst_file"
+	if [ -n "$src_file" ]; then
+	
         if [ ! -f "$src_file" ]; then
-            error_msg "_copy_etc_file() src_file NOT FOUND!\n$src_file"
+            error_msg "_tef_copy_etc_file() src_file NOT FOUND!\n$src_file"
         fi
     	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             cp "$src_file" "$dst_file"
    	    echo "$src_file"
-    	elif [ "$SPD_TASK_DISPLAY" = "1" ] \
-                && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-            echo "Will NOT be modified"
+    	#elif [ "$SPD_TASK_DISPLAY" = "1" ] \
+        #        && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
     	fi
+	
+	else
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] \
+                && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+        msg_3 "$dst_file"
+        echo "Will NOT be modified"
     fi
     unset src_file
     unset dst_file

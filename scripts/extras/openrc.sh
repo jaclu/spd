@@ -39,7 +39,7 @@ ensure_runlevel_default() {
     
     ensure_installed openrc
     
-    _patch_rc_cgroup_sh
+    #_patch_rc_cgroup_sh
     #_remove_problematic_services
 
     
