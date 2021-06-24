@@ -104,7 +104,7 @@ _read_cfg_file() {
         verbose_msg "will read: $cfg_file"
         . "$cfg_file"
     elif [ "$must_exist" = "1" ]; then
-	error_message "_read_cfg_file($cfg_file) obligatory config file not found!"
+	error_msg "_read_cfg_file($cfg_file) obligatory config file not found!"
     else
         verbose_msg "NOT found: $cfg_file"
     fi    
