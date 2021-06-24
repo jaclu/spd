@@ -42,8 +42,8 @@ fi
 task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
-    SPD_UID=${SPD_UID:-1000}
-    SPD_GID=${SPD_GID:-1000}
+    #SPD_UID=${SPD_UID:-1000}
+    #SPD_GID=${SPD_GID:-1000}
 
     _mtu_expand_all_deploy_paths
 
@@ -81,8 +81,11 @@ task_restore_user() {
                     #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                    error_msg "group id already in use: $SPD_GID"
                 fi
-                if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m \
-                              -s "$SPD_SHELL" "$SPD_UNAME") ; then
+		cmd="useradd -s $SPD_SHELL $SPD_UNAME"
+		[ -n "$SPD_UID" ] && cmd="$cmd -u $SPD_UID"
+		[ -n "$SPD_GID" ] && cmd="$cmd -g $SPD_GID"
+		
+                if !($cmd) ; then
                     groupdel "$SPD_UNAME"
                     error_msg "task_restore_user() - useradd failed to complete."
                 fi
