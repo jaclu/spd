@@ -53,22 +53,22 @@ task_restore_user() {
         #
         msg_2 "$msg_txt"
         ensure_installed shadow "Adding shadow (provides useradd & usrtmod)"
-
+	
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 # [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] \
-                # if find . | grep -q 'IMG[0-9]'
-
+                    # if find . | grep -q 'IMG[0-9]'
+		
                 # grep -q "$SPD_UID:$SPD_GID" /etc/passwd \
-                #     && error_msg "uid:group already used in /etc/passwd"
+                    #     && error_msg "uid:group already used in /etc/passwd"
                 # grep -q "$SPD_UID:" /etc/passwd \
-                #     && error_msg "uid:$SPD_UID already used in /etc/passwd"
+                    #     && error_msg "uid:$SPD_UID already used in /etc/passwd"
                 # grep -q ":$SPD_GID:" /etc/group \
-                #     && error_msg "gid:$SPD_GID already used in /etc/group"
+                    #     && error_msg "gid:$SPD_GID already used in /etc/group"
 
                 # Splitting long param on multiple lines
                 msg_3 "$(
-                    printf "Will be created as %s:x:" "$SPD_UNAME"
+		    printf "Will be created as %s:x:" "$SPD_UNAME"
                     echo "$SPD_UID:$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
                     )"
 
@@ -87,7 +87,7 @@ task_restore_user() {
                             #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                             error_msg "group id already in use: $SPD_GID"
                         fi
-		    fo
+		    fi
 		    cmd="useradd $params"
 		
                     if !($cmd) ; then
