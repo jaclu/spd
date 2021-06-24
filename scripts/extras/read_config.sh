@@ -72,7 +72,7 @@ read_config() {
     [ -n "$distro_family" ] &&  _read_cfg_file "$distro_family"
     [ -n "$distro" ] &&         _read_cfg_file "$distro"
     
-    _read_cfg_file settings-post-os 1
+    _read_cfg_file settings-post-os
 
     _read_cfg_file "$(hostname | sed 's/\./ /' | awk '{print $1}')"
 
