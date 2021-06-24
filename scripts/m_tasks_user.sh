@@ -55,7 +55,6 @@ task_restore_user() {
         ensure_installed shadow "Adding shadow (provides useradd & usrtmod)"
 
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
-            # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 # [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] \
                 # if find . | grep -q 'IMG[0-9]'
@@ -76,20 +75,34 @@ task_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
-                _mtu_make_available_uid_gid
-                if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
-                    #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
-                   error_msg "group id already in use: $SPD_GID"
-                fi
-		cmd="useradd -s $SPD_SHELL $SPD_UNAME"
-		[ -n "$SPD_UID" ] && cmd="$cmd -u $SPD_UID"
-		[ -n "$SPD_GID" ] && cmd="$cmd -g $SPD_GID"
+	        params="-s $SPD_SHELL $SPD_UNAME"
+		if [ -z "$SPD_UID" ] && [ -z "$SPD_GID" ]; then
+		    useradd "$params"
+		else
+                    _mtu_make_available_uid_gid
+		    [ -n "$SPD_UID" ] && params="-u $SPD_UID $params"
+		    if [ -n "$SPD_GID" ]; then
+		        params="-g $SPD_GID $params"
+		        if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
+                            #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
+                            error_msg "group id already in use: $SPD_GID"
+                        fi
+		    fo
+		    cmd="useradd $params"
 		
-                if !($cmd) ; then
-                    groupdel "$SPD_UNAME"
-                    error_msg "task_restore_user() - useradd failed to complete."
-                fi
-                msg_3 "added: $SPD_UNAME ($SPD_UID:$SPD_GID)"
+                    if !($cmd) ; then
+                        groupdel "$SPD_UNAME"
+                        error_msg "task_restore_user() - useradd failed to complete."
+                    fi
+		fi
+		msg="added: $SPD_UNAME "
+		if [ -n "$SPD_UID" ] || [ -n "$SPD_GID" ]; then
+		    msg="$msg ("
+		    [ -n "$SPD_UID" ] && msg="$msg$SPD_UID"
+		    [ -n "$SPD_GID" ] && msg="$msg:$SPD_GID"
+		    msg="$msg)"
+		fi
+                msg_3 "$msg"
                 msg_3 "shell: $SPD_SHELL"
             fi
         else
