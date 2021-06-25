@@ -43,7 +43,8 @@ fi
 
 task_runbg() { 
     verbose_msg "task_runbg($SPD_RUN_BG)"
-
+    check_abort
+    
     #
     # source dependencies if not available
     #

@@ -44,7 +44,8 @@ task_replace_some_etc_files() {
 
     msg_2 "Copying some files to /etc"
     # If the config file is not found, no action will be taken
-
+    check_abort
+    
     _tef_copy_etc_file /etc/hosts "$SPD_FILE_HOSTS"
     _tef_copy_etc_file /etc/apk/repositories "$SPD_FILE_REPOSITORIES"
     #
@@ -85,12 +86,12 @@ _tef_copy_etc_file() {
     fi
     verbose_msg "_tef_copy_etc_file($dst_file,$src_file)"
     if [ -z "$dst_file" ]; then
-        error_msg "_copy_etc_file() param 1 dst_file not supplied!"
+        error_msg "_tef_copy_etc_file() param 1 dst_file not supplied!"
     fi
     if [ -n "$src_file" ]; then
     	msg_3 "$dst_file"
         if [ ! -f "$src_file" ]; then
-            error_msg "_copy_etc_file() src_file NOT FOUND!\n$src_file"
+            error_msg "_tef_copy_etc_file() src_file NOT FOUND!\n$src_file"
         fi
     	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             cp "$src_file" "$dst_file"

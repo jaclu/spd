@@ -39,17 +39,23 @@ fi
 #  Use a short prefix unique for your module.
 #
 
-task_restore_root() {
-    check_abort
-    _expand_all_deploy_paths_restore_root
-    _update_root_shell
+task_replace_some_etc_files() {
+    _tef_expand_all_deploy_paths
 
-    msg_txt="Restoration of /root"
-    if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
-        unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" \
-                "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
-        echo
+    msg_2 "Copying some files to /etc"
+    # If the config file is not found, no action will be taken
+    check_abort
+    
+    _tef_copy_etc_file /etc/hosts "$SPD_FILE_HOSTS"
+    _tef_copy_etc_file /etc/apk/repositories "$SPD_FILE_REPOSITORIES"
+    #
+    # The AOK inittab is more complex, and does not need to be modified
+    # to enablle openrc, so we do not touch it.
+    #
+    if [ "$SPD_FILE_SYSTEM" != "AOK" ]; then
+        _tef_copy_etc_file /etc/inittab "$DEPLOY_PATH/files/inittab-default-FS"
     fi
+    echo
 }
 
 
@@ -61,44 +67,43 @@ task_restore_root() {
 #
 #=====================================================================
 
-_expand_all_deploy_paths_restore_root() {
+_tef_expand_all_deploy_paths() {
     #
     # Expanding path variables that are either absolute or relative
     # related to the deploy-path
     #
-    SPD_ROOT_HOME_TGZ=$(expand_deploy_path "$SPD_ROOT_HOME_TGZ")
+    SPD_FILE_HOSTS=$(expand_deploy_path "$SPD_FILE_HOSTS")
+    SPD_FILE_REPOSITORIES=$(expand_deploy_path "$SPD_FILE_REPOSITORIES")
 }
 
 
-_update_root_shell() {
-    SPD_ROOT_SHELL="${SPD_ROOT_SHELL:-"/bin/ash"}"
-    #pidfile="${SSHD_PIDFILE:-"/run/$RC_SVCNAME.pid"}"
-
-    if [ "$SPD_ROOT_SHELL" = "" ]; then
-        # no change requested
-        return
-    fi   
-    
-    current_shell=$(grep ^root /etc/passwd | sed 's/:/ /g'|  awk '{ print $NF }')
-    
-    if [ "$current_shell" != "$SPD_ROOT_SHELL" ]; then
-        msg_2 "Changing root shell"
-        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-            echo "Will change root shell $current_shell -> $SPD_ROOT_SHELL"
-            ensure_shell_is_installed $SPD_ROOT_SHELL
-        else
-            ensure_shell_is_installed $SPD_ROOT_SHELL
-            usermod -s $SPD_ROOT_SHELL root
-            msg_3 "new root shell: $SPD_ROOT_SHELL"
-        fi
-        echo
- 
-    elif       [ "$SPD_TASK_DISPLAY" = "1" ] \
-            && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-        msg_3 "root shell unchanged"
-        echo "$current_shell"
-        echo
+_tef_copy_etc_file() {
+    dst_file="$1"
+    src_file="$2"
+    surplus_param="$3"
+    if [ -n "$surplus_param" ]; then
+        error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!"
     fi
+    verbose_msg "_tef_copy_etc_file($dst_file,$src_file)"
+    if [ -z "$dst_file" ]; then
+        error_msg "_copy_etc_file() param 1 dst_file not supplied!"
+    fi
+    if [ -n "$src_file" ]; then
+    	msg_3 "$dst_file"
+        if [ ! -f "$src_file" ]; then
+            error_msg "_copy_etc_file() src_file NOT FOUND!\n$src_file"
+        fi
+    	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+            cp "$src_file" "$dst_file"
+   	    echo "$src_file"
+    	elif [ "$SPD_TASK_DISPLAY" = "1" ] \
+                && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+            echo "Will NOT be modified"
+    	fi
+    fi
+    unset src_file
+    unset dst_file
+    unset surplus_param
 }
 
 
@@ -119,7 +124,11 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    task_restore_root
+    _tef_expand_all_deploy_paths
+
+    [ -z "$SPD_FILE_HOSTS" ] && [ -z "$SPD_FILE_REPOSITORIES" ] \
+        && warning_msg "None of the relevant variables set, nothing will be done"
+    task_replace_some_etc_files
     #
     # Always display this final message  in standalone,
     # to indicate process terminated successfully.
@@ -130,38 +139,34 @@ _run_this() {
 
 
 _display_help() {
-    _expand_all_deploy_paths_restore_root
-    echo "task_restore_root.sh [-v] [-c] [-h]"
+    _tef_expand_all_deploy_paths
+
+    echo "m_tasks_etc_files.sh [-v] [-c] [-h]"
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
     echo
-    echo "Restores root environment. currently shell and /root content can be modified."            
-    echo "Can restore /root from a tgz file. Optional ptr to indicate if it has"
-    echo "already been unpacked."
-    echo "Normal operation is to just untar it into /root."
-    echo "SPD_ROOT_REPLACE=1 moves /root to /root-OLD (previous such removed)"
-    echo "Before unpacking."
+    echo "Some tasks to change /etc files"
+    echo
+    echo "Tasks included:"
+    echo " task_replace_some_etc_files - "
+    echo "   SPD_FILE_HOSTS will replace /etc/hots"
+    echo "   SPD_FILE_REPOSITORIES will replace /etc/apk/repositories"
+    echo "If the default /etc/inittab from iSH is detected it is replaced with one"
+    echo "where all gettys are disabled, since they arent used anyhow,"
+    echo "and openrc settings are corected. This will not happen on AOK filesystems"
+    echo "Their inittab is mostly ok"
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_ROOT_SHELL$(
-        test -z "$SPD_ROOT_SHELL" \
-        && echo '        - switch to this shell' \
-        || echo "=$SPD_ROOT_SHELL")"
-    echo "SPD_ROOT_HOME_TGZ$(
-        test -z "$SPD_ROOT_HOME_TGZ" \
-        && echo '     - unpack this into /root if found' \
-        || echo "=$SPD_ROOT_HOME_TGZ")"
-    echo
-    echo "SPD_ROOT_UNPACKED_PTR$(
-        test -z "$SPD_ROOT_UNPACKED_PTR" \
-        && echo ' - Indicates root.tgz is unpacked' \
-        || echo "=$SPD_ROOT_UNPACKED_PTR")"
-    echo "SPD_ROOT_REPLACE$(
-        test -z "$SPD_ROOT_REPLACE" \
-        && echo '      - if 1 move previous /root to /root-OLD and replace it' \
-        || echo "=$SPD_ROOT_REPLACE")"
+    echo "SPD_FILE_HOSTS$(
+        test -z "$SPD_FILE_HOSTS" \
+        && echo '        - custom /etc/hosts' \
+        || echo "=$SPD_FILE_HOSTS" )"
+    echo "SPD_FILE_REPOSITORIES$(
+        test -z "$SPD_FILE_REPOSITORIES" \
+        && echo ' - repository_file_to_use' \
+        || echo "=$SPD_FILE_REPOSITORIES" )"
     echo
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \

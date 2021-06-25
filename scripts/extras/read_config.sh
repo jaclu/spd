@@ -10,16 +10,16 @@
 #
 
 
-_local_error_msg() {
-    printf '\n\nERROR: %b\n' "$1"
-    exit 1
-}
+#_local_error_msg() {
+#    printf '\n\nERROR: %b\n' "$1"
+#    exit 1
+#}
     
 
 #
 # This should only be sourced...
 #
-[ -z "$DEPLOY_PATH" ] && _local_error_msg "Not meant to be run standalone: scripts/extras/read_config.sh"
+[ -z "$DEPLOY_PATH" ] && error_msg "Not meant to be run standalone: scripts/extras/read_config.sh"
     
 . "$DEPLOY_PATH/scripts/extras/detect_env.sh"
 
@@ -64,18 +64,20 @@ read_config() {
     # on env variables we only give the basename of the
     # config file below
     #
-    _read_cfg_file defaults
+    _read_cfg_file defaults 1
 
-    _read_cfg_file settings-pre
+    _read_cfg_file settings-pre-os
     
     [ -n "$os_type" ] &&        _read_cfg_file "$os_type"
     [ -n "$distro_family" ] &&  _read_cfg_file "$distro_family"
     [ -n "$distro" ] &&         _read_cfg_file "$distro"
     
-    _read_cfg_file settings-post  # general user settings
+    _read_cfg_file settings-post-os
 
     _read_cfg_file "$(hostname | sed 's/\./ /' | awk '{print $1}')"
 
+    _read_cfg_file settings-last
+    
     [ -n "$p_verbose" ] && echo  # Whitespace after listing config files parsed
 }
 
@@ -93,24 +95,21 @@ read_config() {
 
 _read_cfg_file() {
     cfg_file="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    must_exist="${2:-0}"
 
-    [ -z "$cfg_file" ] && _local_error_msg "_read_cfg_file() called with no param!"
+    [ -z "$cfg_file" ] && error_msg "_read_cfg_file() called with no param!"
     cfg_file="$DEPLOY_PATH/custom/config/${cfg_file}.cfg"
 
-    if [ ! -f "$cfg_file" ]; then
-	verbose_msg "NOT found: $cfg_file"
-        unset cfg_file
-	return
-    fi
-    verbose_msg "will read: $cfg_file"
-    . "$cfg_file"
-    
-    #msg_3 "After reading $cfg_file"
-    #echo "Current state of SPD_APKS_DEL:"
-    #echo "$SPD_APKS_DEL"
-    #echo
+    if [ -f "$cfg_file" ]; then
+        verbose_msg "will read: $cfg_file"
+        . "$cfg_file"
+    elif [ "$must_exist" = "1" ]; then
+	error_msg "_read_cfg_file($cfg_file) obligatory config file not found!"
+    else
+        verbose_msg "NOT found: $cfg_file"
+    fi    
     unset cfg_file
+    unset musut_exist
 }
-
 
 

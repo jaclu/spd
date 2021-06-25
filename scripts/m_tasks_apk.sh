@@ -43,8 +43,11 @@ task_apk_update() {
     msg_2 "update & fix apk index"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
-    elif ! apk update && apk fix ; then
-        error_msg "Failed to update repos - network issue?"
+    else
+	check_abort
+	if ! apk update && apk fix ; then
+            error_msg "Failed to update repos - network issue?"
+	fi
     fi
     echo
 }
@@ -55,6 +58,7 @@ task_apk_upgrade() {
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
     else
+	check_abort
         apk upgrade ||  error_msg "Failed to upgrade apks - network issue?"
     fi
     echo
@@ -69,6 +73,7 @@ task_apks_delete() {
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             echo "$SPD_APKS_DEL"
         else
+	    check_abort
             echo "$SPD_APKS_DEL"
             # TODO: fix
             # argh due to shellcheck complaining that
@@ -101,6 +106,7 @@ task_apks_add() {
         else
             # TODO: see in task_apks_delete() for description
             # about why this seems needed ATM
+	    check_abort
             cmd="apk add $SPD_APKS_ADD"
             verbose_msg "Will run: $cmd"
             $cmd || error_msg "Failed to install requested software - network issue?"
