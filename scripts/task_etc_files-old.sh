@@ -44,7 +44,8 @@ task_replace_some_etc_files() {
 
     msg_2 "Copying some files to /etc"
     # If the config file is not found, no action will be taken
-
+    check_abort
+    
     _tef_copy_etc_file /etc/hosts "$SPD_FILE_HOSTS"
     _tef_copy_etc_file /etc/apk/repositories "$SPD_FILE_REPOSITORIES"
     #

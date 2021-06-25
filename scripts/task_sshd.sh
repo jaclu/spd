@@ -70,6 +70,8 @@ task_sshd() {
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
 	           msg_3 "Will be disabled"
             else
+		check_abort
+		
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then		    
                     disable_service $service_name default
@@ -103,7 +105,8 @@ task_sshd() {
                 echo
             else
                 msg_3 "Enabeling service"
-
+		check_abort
+		
                 ensure_installed openrc
                 ensure_installed openssh
                 ensure_runlevel_default

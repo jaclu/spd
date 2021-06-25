@@ -188,6 +188,12 @@ msg_3() {
 #==========================================================
 
 
+check_abort() {
+    [ "$SPD_ABORT" != "1" ] && return
+    msg_2 "SPD_ABORT=1"
+   error_msg "This prevents any action from being taken"
+}
+
 expand_deploy_path() {
     #
     #  Path not starting with / are asumed to be relative to

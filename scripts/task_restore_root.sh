@@ -40,6 +40,7 @@ fi
 #
 
 task_restore_root() {
+    check_abort
     _expand_all_deploy_paths_restore_root
     _update_root_shell
 

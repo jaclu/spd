@@ -52,6 +52,7 @@ task_restore_user() {
         # Ensure user is created
         #
         msg_2 "$msg_txt"
+	check_abort
         ensure_installed shadow "Adding shadow (provides useradd & usrtmod)"
 
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then

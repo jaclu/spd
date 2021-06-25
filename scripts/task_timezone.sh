@@ -32,7 +32,9 @@ task_timezone() {
         msg_2 "$msg_txt"
         echo "$SPD_TIME_ZONE"
         if [ ! "$SPD_TASK_DISPLAY" = "1" ]; then
-            ensure_installed tzdata
+	    check_abort
+
+	    ensure_installed tzdata
             if [ "$tz_file" != "" ] && test -f $tz_file ; then
                 cp "$tz_file" /etc/localtime
                 # remove obsolete file
