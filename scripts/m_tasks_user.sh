@@ -68,7 +68,7 @@ task_restore_user() {
                         #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                         error_msg "group id already in use: $SPD_GID"
                     fi
-		    params="-g $SPD_GID $params";5B
+		    params="-g $SPD_GID $params"
 		fi
 		cmd="useradd $params"
 		if ! ($cmd); then
