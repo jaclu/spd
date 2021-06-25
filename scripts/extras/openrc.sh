@@ -71,7 +71,11 @@ ensure_service_is_added() {
         # activate service
         rc-update add "$srvc" "$runlevel"
     fi
-    [ "$restart" = "restart" ] && rc-service "$srvc" restart
+    if [ "$restart" = "restart" ]; then
+	msg_3 "Restarting service"
+	echo "To ensure curent config will be used"
+	rc-service "$srvc" restart
+    fi
 }
 
 
