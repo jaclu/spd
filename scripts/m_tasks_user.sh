@@ -191,6 +191,7 @@ _mtu_make_available_uid_gid() {
     fi
     if [ -z "$user_name" ] && [ -z "$group_name" ]; then
         # no change needed so we can leave
+	msg_3 "No colliding uid or gid"
         return
     fi
     msg_3 "Intended uid/gid is beeing used"
