@@ -42,8 +42,8 @@ fi
 task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
-    SPD_UID=${SPD_UID:-1000}
-    SPD_GID=${SPD_GID:-1000}
+    #SPD_UID=${SPD_UID:-1000}
+    #SPD_GID=${SPD_GID:-1000}
 
     _mtu_expand_all_deploy_paths
 
@@ -57,36 +57,33 @@ task_restore_user() {
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                # [ -n "$(grep "x:$SPD_UID:" /etc/passwd)" ] \
-                # if find . | grep -q 'IMG[0-9]'
-
-                # grep -q "$SPD_UID:$SPD_GID" /etc/passwd \
-                #     && error_msg "uid:group already used in /etc/passwd"
-                # grep -q "$SPD_UID:" /etc/passwd \
-                #     && error_msg "uid:$SPD_UID already used in /etc/passwd"
-                # grep -q ":$SPD_GID:" /etc/group \
-                #     && error_msg "gid:$SPD_GID already used in /etc/group"
-
-                # Splitting long param on multiple lines
-                msg_3 "$(
-                    printf "Will be created as %s:x:" "$SPD_UNAME"
-                    echo "$SPD_UID:$SPD_GID::/home/$SPD_UNAME:$SPD_SHELL"
-                    )"
-
+                msg_3 "Will be created"
                 msg_3 "shell: $SPD_SHELL"
                 ensure_shell_is_installed "$SPD_SHELL"
             else
                 _mtu_make_available_uid_gid
-                if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
-                    #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
-                   error_msg "group id already in use: $SPD_GID"
-                fi
-                if ! (useradd -u "$SPD_UID" -g "$SPD_GID" -G wheel -m \
-                              -s "$SPD_SHELL" "$SPD_UNAME") ; then
+		params="-G wheel -s $SPD_SHELL $SPD_UNAME"
+		[ -n "$SPD_UID" ] && params="-u $SPD_UID $params"
+		if [ -n "$SPD_GID" ]; then
+                    if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
+                        #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
+                        error_msg "group id already in use: $SPD_GID"
+                    fi
+		    params="-g $SPD_GID $params";5B
+		fi
+		cmd="useradd $params"
+		if ! ($cmd); then
                     groupdel "$SPD_UNAME"
                     error_msg "task_restore_user() - useradd failed to complete."
                 fi
-                msg_3 "added: $SPD_UNAME ($SPD_UID:$SPD_GID)"
+		msg="added: $SPD_UNAME"
+		if [ -n "$SPD_UID" ] || [ -n "$SPD_GID" ]; then
+		    msg="$msg ("
+		    [ -n "$SPD_UID" ] && msg="$msg$SPD_UID"
+		    [ -n "$SPD_GID" ] && msg="$msg:$SPD_GID"
+		    msg="$msg)"
+		fi
+		msg_3 "$msg"
                 msg_3 "shell: $SPD_SHELL"
             fi
         else
@@ -124,6 +121,8 @@ task_restore_user() {
                     usermod -s "$SPD_SHELL" "$SPD_UNAME"
                     echo "new shell: $SPD_SHELL"
                 fi
+	    else
+	        echo "$current_shell"
             fi
         fi
         echo
@@ -182,11 +181,15 @@ _mtu_expand_all_deploy_paths() {
 #  an available pair and print out warning
 #
 _mtu_make_available_uid_gid() {
-
-    user_name=$(sed 's/:/ /g' /etc/passwd | awk '{print $1 " " $3}' | \
-                grep "$SPD_UID" | awk '{print $1}')
-    group_name=$(grep "$SPD_GID" /etc/group | sed 's/:/ /' | \
-                 awk '{print $1}')
+    [ -z "$SPD_UID" ] && [ -z "$SPD_GID" ] && return
+    if [ -n "$SPD_UID" ]; then
+        user_name=$(sed 's/:/ /g' /etc/passwd | awk '{print $1 " " $3}' | \
+                    grep "$SPD_UID" | awk '{print $1}')
+    fi
+    if [ -n "$SPD_GID" ]; then
+        group_name=$(grep "$SPD_GID" /etc/group | sed 's/:/ /' | \
+                     awk '{print $1}')
+    fi
     if [ -z "$user_name" ] && [ -z "$group_name" ]; then
         # no change needed so we can leave
         return
@@ -219,7 +222,6 @@ _mtu_make_available_uid_gid() {
     test -f /var/mail/"$user_name" && \
         chown "$user_name":"$user_name" /var/mail/"$user_name" -R
  }
-
 
 
 #=====================================================================
