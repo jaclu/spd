@@ -42,8 +42,6 @@ fi
 task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
     SPD_SHELL=${SPD_SHELL:-/bin/ash}
-    #SPD_UID=${SPD_UID:-1000}
-    #SPD_GID=${SPD_GID:-1000}
 
     _mtu_expand_all_deploy_paths
 
@@ -63,7 +61,7 @@ task_restore_user() {
                 ensure_shell_is_installed "$SPD_SHELL"
             else
                 _mtu_make_available_uid_gid
-		params="-G wheel -s $SPD_SHELL $SPD_UNAME"
+		params="-m -G wheel -s $SPD_SHELL $SPD_UNAME"
 		[ -n "$SPD_UID" ] && params="-u $SPD_UID $params"
 		if [ -n "$SPD_GID" ]; then
                     if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
