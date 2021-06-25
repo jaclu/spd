@@ -205,13 +205,21 @@ _mtu_make_available_uid_gid() {
     # If no ids were in the 1xxx range nothing was found, so pick 1000
     test -z "$id_available" && id_available=1000
 
+    chown_home=0
     if test -n "$user_name" ; then
         echo "Changing uid for $user_name into $id_available"
         usermod -u "$id_available" "$user_name"
+	chown_home=1
     fi
     if test -n "$group_name" ; then
         echo "Changing gid for $user_name into $id_available"
         groupmod -g "$id_available" "$group_name"
+	chown_home=1
+    fi
+    if [ "$chown_home" = 1 ]; then
+	msg_3 "changing home ownership"
+	echo "/home/$user_name -> $id_available:$id_available"
+	chown "$id_available":"$id_available" /home/"$user_name"
     fi
     #
     # Even if the GID of the offending user wasnt the offending GID
