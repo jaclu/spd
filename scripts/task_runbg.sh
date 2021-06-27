@@ -191,6 +191,7 @@ _display_help() {
         test -z "$SPD_DISPLAY_NON_TASKS" \
         && echo ' - if 1 will show what will NOT happen' \
         || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo
 }
 
 
