@@ -38,11 +38,7 @@ ensure_runlevel_default() {
     verbose_msg "ensure_runlevel_default()"
     
     ensure_installed openrc
-    
-    #_patch_rc_cgroup_sh
-    #_remove_problematic_services
-
-    
+       
     if [ "$(rc-status -r)" != "default" ]; then
         rc_runlevel=default
         msg_2 "Setting runlevel $rc_runlevel"
@@ -107,7 +103,7 @@ disable_service() {
 #
 #==========================================================
 
-_problematic_service_hwdrivers() {
+_NOT_problematic_service_hwdrivers() {
     if [ "$SPD_FILE_SYSTEM" = "AOK" ]; then
         # AOK fs version of this service no longer displays warnings
         return
@@ -142,7 +138,7 @@ _problematic_service_hwdrivers() {
 # Needs to be run as root, but since this script already has that
 # requirement it should be fine.
 #
-_patch_rc_cgroup_sh() {
+_NOT_patch_rc_cgroup_sh() {
     fname=/lib/rc/sh/rc-cgroup.sh
     fn_backup=${fname}.org
 
