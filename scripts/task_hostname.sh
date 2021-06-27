@@ -39,27 +39,70 @@ fi
 #  Use a short prefix unique for your module.
 #
 
+_th_alternate_hostname_bin_source=files/extra_bins/hostname
+_th_alternate_hostname_bin_destination=/usr/local/bin/hostname
+_th_hostname_file=/etc/hostname
+
 task_hostname() {
     msg_2 "Setting hostname if this is not AOK"
 
+     _th_expand_all_deploy_paths     
+    [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
+    _th_setup_env
+
     if [ -d "/AOK" ]; then 
-        echo "this is an AOK filesystem"
-	echo
-        return
+        msg_3 "AOK filesystem, hostname good as is"
+    else
+        _th_alternate_host_name
     fi
-    
-    _th_hostname="$(hostname)"
-    if [ -n "$(echo $_th_hostname | grep '-i')"  ]; then
-        echo "hostname is already $_th_hostname"
-	echo
-	return
-    fi
-    
-    hostname "$(hostname)-i"
-    echo "hostname is now: $(hostname)"
     echo
 }
 
+
+
+#=====================================================================
+#
+#   Internals, start with _ to make it obvious they should not be
+#   called by other modules.
+#
+#=====================================================================
+
+_th_expand_all_deploy_paths() {
+    _th_alternate_hostname_bin_source=$(expand_deploy_path "$_th_alternate_hostname_bin_source")
+}
+
+
+_th_setup_env() {
+    if [ "$SPD_TASK_DISPLAY" != 1 ]; then
+        if [ ! -f "$SPD_HOSTNAME_BIN" ]; then
+            echo "Copying custom hostname binary to $SPD_HOSTNAME_BIN"
+            cp "$_th_alternate_hostname_bin_source"  "$SPD_HOSTNAME_BIN"
+        fi
+        if [ ! -f "$_th_hostname_file" ] || [ "$(echo $_th_hostname_file)" = 'localhost' ]; then
+	    echo "Setting default content for $_th_hostname_file"
+	    echo "$(/bin/hostname)" >  "$_th_hostname_file"
+        fi
+    fi
+}
+
+
+_th_alternate_host_name() {
+    current_hostname="$(hostname)"
+    new_hostname="$(/bin/hostname)-i"
+    if [ -n "$(echo $current_hostname | grep '\-i')" ]; then
+        echo "hostname was already $current_hostname"
+    else
+        if [ "$SPD_TASK_DISPLAY" = 1 ]; then
+            echo "hostname will be changed into $new_hostname"
+        else
+	    [ ! -x "$SPD_HOSTNAME_BIN" ] && error_msg "SPD_HOSTNAME_BIN not executable, aborting"
+            echo  "$new_hostname" > "$_th_hostname_file"
+            msg_3 "hostname: $(hostname)"
+        fi
+    fi
+    unset current_hostname
+    unset new_hostname
+}
 
 
 #=====================================================================
@@ -101,17 +144,26 @@ _display_help() {
     echo
     echo "Give non AOK filesystem hostname suffix -i to make it more obvious"
     echo "to indicate a default iSH filesystem."
+    echo "Since hostname can't be changed inside iSH, we set /etc/hostname to the"
+    echo "desired name and use a custom hostname binary to display this instead."
     echo
     echo "Env paramas"
     echo "-----------"
+    echo "SPD_HOSTNAME_BIN$(
+        test -z "$SPD_HOSTNAME_BIN" \
+	&& echo ' -' \
+	&& echo '  Location of binary acting as hostname replacement (reading /etc/hostname)' \
+	&& echo "  defaults to $_th_alternate_hostname_bin_destination." \
+	&& echo '  This needs to be before /bin in your PATH! You also need to change your' \
+	&& echo '  prompt to use $(hostname) instead of \h "' \
+	&& echo '  In order for this alternate hostname version to be used.' \
+	&& echo ' ' \
+        || echo "=$SPD_HOSTNAME_BIN")"
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
-        && echo '      - if 1 will only display what will be done' \
+        && echo ' - if 1 will only display what will be done' \
         || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(
-        test -z "$SPD_DISPLAY_NON_TASKS" \
-        && echo ' - if 1 will show what will NOT happen' \
-        || echo "=$SPD_DISPLAY_NON_TASKS")"
+    echo
 }
 
 
