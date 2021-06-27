@@ -103,13 +103,14 @@ parse_command_line $@
 . "$DEPLOY_PATH/scripts/extras/read_config.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
 . "$DEPLOY_PATH/scripts/task_etc_files.sh"
-. "$DEPLOY_PATH/scripts/task_runbg.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
-. "$DEPLOY_PATH/scripts/task_timezone.sh"
-. "$DEPLOY_PATH/scripts/task_sshd.sh"
 . "$DEPLOY_PATH/scripts/task_do_extra.sh"
+. "$DEPLOY_PATH/scripts/task_hostname.sh"
 . "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
+. "$DEPLOY_PATH/scripts/task_timezone.sh"
 . "$DEPLOY_PATH/scripts/task_restore_root.sh"
+. "$DEPLOY_PATH/scripts/task_runbg.sh"
+. "$DEPLOY_PATH/scripts/task_sshd.sh"
 
 read_config
 
@@ -156,6 +157,8 @@ run_tasks() {
     # It is probably not a good idea to reshuffle their order too much
     # some of them depend on previous tasks
     #
+    task_hostname
+    
     task_replace_some_etc_files
 
     # Do this early, so no risk of installation issues
