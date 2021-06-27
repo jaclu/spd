@@ -39,19 +39,18 @@ fi
 #  Use a short prefix unique for your module.
 #
 
-_th_alternate_hostname_bin_source=files/extra_bins/hostname
-_th_alternate_hostname_bin_destination=/usr/local/bin/hostname
-_th_hostname_file=/etc/hostname
-
 task_hostname() {
+    [ "$SPD_HOSTNAME_SET" != "1" ] && return # skip this task requested
+    
     msg_2 "Setting hostname if this is not AOK"
-
+    
      _th_expand_all_deploy_paths     
     [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
     _th_setup_env
 
     if [ -d "/AOK" ]; then 
-        msg_3 "AOK filesystem, hostname good as is"
+        msg_3 "AOK filesystem"
+	echo "hostname will not be altered."
     else
         _th_alternate_host_name
     fi
@@ -78,9 +77,9 @@ _th_setup_env() {
             echo "Copying custom hostname binary to $SPD_HOSTNAME_BIN"
             cp "$_th_alternate_hostname_bin_source"  "$SPD_HOSTNAME_BIN"
         fi
-        if [ ! -f "$_th_hostname_file" ] || [ "$(echo $_th_hostname_file)" = 'localhost' ]; then
-	    echo "Setting default content for $_th_hostname_file"
-	    echo "$(/bin/hostname)" >  "$_th_hostname_file"
+        if [ ! -f /etc/hostname ] || [ "$(cat /etc/hostname)" = 'localhost' ]; then
+	    echo "Setting default content for /etc/hostname"
+	    echo "$(/bin/hostname)" >  /etc/hostname
         fi
     fi
 }
@@ -89,16 +88,12 @@ _th_setup_env() {
 _th_alternate_host_name() {
     current_hostname="$(hostname)"
     new_hostname="$(/bin/hostname)-i"
-    if [ -n "$(echo $current_hostname | grep '\-i')" ]; then
-        echo "hostname was already $current_hostname"
+    if [ "$SPD_TASK_DISPLAY" = 1 ]; then
+        echo "hostname will be changed into $new_hostname"
     else
-        if [ "$SPD_TASK_DISPLAY" = 1 ]; then
-            echo "hostname will be changed into $new_hostname"
-        else
-	    [ ! -x "$SPD_HOSTNAME_BIN" ] && error_msg "SPD_HOSTNAME_BIN not executable, aborting"
-            echo  "$new_hostname" > "$_th_hostname_file"
-            msg_3 "hostname: $(hostname)"
-        fi
+        [ ! -x "$SPD_HOSTNAME_BIN" ] && error_msg "SPD_HOSTNAME_BIN not executable, aborting"
+        echo  "$new_hostname" > /etc/hostname
+        msg_3 "hostname: $(hostname)"
     fi
     unset current_hostname
     unset new_hostname
@@ -159,9 +154,14 @@ _display_help() {
 	&& echo '  In order for this alternate hostname version to be used.' \
 	&& echo ' ' \
         || echo "=$SPD_HOSTNAME_BIN")"
+    echo "SPD_HOSTNAME_SET$(
+        test -z "$SPD_HOSTNAME_SET" \
+        && echo ' - if not 1 this task will be skipped, and no hostname related steps will be taken.' \
+        || echo "=$SPD_HOSTNAME_SET")"
+	
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
-        && echo ' - if 1 will only display what will be done' \
+        && echo '  - if 1 will only display what will be done' \
         || echo "=$SPD_TASK_DISPLAY")"
     echo
 }
@@ -173,6 +173,12 @@ _display_help() {
 #     main
 #
 #=====================================================================
+
+#
+# Some defaults
+#
+_th_alternate_hostname_bin_source=files/extra_bins/hostname
+_th_alternate_hostname_bin_destination=/usr/local/bin/hostname
 
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
