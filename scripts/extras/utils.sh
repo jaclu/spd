@@ -230,8 +230,9 @@ ensure_installed() {
     ret_val=0
     test -z "$pkg" && error_msg "ensure_installed() called with no param!"
     test -z "$msg" && msg="Installing dependency $pkg"
+    [ -z "$(apk info -e "$pkg")" ] && msg_3 "$msg"
+    [ "$SPD_TASK_DISPLAY" = "1" ] && return
     if [ -z "$(apk info -e "$pkg")" ]; then
-        msg_3 "$msg"
         apk add "$pkg"
         ret_val=1
     fi
