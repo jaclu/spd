@@ -41,9 +41,8 @@ fi
 
 task_hostname() {
     [ "$SPD_HOSTNAME_SET" != "1" ] && return # skip this task requested
-    
-    msg_2 "Setting hostname if this is not AOK"
-    
+
+    msg_2 "Setting hostname if this is not AOK"    
      _th_expand_all_deploy_paths     
     [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
     _th_setup_env
