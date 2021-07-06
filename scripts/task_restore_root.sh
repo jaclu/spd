@@ -45,9 +45,9 @@ task_restore_root() {
     _update_root_shell
 
     if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
-        unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" \
-                "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE" \
-                "Restoration of /root"
+        unpack_home_dir "Restoration of /root" root /root \
+                "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" \
+                "$SPD_ROOT_REPLACE"
         echo
     fi
 }

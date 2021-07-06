@@ -315,12 +315,12 @@ clear_work_dir() {
 #  kept, otherwise current home-dir is emptied if extract succeeds.
 #
 unpack_home_dir() {
-    username=$1
-    home_dir=$2
-    fname_tgz=$3
-    unpacked_ptr=$4
-    save_current=$5
-    msg_txt=$6
+    msg_txt=$1
+    username=$2
+    home_dir=$3
+    fname_tgz=$4
+    unpacked_ptr=$5
+    save_current=$6
     old_home_dir="$home_dir-OLD"
 
     [ "$save_current" != "1" ] && save_current=0

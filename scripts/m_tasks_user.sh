@@ -130,9 +130,10 @@ task_restore_user() {
         # Restore user home
         #
         if [ -n "$SPD_HOME_DIR_TGZ" ]; then
-            unpack_home_dir "$SPD_UNAME" /home/"$SPD_UNAME" \
-                "$SPD_HOME_DIR_TGZ" "$SPD_HOME_DIR_UNPACKED_PTR" \
-                "Restoration of /home/$SPD_UNAME"
+            unpack_home_dir "Restoration of /home/$SPD_UNAME" "$SPD_UNAME" \
+                /home/"$SPD_UNAME" "$SPD_HOME_DIR_TGZ" \
+                "$SPD_HOME_DIR_UNPACKED_PTR"
+
         fi
     elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "Will NOT create any user"
