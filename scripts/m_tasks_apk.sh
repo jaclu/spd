@@ -87,13 +87,15 @@ task_apks_delete() {
             verbose_msg "Will run: $cmd"
             $cmd
         fi
-        echo
     elif      [ "$SPD_TASK_DISPLAY" = "1" ] \
           &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
         echo "nothing listed, no action to take"
-        echo
     fi
+    echo
+
+    unset msg_txt
+    unset msg
 }
 
 

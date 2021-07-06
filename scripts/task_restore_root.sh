@@ -44,10 +44,10 @@ task_restore_root() {
     _expand_all_deploy_paths_restore_root
     _update_root_shell
 
-    msg_txt="Restoration of /root"
     if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
-        unpack_home_dir root /root "$SPD_ROOT_HOME_TGZ" \
-                "$SPD_ROOT_UNPACKED_PTR" "$SPD_ROOT_REPLACE"
+        unpack_home_dir "Restoration of /root" root /root \
+                "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" \
+                "$SPD_ROOT_REPLACE"
         echo
     fi
 }
@@ -72,12 +72,8 @@ _expand_all_deploy_paths_restore_root() {
 
 _update_root_shell() {
     SPD_ROOT_SHELL="${SPD_ROOT_SHELL:-"/bin/ash"}"
-    #pidfile="${SSHD_PIDFILE:-"/run/$RC_SVCNAME.pid"}"
 
-    if [ "$SPD_ROOT_SHELL" = "" ]; then
-        # no change requested
-        return
-    fi   
+    [ "$SPD_ROOT_SHELL" = "" ] && return # no change requested
     
     current_shell=$(grep ^root /etc/passwd | sed 's/:/ /g'|  awk '{ print $NF }')
     
@@ -85,10 +81,10 @@ _update_root_shell() {
         msg_2 "Changing root shell"
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             echo "Will change root shell $current_shell -> $SPD_ROOT_SHELL"
-            ensure_shell_is_installed $SPD_ROOT_SHELL
+            ensure_shell_is_installed "$SPD_ROOT_SHELL"
         else
-            ensure_shell_is_installed $SPD_ROOT_SHELL
-            usermod -s $SPD_ROOT_SHELL root
+            ensure_shell_is_installed "$SPD_ROOT_SHELL"
+            usermod -s "$SPD_ROOT_SHELL" root
             msg_3 "new root shell: $SPD_ROOT_SHELL"
         fi
         echo
@@ -99,6 +95,8 @@ _update_root_shell() {
         echo "$current_shell"
         echo
     fi
+
+    unset current_shell
 }
 
 

@@ -88,7 +88,7 @@ test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PAT
 # workaround: first script running sets SPD_INITIAL_SCRIPT=1,
 # any other detecting it is set will assume to be sourced.
 #
-[ ! -z "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: restore-ish can NOT be sourced!" 1
+[ -n "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: restore-ish can NOT be sourced!" 1
 SPD_INITIAL_SCRIPT=1
 
 
@@ -99,7 +99,7 @@ SPD_INITIAL_SCRIPT=1
 #
 
 . "$DEPLOY_PATH/scripts/extras/utils.sh"
-parse_command_line $@
+parse_command_line "$@"
 . "$DEPLOY_PATH/scripts/extras/read_config.sh"
 
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
@@ -183,12 +183,12 @@ run_tasks() {
 
     task_apks_add
 
+    task_dcron
     task_restore_root
     task_nopasswd_sudo
     task_restore_user
     task_do_extra_task
     task_user_pw_reminder
-    task_dcron
 }
 
 

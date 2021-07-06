@@ -42,7 +42,7 @@ fi
 task_nopasswd_sudo() {
     msg_2 "no-pw sudo for group wheel"
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-	check_abort
+        check_abort
         ensure_installed sudo
         grep restore-ish /etc/sudoers > /dev/null
         if [ $? -eq 1 ]; then

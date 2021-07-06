@@ -58,8 +58,8 @@ task_runbg() {
     # Name of service
     #
     service_name=runbg
-    source_fname="$DEPLOY_PATH/files/services/$service_name"
     service_fname="/etc/init.d/$service_name"
+    source_fname="$DEPLOY_PATH/files/services/$service_name"
             
     if [ "$SPD_RUN_BG" = "" ]; then
         SPD_RUN_BG="0"
@@ -119,6 +119,11 @@ task_runbg() {
        *) error_msg "task_runbg($SPD_RUN_BG) invalid option, must be one of -1, 0, 1"
     esac
     echo
+
+    unset service_name
+    unset service_fname
+    unset source_fname
+    unset service_installed
 }
 
 

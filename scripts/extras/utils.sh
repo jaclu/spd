@@ -97,6 +97,8 @@ error_msg() {
     printf '\nERROR: %b\n\n' "$msg"
 
     clear_work_dir # clear tmp extract dir
+
+    # since we are exiting, no point in unseting local variables.
     exit $err_code
 }
 
@@ -119,6 +121,7 @@ verbose_msg() {
     
     [ -z "$msg" ] && error_msg "verbose_msg() with no param"
     [ "$p_verbose" = "1" ] && printf 'VERBOSE: %b\n' "$msg"
+
     unset msg
 }
 
@@ -167,6 +170,9 @@ msg_1() {
     
     unset msg
     unset max_length
+    unset pad_str
+    unset pad_length
+    unset border_line
 }
 
 
@@ -191,7 +197,7 @@ msg_3() {
 check_abort() {
     [ "$SPD_ABORT" != "1" ] && return
     msg_2 "SPD_ABORT=1"
-   error_msg "This prevents any action from being taken"
+    error_msg "This prevents any action from being taken"
 }
 
 expand_deploy_path() {
@@ -237,11 +243,12 @@ ensure_installed() {
         ret_val=1
     fi
     
-    unset pk
+    unset pkg
     unset msg
+
     if [ $ret_val -eq 1 ]; then
         unset ret_val
-	return 1
+        return 1
     fi
     unset ret_val
     return 0
@@ -263,6 +270,8 @@ ensure_shell_is_installed() {
         test -f "$SHELL_NAME" || error_msg "Shell not found: $SHELL_NAME"
         test -x "$SHELL_NAME" || error_msg "Shell not executable: $SHELL_NAME"
     fi
+
+    unset SHELL_NAME
 }
 
 
@@ -276,7 +285,7 @@ ensure_shell_is_installed() {
 clear_work_dir() {
     new_space=$1
 
-    extract_location="/tmp/restore-ish-$$"
+    extract_location="/tmp/restore-ish-$$" # based on pid
     rm $extract_location -rf 2> /dev/null
     case "$new_space" in
     
@@ -294,6 +303,7 @@ clear_work_dir() {
             exit 1
             
     esac
+
     unset new_space
 }
 
@@ -302,15 +312,17 @@ clear_work_dir() {
 #
 #  Restore $home_dir unless $unpacked_ptr points to an existing file.
 #  If $save_current is 1, curent home dir is moved to $home_dir-OLD and
-#  always restored.
+#  kept, otherwise current home-dir is emptied if extract succeeds.
 #
 unpack_home_dir() {
-    username=$1
-    home_dir=$2
-    fname_tgz=$3
-    unpacked_ptr=$4
-    save_current=$5
+    msg_txt=$1
+    username=$2
+    home_dir=$3
+    fname_tgz=$4
+    unpacked_ptr=$5
+    save_current=$6
     old_home_dir="$home_dir-OLD"
+
     [ "$save_current" != "1" ] && save_current=0
 
     # (mostly) unverified params
@@ -390,22 +402,30 @@ unpack_home_dir() {
                 msg_3 "Previous content has been moved to ${old_home_dir}"
                 mv "$username" "$home_dir"
             else
-                msg_3 "Overwriting into current $home_dir"
-                cd "$home_dir" || error_msg "Failed to cd into $home_dir"
+                msg_3 "Replacing $home_dir"
+                cd "$home_dir" || error_msg "Failed to cd to $home_dir"
                 cd ..
-                cp -a "$extract_location/$username" .
+                rm "$home_dir" -rf
+                mv "$extract_location/$username" .
             fi
             msg_3 "$home_dir restored"
             clear_work_dir  # Remove tmp directory
         fi
     fi
+
+    unset username
+    unset home_dir
+    unset fname_tgz
+    unset unpacked_ptr
+    unset save_current
+    unset old_home_dir
 }
 
 
 parse_command_line() {
     #
     # Only process cmd line for initial_script
-    #
+    # The p_ variables should not be unset!
     p_cfg=0
     p_help=0
     p_verbose=0
@@ -415,18 +435,18 @@ parse_command_line() {
                 p_help=1
                 ;;
 		
-	    "-v" | "--verbose")
-	    	p_verbose=1
-		;;
-                
-            "-c")
-	        p_cfg=1
+            "-v" | "--verbose")
+                p_verbose=1
                 ;;
                 
-	    *)
-	        echo "WARNING: Unsupported param!: [$1]"
-         esac
-         shift
+            "-c")
+                p_cfg=1
+                ;;
+                
+            *)
+                echo "WARNING: Unsupported param!: [$1]"
+        esac
+        shift
     done
     
     if [ $p_cfg -eq 1 ]; then
@@ -441,7 +461,7 @@ parse_command_line() {
     # Since nothing will be changed, and it helps testting scipts on non supported platforms. 
     #
     if [ "$SPD_TASK_DISPLAY" = "0" ] && [ $p_help = 0 ]; then
-	[ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system."
+        [ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system."
     fi    
 }
 
@@ -456,13 +476,13 @@ parse_command_line() {
 #
 #  Identify fiilesystem, some operations depend on it
 #
+# shellcheck disable=SC2034
 test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH' 
 
 
 #
 # 
 #
-
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     parse_command_line "$@"
 

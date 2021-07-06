@@ -105,6 +105,9 @@ task_dcron() {
        *) error_msg "task_dcron($SPD_DCRON) invalid option, must be one of -1, 0, 1"
     esac
     echo
+
+    unset service_name
+    unset service_installed
 }
 
 
@@ -179,7 +182,7 @@ _display_help() {
     echo "-----------"
     echo "SPD_DCRON$(
         test -z "$SPD_DCRON" \
-        && echo ' -  cron status (-1/0/1)' \
+        && echo '              -  cron status (-1/0/1)' \
         || echo "=$SPD_DCRON")"
     echo "SPD_DCRON_ROOT_CRONTAB$(
         test -z "$SPD_DCRON_ROOT_CRONTAB" \

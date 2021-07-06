@@ -60,7 +60,7 @@ ensure_service_is_added() {
     
     verbose_msg "ensure_service_is_added(srvc=$srvc, runlevel=$runlevel, restart=$restart)"
 
-        [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc"
+    [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc"
     [ "$runlevel" = "" ] && error_msg "ensure_service_is_added() called without param runlevel"
     if [ "$(rc-status -u | grep "$srvc")" != "" ]; then
         echo "assigning [$srvc] to runlvl: [$runlevel]"
@@ -68,10 +68,14 @@ ensure_service_is_added() {
         rc-update add "$srvc" "$runlevel"
     fi
     if [ "$restart" = "restart" ]; then
-	msg_3 "Restarting service"
-	echo "To ensure curent config will be used"
-	rc-service "$srvc" restart
+        msg_3 "Restarting service"
+        echo "To ensure curent config will be used"
+        rc-service "$srvc" restart
     fi
+
+    unset srvc
+    unset runlevel
+    unset restart
 }
 
 
@@ -88,9 +92,11 @@ disable_service() {
     if [ "$(rc-service -l | grep "$srvc")" != "" ]; then
         rc-service "$srvc" stop
         rc-update del "$srvc" "$rc_runlevel"
+        _orc_disable_unset
         return 0
     else
         verbose_msg "service not found, so nothing to remove"
+        _orc_disable_unset
         return 1
     fi
 }
@@ -102,6 +108,13 @@ disable_service() {
 #   Internals
 #
 #==========================================================
+
+_orc_disable_unset() {
+    # This is called from multiple point, make all the unsets in one place
+    unset srvc
+    unset runlevel
+}
+
 
 _NOT_problematic_service_hwdrivers() {
     if [ "$SPD_FILE_SYSTEM" = "AOK" ]; then
