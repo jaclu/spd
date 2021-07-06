@@ -149,7 +149,7 @@ task_restore_user() {
 
 
 task_user_pw_reminder() {
-    if [ -n "$SPD_UNAME" ] && "$(grep -q "$SPD_UNAME":\!: /etc/shadow)"; then
+    if [ -n "$SPD_UNAME" ] && grep -q "$SPD_UNAME":\!: /etc/shadow; then
         echo "+------------------------------+"
         echo "|                              |"
         echo "|  Remember to set a password  |"
