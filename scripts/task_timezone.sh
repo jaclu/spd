@@ -32,10 +32,9 @@ task_timezone() {
         msg_2 "$msg_txt"
         echo "$SPD_TIME_ZONE"
         if [ ! "$SPD_TASK_DISPLAY" = "1" ]; then
-	    check_abort
-
-	    ensure_installed tzdata
-            if [ "$tz_file" != "" ] && test -f $tz_file ; then
+            check_abort
+            ensure_installed tzdata
+            if [ "$tz_file" != "" ] && test -f "$tz_file" ; then
                 cp "$tz_file" /etc/localtime
                 # remove obsolete file
                 2> /dev/null rm /etc/timezone
@@ -45,12 +44,14 @@ task_timezone() {
                 error_msg "BAD TIMEZONE: $SPD_TIME_ZONE" 1
             fi
         fi
-        echo
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ $SPD_DISPLAY_NON_TASKS = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
         echo "Timezone ill NOT be changed"
-        echo
     fi
+    echo
+
+    unset tz_file
+    unset msg_txt
 }
 
 
@@ -95,7 +96,7 @@ _display_help() {
     echo
     echo "Env paramas"
     echo "-----------"
-    echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo =$SPD_TIME_ZONE )"
+    echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo "=$SPD_TIME_ZONE" )"
     echo
     echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
     echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"

@@ -50,7 +50,7 @@ task_restore_user() {
         # Ensure user is created
         #
         msg_2 "$msg_txt"
-	check_abort
+        check_abort
         ensure_installed shadow "Adding shadow (provides useradd & usermod)"
 
         if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
@@ -61,28 +61,28 @@ task_restore_user() {
                 ensure_shell_is_installed "$SPD_SHELL"
             else
                 _mtu_make_available_uid_gid
-		params="-m -G wheel -s $SPD_SHELL $SPD_UNAME"
-		[ -n "$SPD_UID" ] && params="-u $SPD_UID $params"
-		if [ -n "$SPD_GID" ]; then
+                params="-m -G wheel -s $SPD_SHELL $SPD_UNAME"
+                [ -n "$SPD_UID" ] && params="-u $SPD_UID $params"
+                if [ -n "$SPD_GID" ]; then
                     if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
                         #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                         error_msg "group id already in use: $SPD_GID"
                     fi
-		    params="-g $SPD_GID $params"
-		fi
-		cmd="useradd $params"
-		if ! ($cmd); then
+                    params="-g $SPD_GID $params"
+                fi
+                cmd="useradd $params"
+                if ! ($cmd); then
                     groupdel "$SPD_UNAME"
                     error_msg "task_restore_user() - useradd failed to complete."
                 fi
-		msg="added: $SPD_UNAME"
-		if [ -n "$SPD_UID" ] || [ -n "$SPD_GID" ]; then
-		    msg="$msg ("
-		    [ -n "$SPD_UID" ] && msg="$msg$SPD_UID"
-		    [ -n "$SPD_GID" ] && msg="$msg:$SPD_GID"
-		    msg="$msg)"
-		fi
-		msg_3 "$msg"
+                msg="added: $SPD_UNAME"
+                if [ -n "$SPD_UID" ] || [ -n "$SPD_GID" ]; then
+                    msg="$msg ("
+                    [ -n "$SPD_UID" ] && msg="$msg$SPD_UID"
+                    [ -n "$SPD_GID" ] && msg="$msg:$SPD_GID"
+                    msg="$msg)"
+                fi
+                msg_3 "$msg"
                 msg_3 "shell: $SPD_SHELL"
             fi
         else
@@ -120,8 +120,8 @@ task_restore_user() {
                     usermod -s "$SPD_SHELL" "$SPD_UNAME"
                     echo "new shell: $SPD_SHELL"
                 fi
-	    else
-	        echo "$current_shell"
+            else
+	           echo "$current_shell"
             fi
         fi
         echo
@@ -130,19 +130,25 @@ task_restore_user() {
         # Restore user home
         #
         if [ -n "$SPD_HOME_DIR_TGZ" ]; then
-            msg_txt="Restoration of /home/$SPD_UNAME"
             unpack_home_dir "$SPD_UNAME" /home/"$SPD_UNAME" \
-                "$SPD_HOME_DIR_TGZ" "$SPD_HOME_DIR_UNPACKED_PTR"
+                "$SPD_HOME_DIR_TGZ" "$SPD_HOME_DIR_UNPACKED_PTR" \
+                "Restoration of /home/$SPD_UNAME"
         fi
     elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "Will NOT create any user"
     fi
     echo
+
+    unset msg_txt
+    unset params
+    unset cmd
+    unset msg
+    unset current_shell
 }
 
 
 task_user_pw_reminder() {
-    if [ -n "$SPD_UNAME" ] && [ -n "$(grep "$SPD_UNAME":\!: /etc/shadow)" ]; then
+    if [ -n "$SPD_UNAME" ] && "$(grep -q "$SPD_UNAME":\!: /etc/shadow)"; then
         echo "+------------------------------+"
         echo "|                              |"
         echo "|  Remember to set a password  |"
@@ -191,7 +197,7 @@ _mtu_make_available_uid_gid() {
     fi
     if [ -z "$user_name" ] && [ -z "$group_name" ]; then
         # no change needed so we can leave
-	msg_3 "No colliding uid or gid"
+        msg_3 "No colliding uid or gid"
         return
     fi
     msg_3 "Intended uid/gid is beeing used"
@@ -200,8 +206,8 @@ _mtu_make_available_uid_gid() {
     # getting the first id free in both users and groups
     #
     id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | \
-    	            grep "^1...$" | sort -n | tail -n 1 | \
-		    awk '{ print $1+1 }')"
+        grep "^1...$" | sort -n | tail -n 1 | \
+        awk '{ print $1+1 }')"
     # If no ids were in the 1xxx range nothing was found, so pick 1000
     test -z "$id_available" && id_available=1000
 
@@ -209,17 +215,17 @@ _mtu_make_available_uid_gid() {
     if test -n "$user_name" ; then
         echo "Changing uid for $user_name into $id_available"
         usermod -u "$id_available" "$user_name"
-	chown_home=1
+        chown_home=1
     fi
     if test -n "$group_name" ; then
         echo "Changing gid for $user_name into $id_available"
         groupmod -g "$id_available" "$group_name"
-	chown_home=1
+        chown_home=1
     fi
     if [ "$chown_home" = 1 ]; then
-	msg_3 "changing home ownership"
-	echo "/home/$user_name -> $id_available:$id_available"
-	chown "$id_available":"$id_available" /home/"$user_name"
+        msg_3 "changing home ownership"
+        echo "/home/$user_name -> $id_available:$id_available"
+        chown "$id_available":"$id_available" /home/"$user_name"
     fi
     #
     # Even if the GID of the offending user wasnt the offending GID
@@ -229,6 +235,11 @@ _mtu_make_available_uid_gid() {
         chown "$user_name":"$user_name" /home/"$user_name" -R
     test -f /var/mail/"$user_name" && \
         chown "$user_name":"$user_name" /var/mail/"$user_name" -R
+
+    unset user_name
+    unset group_name
+    unset id_available
+    unset chown_home
  }
 
 

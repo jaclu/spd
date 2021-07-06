@@ -55,6 +55,7 @@ task_do_extra_task() {
 	    check_abort
             echo "Running:   $SPD_EXTRA_TASK"
             echo
+            # shellcheck disable=SC1090
             . "$SPD_EXTRA_TASK"
             echo "Completed: $SPD_EXTRA_TASK"
         fi
@@ -62,6 +63,8 @@ task_do_extra_task() {
         msg_2 "NO custom task will be run"
     fi
     echo
+
+    unset msg_txt
 }
 
 

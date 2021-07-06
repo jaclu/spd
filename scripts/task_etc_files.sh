@@ -81,28 +81,22 @@ _tef_copy_etc_file() {
     dst_file="$1"
     src_file="$2"
     surplus_param="$3"
-    if [ -n "$surplus_param" ]; then
-        error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!"
-    fi
+    [ -n "$surplus_param" ] && error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!"
     verbose_msg "_tef_copy_etc_file($dst_file,$src_file)"
-    if [ -z "$dst_file" ]; then
-        error_msg "_tef_copy_etc_file() param 1 dst_file not supplied!"
-    fi
+    [ -z "$dst_file" ] && error_msg "_tef_copy_etc_file() param 1 dst_file not supplied!"
     if [ -n "$src_file" ]; then
     	msg_3 "$dst_file"
-        if [ ! -f "$src_file" ]; then
-            error_msg "_tef_copy_etc_file() src_file NOT FOUND!\n$src_file"
-        fi
+        [ ! -f "$src_file" ] && error_msg "_tef_copy_etc_file() src_file NOT FOUND!\n$src_file"
     	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             cp "$src_file" "$dst_file"
-   	    echo "$src_file"
+            echo "$src_file"
     	elif [ "$SPD_TASK_DISPLAY" = "1" ] \
                 && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
             echo "Will NOT be modified"
     	fi
     fi
-    unset src_file
     unset dst_file
+    unset src_file
     unset surplus_param
 }
 

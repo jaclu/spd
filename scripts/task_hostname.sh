@@ -19,9 +19,9 @@ if test -z "$DEPLOY_PATH" ; then
     # files etc, so should always be set!
     #
     # First define it relative based on this scripts location
-    DEPLOY_PATH="$(dirname $0)/.."
+    DEPLOY_PATH="$(dirname "$0")/.."
     # Make it absolutized and normalized
-    DEPLOY_PATH="$( cd $DEPLOY_PATH && pwd )"
+    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
 fi
 
 
@@ -49,7 +49,7 @@ task_hostname() {
 
     if [ -d "/AOK" ]; then 
         msg_3 "AOK filesystem"
-	echo "hostname will not be altered."
+        echo "hostname will not be altered."
     else
         _th_alternate_host_name
     fi
@@ -77,15 +77,14 @@ _th_setup_env() {
             cp "$_th_alternate_hostname_bin_source"  "$SPD_HOSTNAME_BIN"
         fi
         if [ ! -f /etc/hostname ] || [ "$(cat /etc/hostname)" = 'localhost' ]; then
-	    echo "Setting default content for /etc/hostname"
-	    echo "$(/bin/hostname)" >  /etc/hostname
+            echo "Setting default content for /etc/hostname"
+            /bin/hostname >  /etc/hostname
         fi
     fi
 }
 
 
 _th_alternate_host_name() {
-    current_hostname="$(hostname)"
     new_hostname="$(/bin/hostname)-i"
     if [ "$SPD_TASK_DISPLAY" = 1 ]; then
         echo "hostname will be changed into $new_hostname"
@@ -94,7 +93,6 @@ _th_alternate_host_name() {
         echo  "$new_hostname" > /etc/hostname
         msg_3 "hostname: $(hostname)"
     fi
-    unset current_hostname
     unset new_hostname
 }
 
@@ -144,13 +142,13 @@ _display_help() {
     echo "Env paramas"
     echo "-----------"
     echo "SPD_HOSTNAME_BIN$(
-        test -z "$SPD_HOSTNAME_BIN" \
+    test -z "$SPD_HOSTNAME_BIN" \
 	&& echo ' -' \
 	&& echo '  Location of binary acting as hostname replacement (reading /etc/hostname)' \
 	&& echo "  defaults to $_th_alternate_hostname_bin_destination." \
-	&& echo '  This needs to be before /bin in your PATH! You also need to change your' \
-	&& echo '  prompt to use $(hostname) instead of \h "' \
-	&& echo '  In order for this alternate hostname version to be used.' \
+	&& echo '  This needs to be before /bin in your PATH!' \
+	&& echo "  You also need to change your prompt to use $(hostname) instead of \h " \
+	&& echo '  In order for this alternate hostname version to be prompt displayed.' \
 	&& echo ' ' \
         || echo "=$SPD_HOSTNAME_BIN")"
     echo "SPD_HOSTNAME_SET$(
@@ -160,7 +158,7 @@ _display_help() {
 	
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
-        && echo '  - if 1 will only display what will be done' \
+        && echo ' - if 1 will only display what will be done' \
         || echo "=$SPD_TASK_DISPLAY")"
     echo
 }

@@ -16,7 +16,7 @@
 
 
 #
-#  diable if unset
+#  disable if unset
 #
 [ -z ${p_verbose+x} ] && p_verbose=0
 
@@ -53,15 +53,15 @@ distro_MacOS='MacOS'
 case "$(uname)" in
     "$os_type_Linux")
         os_type=$os_type_Linux
-    	if [ "$(uname -r | grep ish)" != "" ]; then
-	    distro_family=$distro_family_ish
-	    if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
-	        distro=$distro_ish_AOK
-	    else
-	    	distro=$distro_ish
-	    fi
-	#elif [ "$(uname -r) | grep ish" != "" ]; then
-	fi
+		if [ "$(uname -r | grep ish)" != "" ]; then
+			distro_family=$distro_family_ish
+			if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
+				distro=$distro_ish_AOK
+			else
+				distro=$distro_ish
+			fi
+			#elif [ "$(uname -r) | grep ish" != "" ]; then
+		fi
     	;;
 	
     "$os_type_Darwin")

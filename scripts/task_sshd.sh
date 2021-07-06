@@ -56,7 +56,6 @@ task_sshd() {
     # Name of service
     #
     service_name=sshd
-    service_fname="/etc/init.d/$service_name"
 
     if [ -z "$SPD_SSHD_SERVICE" ]; then
         SPD_SSHD_SERVICE="0"
@@ -70,8 +69,7 @@ task_sshd() {
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
 	           msg_3 "Will be disabled"
             else
-		check_abort
-		
+                check_abort
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then		    
                     disable_service $service_name default
@@ -96,21 +94,18 @@ task_sshd() {
         
         "1" )  # activate 
             _ts_task_label
-            if [ "$SPD_SSHD_PORT" = "" ]; then
-                error_msg "Invalid setting: SPD_SSHD_PORT must be specified"
-            fi
+            [ "$SPD_SSHD_PORT" = "" ] && error_msg "Invalid setting: SPD_SSHD_PORT must be specified"
+
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
                 echo "port: $SPD_SSHD_PORT"
                 echo
             else
                 msg_3 "Enabeling service"
-		check_abort
-		
+                check_abort
                 ensure_installed openrc
                 ensure_installed openssh
                 ensure_runlevel_default
-
                 #
                 #  Preparational steps
                 #
@@ -135,6 +130,9 @@ task_sshd() {
             error_msg "Invalid setting: SPD_SSHD_SERVICE=$SPD_SSHD_SERVICE\nValid options: -1 0 1"
 
     esac
+
+    unset service_name
+    unset service_installed
 }
 
 
