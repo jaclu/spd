@@ -87,6 +87,7 @@ _th_setup_env() {
 
 _th_alternate_host_name() {
     new_hostname="$(/bin/hostname)-i"
+    msg_verbose "New hostname: $new_hostname"
     if [ "$SPD_TASK_DISPLAY" = 1 ]; then
         echo "hostname will be changed into $new_hostname"
     else
