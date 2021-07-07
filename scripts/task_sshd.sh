@@ -103,9 +103,8 @@ task_sshd() {
             else
                 msg_3 "Enabeling service"
                 check_abort
-                ensure_installed openrc
-                ensure_installed openssh
                 ensure_runlevel_default
+                ensure_installed openssh
                 #
                 #  Preparational steps
                 #

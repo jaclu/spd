@@ -72,6 +72,7 @@ task_runbg() {
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
 	           msg_3 "Will be disabled"
             else
+                check_abort
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then		    
                     disable_service $service_name default
@@ -97,8 +98,8 @@ task_runbg() {
                 msg_3 "Will be enabled"
             else
                 msg_3 "Enabeling service"
+                check_abort
 
-                ensure_installed openrc
                 ensure_runlevel_default
 
                 #diff "$source_fname" "$service_fname" > /dev/null 2>&1

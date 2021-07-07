@@ -52,7 +52,7 @@ task_do_extra_task() {
         test -f "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not found"
         test -x "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not executable"
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-	    check_abort
+            check_abort
             echo "Running:   $SPD_EXTRA_TASK"
             echo
             # shellcheck disable=SC1090
