@@ -1,16 +1,16 @@
 #!/bin/sh
 # ^^^ just a helper for editttors
 #
-#   sourced, so variables / functions in restore-ish can be used.
+#   sourced, so variables / functions can be used.
 #
 #   This is just a sample, comment out or replacee to fit your needs.
 #
 
 
 #
-#   Verifies IT_UNAME has been set, use if the username is needed in the tasks below
+#   Verifies SPD_UNAME has been set, use if the username is needed in the tasks below
 #
-[ "$IT_UNAME" = "" ] && error_msg "This additonal-restore-tasks can not run without a IT_UNAME set!" 1
+[ -z "$SPD_UNAME" ] && error_msg "This additonal-restore-tasks can not run without a SPD_UNAME set!" 1
 
 
 #
@@ -23,16 +23,16 @@ echo
 
 
 #
-#   Run additional-as-$IT_UNAME script, if found
+#   Run additional-as-$SPD_UNAME script, if found
 #
-my_additional_stuff=$DEPLOY_PATH/custom/additional-as-$IT_UNAME
+my_additional_stuff=$DEPLOY_PATH/custom/additional-as-$SPD_UNAME
 if ! test -f "$my_additional_stuff" ; then
     error_msg "Not found: $my_additional_stuff"
 elif test -x "$my_additional_stuff" ; then
     msg_1 "user-based extra script"
     echo "Runnig:    $my_additional_stuff"
     echo
-    /bin/su -c "$my_additional_stuff" - "$IT_UNAME"
+    /bin/su -c "$my_additional_stuff" - "$SPD_UNAME"
     echo "Completed: $my_additional_stuff"
 else
     error_msg "$my_additional_stuff is not a runable script!"

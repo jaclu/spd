@@ -1,0 +1,29 @@
+#!/bin/sh
+
+#
+# Simulating the ish output style, since this is not sourced
+#
+function msg_2() {
+    local msg=$1
+
+    echo "=== $msg ==="
+}
+
+function msg_3() {
+    local msg=$1
+
+    echo "--- $msg ---"
+}
+
+
+msg_2 "Softlinking ~/cloud"
+dest=$1
+[ "$dest" = "" ] && dest="$HOME"
+
+if ! cd "$dest"; then
+    echo "Failed to cd to $dest"
+    exit 1
+fi
+
+ln -sf /iCloud/cloud .
+echo
