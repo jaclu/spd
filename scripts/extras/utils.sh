@@ -449,6 +449,12 @@ parse_command_line() {
         shift
     done
     
+    #
+    # This will not happen by default when run as bin/restore-ish.sh!
+    # So in that file read_config.sh is sourced directly.
+    # If you were to run bin/restore-ish.sh with -c nothing bad happens,
+    # the configs will just be parsed twice
+    #
     if [ $p_cfg -eq 1 ]; then
     	. "$DEPLOY_PATH/scripts/extras/read_config.sh"
     	read_config

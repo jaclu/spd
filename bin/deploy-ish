@@ -99,8 +99,8 @@ SPD_INITIAL_SCRIPT=1
 #
 
 . "$DEPLOY_PATH/scripts/extras/utils.sh"
-parse_command_line "$@"
 . "$DEPLOY_PATH/scripts/extras/read_config.sh"
+
 
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
@@ -114,8 +114,10 @@ parse_command_line "$@"
 . "$DEPLOY_PATH/scripts/task_runbg.sh"
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
 
-read_config
 
+parse_command_line "$@"
+# Since in most cases this wasn't run with -c, ensure configs are parsed
+read_config
 
 
 
@@ -150,8 +152,8 @@ not_task_aok_tweaks() {
 #==========================================================
 
 #
-# If SPD_TASK_DISPLAY=1 then what will be done is displayed
-# otherwise the tasks are performed
+# If SPD_TASK_DISPLAY=1 then what will be done is displayed and no actions
+# are taken,  otherwise the tasks are performed
 #
 run_tasks() {
     #
@@ -171,18 +173,14 @@ run_tasks() {
     # during deploy.
     task_runbg
 
-    task_timezone
-    
     # do before upgrade to avoid time waste of upgrading
     # only to then remove it
     task_apks_delete
 
     task_apk_upgrade
-
-    task_sshd
-
     task_apks_add
-
+    task_timezone
+    task_sshd
     task_dcron
     task_restore_root
     task_nopasswd_sudo
@@ -206,7 +204,7 @@ if false; then
     	task_sshd
     }
     # no need to wait if you are testing tasks...
-    wait_after_summary=5
+    wait_after_summary=0
 else
     # Normal operation
     wait_after_summary=5
@@ -235,11 +233,12 @@ if [ "$p_help" = "1" ]; then
     exit 0
 fi    
 
+
+echo
+echo "Waiting $wait_after_summary secs, in case you want to abort..."
 echo
 echo "Press Ctrl-C if you want to have more time"
 echo "to observe the changes that will be done."
-echo
-echo "Waiting $wait_after_summary secs, in case you want to abort..."
 echo
 sleep $wait_after_summary
 
