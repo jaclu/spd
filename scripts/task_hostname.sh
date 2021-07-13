@@ -149,7 +149,7 @@ _display_help() {
 	&& echo '  Location of binary acting as hostname replacement (reading /etc/hostname)' \
 	&& echo "  defaults to $_th_alternate_hostname_bin_destination." \
 	&& echo '  This needs to be before /bin in your PATH!' \
-	&& echo "  You also need to change your prompt to use $(hostname) instead of \h " \
+	&& echo "  You also need to change your prompt to use \$(hostname) instead of \h " \
 	&& echo '  In order for this alternate hostname version to be prompt displayed.' \
 	&& echo ' ' \
         || echo "=$SPD_HOSTNAME_BIN")"
