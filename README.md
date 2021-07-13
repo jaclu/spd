@@ -1,77 +1,77 @@
 # Simple Posix Deploy
 
+Deploying in place for simple Posix environs, where ansible and similar more advanced tools do not make much sense since getting to the point of being able to run it, would enforce a lot of painful typing
 
-Deploying in place for simple Posix environs, where ansible and similar
-more advanced tools do not make much sense since running them locally would
-depend on a fairly long list of preparational steps and runnig it remotely
-would also depend on a long list of preparational steps to get the target
-system accessable for remote admin.
+running them locally would depend on a fairly long list of preparational steps and runnig it remotely would also depend on a long list of preparational steps to get the target system accessable for remote admin.
 
-Especially since minimalistic linux/linux like devices should ideally be self
-contained and it should be possible to set them up with minimal preparations.
+Especially since minimalistic linux/linux like devices should ideally be self contained and it should be possible to set them up with minimal preparations or dependency of deployment servers.
 
-This toolset achieves this by only depending on a posix shell, and a hopefully
-small enough number of generic nix tools, that it should hopefully be able to
-run out of the box.
+This toolset achieves this by only depending on a posix shell, and a hopefully small enough number of generic nix tools, that it should hopefully be able to run out of the box.
 
-It's current primary purpose is to be used for deployments of iSH environments,
-but it should be possible to fairly easily adopt it to other systems.
+It's current primary purpose is to be used for deployments of iSH environments, but it should be possible to fairly easily adopt it to other systems.
 
-All that should be needed is to have this toolset mounted on the target system
-and run bin/deploy-ish
+All that should be needed is to have this toolset mounted on the target system and run bin/deploy-ish
 
-Configuration is located in custom/config
+## Configuration is located in custom/config
 
-1) Mount this toolset on the destination system
-2) Copy samples/config to custom/config
-3) Check the README.config in that directory and adjust configs to your
-   preferences
-4) run bin/deploy-ish
+*   Mount this toolset on the destination system
+*   Copy samples/config to custom/config
+*   Check the README.config in that directory and adjust configs to your
+    preferences
+*   run bin/deploy-ish
 
-Once the config is set up according to your preferences, redeploys will only
-require you to run bin/deploy-ish, and your iSH will be in your prefered initial
-state.
+Once the config is set up according to your preferences, redeploys will only require you to run bin/deploy-ish, and your iSH will be in your prefered initial state.
 
 
 
 bin/deploy-ish has two primary usage cases
-1) To restore a fresh install into your prefeed state
 
-2) To reset
-  - installed software
-  - services
-  - potentially setup /root dir
-  - potentially create user and initiate home dir
+1. To restore a fresh install into your prefeed state
+
+2. To reset
+    - installed software
+    - services
+    - potentially setup /root dir
+    - potentially create user and initiate home dir
   
-  Into a fresh state, it is not fully indempotent, since some tasks will be redone,
-  but it is in the sense that repeated runs wont alter anything unless
-  config changes requests so.
+It is not fully indempotent, since some tasks will be redone, but it is in the sense that repeated runs wont alter anything unless config changes requests so.
 
 
 ## Filestructure
 ### /bin 
 The main apps included in this repo.
 ### /scripts
-The modules used by restore-ish, offered in a way to make them useable in a standalone fashion.
-### /files
-This is where I store some sample files to deploy, depending on your config
-  - inittab-default-FS -> /etc/inittab
-  - repositories -> /etc/apk/repositories
-  You can use your own such files by indicating so in the config.
+The modules used by deploy-ish, offered in a way to make them useable in a standalone fashion. Run any script with param -h to get a full list of options.
 
-### /initial-apks
+### /files
+This is where I store some sample files that might be convenient to deploy, if so indicated in your config. Sample config lines refering to theese are present but not activated, to ensure no unintentional deploy happens. You can use your own such files by indicating so in your config.
+
+- etc_inittab -> /etc/inittab
+- repositories-Alpine-v3.12 -> /etc/apk/repositories
+
+- services/runbg -- See task_runbg.sh for details
+
+- extra_bins/hostname -- See task_hostname.sh for details
+
+- extra_bins/dev_null-fix -- Recreates /dev/null if it is broken
+
+
+
+  
+
+### initial-apks
 Every now and then I update theese, always check the date to see if it is fresh enough to be usefull for you.
 This directory contains lists of all apks installed out of the box generated by apk-leaves.
 This way its simple to see what is needed to get all your stuff, and what you might want to remove in your restore procedure.
-### /samples
-- config  should be copied into /custom/config
-- additional-restore-tasks A sample of a script that does some additional stuff
-- additional-as-user       A sample of a script that is run as a user by the
-                           supplied additional-restore-tasks
+### samples
+- config -- should be copied into custom/config
+- additional-restore-tasks -- A sample of a script that does some additional stuff. See task_do_extra.sh for details
+- additional-as-user -- A sample of a script that is run as a user by the supplied additional-restore-tasks
 This is a subset of my extra_tasks, with any more private items filtered out :) Mostly to give you a general idea of how I use it.
-### /custom
+### custom
 Ignored by the repo, suggested location for your own local files
-### /custom/config
+### custom/config
+
 This is a hardcoded path. All other files you refer to in this file, so you can decide a good location for them if /custom does not fit your needs. Remember to store anything outside the local filesystem, in order for it to be available for other devices or after a reinstall.
 
 
