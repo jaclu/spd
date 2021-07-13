@@ -48,7 +48,7 @@ task_runbg() {
     #
     # source dependencies if not available
     #
-    if ! type 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         verbose_msg "task_runbg() needs to source openrc to satisfy dependencies"
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
