@@ -22,7 +22,7 @@ It is not fully indempotent, since some tasks will be redone, but it is in the s
 I deploy this to iCloud, this way I can use it on any of my devices, and my configs are maintained
 if I go to a new device or delete - reinstall the iSH app. Any host based differences in config I can also setup in advance.
 
-Be aware that iCloud seems to often fail to keep iOS devices in sync, so please check out the section "Annoyances of iCloud" towards the end of this document, for some suggestions. Personally I always perfom the inbound sync fix before running this tool on a fresh FS in order to ensure iCloud mount points content are up to date.
+Be aware that iCloud seems to often fail to keep iOS devices in sync, so please check out the section "Annoyances of iCloud" towards the end of this document, for some suggestions. Personally I always perfom the inbound sync fix before running this tool on a fresh FS in order to ensure the iCloud content is up to date.
 
 My procedure on a pristine iSH system (as root)
 
@@ -39,12 +39,13 @@ If I import a pristine FS and mount it, in ordeer to "get back to a clean env" t
 
 - create the mount point dir if it does not exist
 - mount the intended location
-- run `/[MountPoint]/bin/deploy-ish -h` <br>
+- run `/[MountPoint]/bin/deploy-ish` <br>
+    Make sure to hit Ctrl-C before actual deploy starts!
     This way the deploy-ish command is in the history.
 - export the FS
 - run `/[MountPoint]/bin/deploy-ish` 
 
-So when I later import this FS, all I need to do after bootup once I have a root prompt, is up-arrow, remove the -h and hit enter, and my environment will be restored with just 4 key-presses!
+So when I later import this FS, all I need to do after bootup once I have a root prompt, is up-arrow and hit enter, and my environment will be restored with just 2 key-presses!
 
 
 ## Configuration is defined in custom/config
