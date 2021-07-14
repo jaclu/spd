@@ -46,15 +46,11 @@ task_replace_some_etc_files() {
     # If the config file is not found, no action will be taken
     check_abort
     
+    [ "$SPD_TASK_DISPLAY" != "1" ] && _tef_cleanup_inittab
+
     _tef_copy_etc_file /etc/hosts "$SPD_FILE_HOSTS"
     _tef_copy_etc_file /etc/apk/repositories "$SPD_FILE_REPOSITORIES"
-    #
-    # The AOK inittab is more complex, and does not need to be modified
-    # to enablle openrc, so we do not touch it.
-    #
-    #if [ "$SPD_FILE_SYSTEM" != "AOK" ]; then
-    #    _tef_copy_etc_file /etc/inittab "$DEPLOY_PATH/files/etc_inittab"
-    #fi
+
     echo
 }
 
@@ -101,6 +97,32 @@ _tef_copy_etc_file() {
 }
 
 
+_tef_cleanup_inittab() {
+    inittab_file="/etc/inittab"
+
+    msg_3 "Cleanup of $inittab_file
+    "
+    # Since iSH has no concept of consoles getty lines are pointless
+    echo "removing getty's"
+    sed -i '/getty/d' "$inittab_file"
+
+    # Current iSH working
+    # ::sysinit:/sbin/openrc default
+
+    # AOK 16 working
+    # ::sysinit:/sbin/openrc default
+    # ::sysinit:/sbin/openrc boot
+    # ::wait:/sbin/openrc default
+
+    echo "Fixing openrc related content"
+    # Get rid of mostly non functional openrc config lines
+    sed -i '/openrc/d' "$inittab_file"
+
+    echo "::sysinit:/sbin/openrc default" > "$inittab_file"
+
+    unset $inittab_file
+}
+
 
 #=====================================================================
 #
@@ -139,6 +161,7 @@ _display_help() {
     echo "  -v  - verbose, display more progress info" 
     echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
+    echo "  -x  - Run this task, otherwise just display what would be done"
     echo
     echo "Some tasks to change /etc files"
     echo

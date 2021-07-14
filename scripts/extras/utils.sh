@@ -196,8 +196,10 @@ msg_3() {
 
 check_abort() {
     [ "$SPD_ABORT" != "1" ] && return
-    msg_2 "SPD_ABORT=1"
-    error_msg "This prevents any action from being taken"
+    if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+        msg_2 "SPD_ABORT=1"
+        error_msg "This prevents any action from being taken"
+    fi
 }
 
 expand_deploy_path() {
@@ -429,6 +431,8 @@ parse_command_line() {
     p_cfg=0
     p_help=0
     p_verbose=0
+    p_execute=0
+    SPD_TASK_DISPLAY=1
     while [ -n "$1" ]; do
         case "$1" in
             "-?" | "-h" | "--help")
@@ -442,7 +446,12 @@ parse_command_line() {
             "-c")
                 p_cfg=1
                 ;;
-                
+
+            "-x")
+                p_execute=1
+                SPD_TASK_DISPLAY=0
+                ;;
+
             *)
                 echo "WARNING: Unsupported param!: [$1]"
         esac
@@ -492,17 +501,22 @@ test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH'
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     parse_command_line "$@"
 
-    if [ $p_help = 0 ]; then
-        # if SPD_TASK_DISPLAY is 1, no actions will be taken so
-        # its safe to run regarless of plattform or privs
-        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+    #
+
+    if [ $p_help = 1 ]; then
+        _display_help
+    else
+        #
+        # Limit in what conditions script can be executed
+        # Displaying what will happen is harmelss and can run at any
+        # time.
+        #
+        if [ $p_execute = 1 ]; then
             [ "$SPD_ABORT" = "1" ] && \
                 error_msg "Detected SPD_ABORT=1  Your settings prevent this device to be modified"
             [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
             [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
         fi
         _run_this
-    else
-        _display_help
     fi
 fi
