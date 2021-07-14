@@ -53,7 +53,7 @@ task_replace_some_etc_files() {
     # to enablle openrc, so we do not touch it.
     #
     if [ "$SPD_FILE_SYSTEM" != "AOK" ]; then
-        _tef_copy_etc_file /etc/inittab "$DEPLOY_PATH/files/inittab-default-FS"
+        _tef_copy_etc_file /etc/inittab "$DEPLOY_PATH/files/etc_inittab"
     fi
     echo
 }
@@ -86,7 +86,7 @@ _tef_copy_etc_file() {
     [ -z "$dst_file" ] && error_msg "_tef_copy_etc_file() param 1 dst_file not supplied!"
     if [ -n "$src_file" ]; then
     	msg_3 "$dst_file"
-        [ ! -f "$src_file" ] && error_msg "_tef_copy_etc_file() src_file NOT FOUND!\n$src_file"
+        [ ! -f "$src_file" ] && error_msg "_tef_copy_etc_file() src_file[$src_file] NOT FOUND!\n$src_file"
     	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             cp "$src_file" "$dst_file"
             echo "$src_file"
