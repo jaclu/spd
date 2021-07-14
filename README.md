@@ -2,41 +2,72 @@
 
 
 
-Deploying in place for simple Posix environs, where ansible and similar more advanced tools do not make much sense since getting to the point of being able to run it, would enforce a lot of painful typing
-
-running them locally would depend on a fairly long list of preparational steps and runnig it remotely would also depend on a long list of preparational steps to get the target system accessable for remote admin.
+Deploying in place for simple Posix environs, where ansible and similar more advanced tools do not make much sense since getting to the point of being able to run it, would enforce a lot of painful touch typing.
 
 Especially since minimalistic linux/linux like devices should ideally be self contained and it should be possible to set them up with minimal preparations or dependency of deployment servers.
 
-This toolset achieves this by only depending on a posix shell, and a hopefully small enough number of generic nix tools, that it should hopefully be able to run out of the box.
+This toolset achieves this by only depending on a posix shell, and a small enough number of generic nix tools, that it should hopefully be able to run out of the box on anything.
 
-It's current primary purpose is to be used for deployments of iSH environments, but it should be possible to fairly easily adopt it to other systems.
+It's current primary purpose is to be used for deployments of iSH environments, so it asumes apk packaging, but it should be possible to fairly easily adopt it to other systems.
 
 All that should be needed is to have this toolset mounted on the target system and run bin/deploy-ish
 
+<br>
+
+
+# Procedure to setup your environment
+
+I deploy this to iCloud, this way I can use it on any of my devices, and my configs are maintained
+if I go to a new device or delete - reinstall the iSH app. Any host based differences in config I can also setup in advance.
+
+My procedure on a pristine iSH system (as root)
+
+- `mount -t ios . /spd` (or any other local path)
+    - Chose where this is located on your devices iCloud in the popup
+- `/spd/bin/deploy-ish`  
+  takes one to a couple of minutes, depending on how many apks you install.
+    - If user was defined, displays a reminder to set the user password if it has not been set yet.
+- Set the user password if requested to do so, following the instructions.
+- Usage once bin/deploy-ish is completed.
+    - default FS
+        - For local access, just do su - {your username}
+    - AOK FS
+        - For local access just exit the current session and login as {username} with or without password, depending on if one was set.
+    - Common for both
+        - For ssh access, asuming you have activated sshd, as soon as "sshd listening on port: xx" is displayed, you can login using the displayed port. Normally the intended user also must have a password defined.
+
+## export / import FS
+
+If I import a pristine FS and mount it, in ordeer to "get back to a clean env" the procedure is somewhat simpler, since the mount is remembered between reboots, even if the FS is replaced. The mountpoint must however exist, so I typically do a delete / install cycle every now and then:
+
+- create the mount point dir if it does not exist
+- mount the intended location
+- run `/[MountPoint]/bin/deploy-ish -h` <br>
+    This way the deploy-ish command is in the history.
+- export the FS
+- run `/[MountPoint]/bin/deploy-ish` 
+
+So when I later import this FS, all I need to do after bootup once I have a root prompt, is up-arrow, remove the -h and hit enter, and my environment will be restored with just 4 key-presses!
+
+
 ## Configuration is located in custom/config
 
- 1. Mount this toolset on the destination system
- 1. Copy samples/config to custom/config
- 1. Check the README.config in that directory and adjust configs to your preferences
- 1. run bin/deploy-ish
+ 1. Copy **samples/config** to **custom/config**
+ 1. Check the **Config.md** in that directory and adjust configs to your preferences
 
-Once the config is set up according to your preferences, redeploys will only require you to run bin/deploy-ish, and your iSH will be in your prefered initial state. If you have multiple iSH instances you want to set up slightly differently, you can use hostname to identify wich host a given config is aimed for. See **custon/config/README.cfg** for more details.
-
+Once the config is set up according to your preferences, redeploys will only require you to run 
+`bin/deploy-ish`, and your iSH will be in your prefered state. If you have multiple iSH instances you want to set up slightly differently, you can use hostname to identify wich host a given config is aimed for. See **custom/config/Config.md** for more details.
 
 
-bin/deploy-ish has two primary usage cases
 
-1. To restore a fresh install into your prefeed state
+**bin/deploy-ish** has two primary usage cases
 
-2. To reset
-   *  installed software
-   *  services
-   *  potentially setup /root dir
-   *  potentially create user and initiate home dir
+- To restore a fresh install into your prefeed state
+- To ensure any config changes are applied to this device
 
 It is not fully indempotent, since some tasks will be redone, but it is in the sense that repeated runs wont alter anything unless config changes requests so.
 
+<br>
 
 ## Filestructure
 
@@ -46,7 +77,23 @@ The main apps included in this repo.
 
 ### scripts
 
-The modules used by deploy-ish, offered in a way to make them useable in a standalone fashion. Run any script with param -h to get a full list of options.
+The actual tasks, offered in a way to make them useable in a standalone fashion. Run any script with param -h to get a full list of options and info.
+
+### samples
+
+- config -- should be copied into custom/config
+- additional-restore-tasks -- A sample of a script that does some additional stuff. See `scripts/task_do_extra.sh -h` for more info.
+- additional-as-user -- A sample of a script that is run as a user by the supplied additional-restore-tasks
+This is a subset of my extra_tasks, with any more private items filtered out :) Mostly to give you a general idea of how I use it.
+
+### custom
+
+Ignored by the repo, suggested location for your own local files
+
+### custom/config
+
+This is a hardcoded path. All other files you refer to in theese files, so you can decide a good location for them if **custom** does not fit your needs. Remember to store anything outside the local filesystem, in order for it to be available for other devices or after a reinstall.
+
 
 ### files
 
@@ -55,8 +102,6 @@ config.
 
  * etc_inittab -> /etc/inittab
  * repositories-Alpine-v3.12 -> /etc/apk/repositories
-
-hej
 
  * services/runbg -- See task_runbg.sh for details
  * extra_bins/hostname -- See task_hostname.sh for details
@@ -72,22 +117,6 @@ Every now and then I update theese, always check the date to see if it is fresh 
 This directory contains lists of all apks installed out of the box generated by apk-leaves.
 This way its simple to see what is needed to get all your stuff, and what you might want to remove in your restore procedure.
 
-### samples
-
-- config -- should be copied into custom/config
-- additional-restore-tasks -- A sample of a script that does some additional stuff. See task_do_extra.sh for details
-- additional-as-user -- A sample of a script that is run as a user by the supplied additional-restore-tasks
-This is a subset of my extra_tasks, with any more private items filtered out :) Mostly to give you a general idea of how I use it.
-
-### custom
-
-Ignored by the repo, suggested location for your own local files
-
-### custom/config
-
-This is a hardcoded path. All other files you refer to in this file, so you can decide a good location for them if /custom does not fit your needs. Remember to store anything outside the local filesystem, in order for it to be available for other devices or after a reinstall.
-
-
 ## Available tools
 
 ### bin/apk-leaves
@@ -101,90 +130,28 @@ Run with -h param to see options.
 
 ### bin/deploy-ish
 
-Restores an iSH env to include your prefered default state, mostly idempotent, so can be run repeatedly. For instance if you change a param, one of the tarballs it uses etc. Very convenient if you have multiple iSH devices to set them up to be in sync.
+Restores an iSH env to be setup according to your preferences
 
-See the header of the file for latest changes.
-
-Params and settings:
-The sample/ishTools.cfg explains all params. copy this file to 
-custom/ishTools.cfg, then it will not be touched if you update the repo.
-
-Actions taken, deppending on your config:
-- Recognizes if this is a default or a AOK filesystem.
-- If AOK FS
-  - corrects a file priv
-- Copies a few files into /etc
-  - If default FS 
-    - an /etc/inittab without unused gettys
-  - can replace /etc/hosts, so it can connect to any of your local devices by name if you dont have local DNS setup.
-  - can replace /etc/apk/repositories, defaul is to use Alpine v3.12  
-- Does apk update and apk upgrade for latest updates
-- can set time_zone
-- Can add any apks you expect to be installed
-- Can remove any apks you do not want to be installed
-- Can deploy ssh hostkeys if prepaed for this device.
-  This is a huge timesaver if you ssh into it, since otherwise after each re-install your other machines will complain that the hostkeys have changed.
-- Can ignore, set up or disable sshd, will install what is needed for sshd to run, even if you do not indicate sshd to be activated, so that you can more conveniently activate it manually later.
-- Creates a no password sudo group
-- If you have defined a root environ and request it to be installed, will untar it into place
-- If you have defined a username, creates it, adds it to the no-password group
-- If you have saved a user environ and request it to be installed, will untar it into place
-- If an extra task has been defined, run it. 
-  I use this to be have my private configs outside of this repo. I have included a sample, to give you an idea.
-- If a user was created and no password is yet defined, prints a reminder to set that users password, since otherwise you will not be able to ssh into the box.
+<br>
 
 ## Scripts
 
-I have split up restore-ish into separate modules, so that some parts of it can be run separatedly
-You can run the individual scripts with a -h param to get a summary of what it offers, and what environment variables it relies on.
-Below is a list of what is propably the parts that are most usefull as standalones.
+All procedures are separated into task scripts
 
-### task_timezone
+```
+task_XXX.sh     - single task script
+m_tasks_XXX.sh  - multiple tasks script
+```
 
-Sets time-zone, also installing all needed tools
-  
-### task_location_tracker
+Running a script with param -h will give info both about command line options, what tasks it performs, and what env variables controls its behaviour.
 
-Sets up a location_tracker service, this keeps ish running in the background right from bootup, avoiding the need for having to login to get this functionality through the login scripts.
+This means that any task can be tested standalone, to ensure its functioning as intended. This hopefully makes it easier to create additional tasks, just copy one of them, keep the boiler plate code, and you should have a new task script with minimal fuzz, just add suitable config variables, test it out and your done!
 
-### task_sshd
+Remember that any script run without -h will perform all tasks it contains based on the variables that it finds.
 
-Does all needed to set up a sshd service
+<br>
 
-### task_etc_files
-
-Deploys a custom /etc/hosts for all your non dns hosts. Deploys /etc/apk/repositories of your choosing
-
-### task_restore_root_home
-
-Populates /root from a tgz, optionally moving previous /root to /root-OLD
-
-### tasks_restore_user
-
-Creates a user, adds it to the no passwd sudo group, sets/changes shell, optionally populates home-dir from a 
-tgz
-
-### task_sudo
-
-Adds a no password sudo group
-
-
-## Procedure to restore your environment
-
-I deploy this to iCloud, this way I can use it on any of my devices
-My procedure on a pristine iSH system (as root)
-- mount -t ios . /mnt (or any other local path)
-  - Chose where this is located on your tablet / phone
-- /mnt/bin/restore-ish, takes one to a couple of minutes, depending on how many apks you install.
-  - If user was defined, displays a reminder to set the user password if it has not been set yet.
-- Set the user password if requested to do so, following the instructions.
-- Usage once restore-ish is completed.
-  - default FS
-    - For local access, just do su - {your username}
-  - AOK FS
-    - For local access just exit the current session and login as {username} with or without password, depending on if one was set.
-  - Common for both
-    - For ssh access, asuming you have activated sshd, as soon as "sshd listening on port: xx" is displayed, you can login using the displayed port and as long as the used account has a password set.
+<br>
 
 ## sshd related things to be aware of
 

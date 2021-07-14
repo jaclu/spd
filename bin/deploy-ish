@@ -3,7 +3,10 @@
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
 # License: MIT
 #
-# Version: 0.4.0 2021-04-30
+# Version: 0.4.1 2021-07-14
+#                Cleanup of this script, ensured more consistent cross references
+#                in documentation to other parts of codebase
+#          0.4.0 2021-04-30
 #                Reworked tasks into separate scripts, so that others can isolate
 #                parts of this more easily. Also added generic service handling.
 #                first call: ensure_runlevel_default
@@ -118,30 +121,6 @@ SPD_INITIAL_SCRIPT=1
 parse_command_line "$@"
 # Since in most cases this wasn't run with -c, ensure configs are parsed
 read_config
-
-
-
-#==========================================================
-#
-#     Tasks not moved to separate scripts
-#
-#==========================================================
-
-
-not_task_aok_tweaks() {
-    prof_dbg=/tmp/profile.debug
-
-    if [ "$SPD_FILE_SYSTEM" = "AOK" ]; then
-        msg_2 "Some AOK tweaks"
-        # If this file isnt globaly writeable, you will get errors if you login
-        # as somebody else than the first one who logged in...
-        if [ "$prof_dbg" != "" ] && test -f $prof_dbg ; then
-            msg_3 "chmod 666 $prof_dbg"
-            chmod 666 "$prof_dbg"
-        fi
-    echo
-    fi
-}
 
 
 
