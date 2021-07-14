@@ -52,9 +52,9 @@ task_replace_some_etc_files() {
     # The AOK inittab is more complex, and does not need to be modified
     # to enablle openrc, so we do not touch it.
     #
-    if [ "$SPD_FILE_SYSTEM" != "AOK" ]; then
-        _tef_copy_etc_file /etc/inittab "$DEPLOY_PATH/files/etc_inittab"
-    fi
+    #if [ "$SPD_FILE_SYSTEM" != "AOK" ]; then
+    #    _tef_copy_etc_file /etc/inittab "$DEPLOY_PATH/files/etc_inittab"
+    #fi
     echo
 }
 
