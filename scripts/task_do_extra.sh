@@ -103,35 +103,25 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    if [ -z "$SPD_EXTRA_TASK" ]; then
-        warning_msg "SPD_EXTRA_TASK not set, cant test task_do_extra_task()"
-    else
-        task_do_extra_task
-    fi
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
+    [ -z "$SPD_EXTRA_TASK" ] && error_msg \
+        "SPD_EXTRA_TASK not set, cant test task_do_extra_task()"
+    task_do_extra_task
 }
 
 
 _display_help() {
     _expand_do_extra_all_deploy_paths
     echo "task_do_extra.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
+    echo "  -c  - reads config files for params"
+    echo "  -x  - Run this task, otherwise just display what would be done"
+    echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
     echo " task_do_extra_task        - Runs user supplied script"
     echo
     echo "Runs additional script defined by SPD_EXTRA_TASK"
-    echo "Intended as part of ish-restore, not realy that meaningful"
-    echo "to run standalone."
-    echo "This is mostly for describing and testing the script"
-    echo "Script will be sourced to exiting functions and variables can be used"
+    echo "Script will be sourced so exiting functions and variables can be used"
     echo
     echo "Env paramas"
     echo "-----------"

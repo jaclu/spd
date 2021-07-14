@@ -160,27 +160,21 @@ _run_this() {
     # and debugging.
     #
     task_runbg
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
 }
 
 
 _display_help() {
     echo "task_runbg.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
-    echo
-    echo "Installs and Activates or Disables a service that monitors the iOS location"
-    echo "this ensures that iSH will continue to run in the background."
-    echo "defined by SPD_RUN_BG or command line param."
+    echo "  -c  - reads config files for params"
+    echo "  -x  - Run this task, otherwise just display what would be done"
+    echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
     echo " task_runbg"
+    echo
+    echo "Installs and Activates or Disables a service that monitors the iOS location"
+    echo "this ensures that iSH will continue to run in the background."
     echo
     echo "Env paramas"
     echo "-----------"

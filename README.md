@@ -71,11 +71,33 @@ task_XXX.sh     - single task script
 m_tasks_XXX.sh  - multiple tasks script
 ```
 
-Running a script with param -h will give info both about command line options, what tasks it performs, and what env variables controls its behaviour.
+Any task can be tested standalone, to ensure its functioning as intended. This hopefully makes it easier to examine configs and debug issues. In order to create additional task scripts, just copy one of them, keep the boiler plate code, and you should have a new task script with minimal fuzz, test it out and your done!
+Once it works as intended add the task(-s) to `bin/deploy-ish`
 
-This means that any task can be tested standalone, to ensure its functioning as intended. This hopefully makes it easier to create additional tasks, just copy one of them, keep the boiler plate code, and you should have a new task script with minimal fuzz, just add suitable config variables, test it out and your done!
+All 3 "run modes" also can use the option -c  This will read the config files, ie
 
-Remember that any script run without -h will perform all tasks it contains based on the variables that it finds.
+- [-h] display help -- For params not defined a description is printed, if the param is defined its content will be displayed
+- [no option for this mode] info about what actions will be performed
+- [-x] execute tasks
+
+
+param example usages
+
+- can be set as env variables
+
+    `SPD_TIME_ZONE=Europe/London ./task_timezone.sh -h`
+
+    To see that the param was set as intended
+
+    `SPD_TIME_ZONE=Europe/London ./task_timezone.sh -x`
+
+    To run the task with the param(-s) given
+
+- using config settings
+
+    `./task_timezone.sh -c -h`
+
+    To read config files and display what was found
 
 
 ### samples
@@ -117,7 +139,7 @@ This way its simple to see what is needed to get all your stuff, and what you mi
 
 ### bin/deploy-ish
 
-Restores an iSH env to be setup according to your preferences
+Restores an iSH env to be setup according to your configurations
 
 ### bin/apk-leaves
 
@@ -128,6 +150,8 @@ Would probably run on any Alpine system, but I havent tried.
 
 Run with -h param to see options.
 
+At least on my iPad 5th gen this takes like 10 mins to run, so be warned :)
+
 ## Annoyances of iCloud
 
 Syncing between devices is pretty flawed at the moment. Both inbound and outbound sync struggles at times.
@@ -135,10 +159,11 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
 - inbound sync -- ie items changed elsewhere.
 
     To some extent this also aplies to MacOS, but there inbound sync is less error prone, but from time to time you will need to do this action if syncing seems out of date, the procedure is the same as for iOS. It seems the only reliable way to ensure your iOS device retrieves changes from other devices is to do a full tree walk, the two methods I have found to solve this so far (from within iSH) are:
+
     - `find . > /dev/null`
     - `ls -laR . > /dev/null`
     
-    Filteing out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necesarry but you can always run the command again, this time you should see no sync issues.
+    Filteing out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necesarry but you can always run the command again for ease of mind, this time you should see no output.
     Either works, personally I ususally use `find` 
     
     - quicker to type
@@ -146,7 +171,7 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
 
 - outbound sync -- ie items changed localy.
 
-    Less error prone, but if it seems something changed on one device isn't picked up by other open Files/Finder on the device where the change has been done, if you see a cloud symbol in the iCloud entry point or in the location where the change was made, usually clicking on the changed file tends to resolve the issue and it is synced into iCloud
+    Less error prone, but if it seems something changed on one device isn't picked up by other devices, open Files/Finder on the device where the change has been done, if you see a cloud symbol in the iCloud entry point or in the location where the change was made, usually clicking on the changed file tends to resolve the issue and it is synced into iCloud.
 
 
 ## sshd related things to be aware of

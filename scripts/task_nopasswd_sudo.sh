@@ -88,26 +88,21 @@ _run_this() {
     # and debugging.
     #
     task_nopasswd_sudo
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
 }
 
 
 _display_help() {
     echo "task_nopasswd_sudo.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
+    echo "  -c  - reads config files for params"
+    echo "  -x  - Run this task, otherwise just display what would be done"
+    echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
     echo " task_nopasswd_sudo"
     echo
     echo "Installs sudo and creates a no password sudo group wheel, if it does not allready exist."
-    echo "This task has no direct params, running this will create the group."
+    echo "This task has no direct params."
     echo
     echo "Env paramas"
     echo "-----------"

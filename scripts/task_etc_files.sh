@@ -40,16 +40,17 @@ fi
 #
 
 task_replace_some_etc_files() {
+    verbose_msg "task_replace_some_etc_files()"
+
     _tef_expand_all_deploy_paths
 
-    msg_2 "Copying some files to /etc"
+    msg_2 "Doing some fixes to /etc"
     # If the config file is not found, no action will be taken
     check_abort
     
-    [ "$SPD_TASK_DISPLAY" != "1" ] && _tef_cleanup_inittab
-
-    _tef_copy_etc_file /etc/hosts "$SPD_FILE_HOSTS"
-    _tef_copy_etc_file /etc/apk/repositories "$SPD_FILE_REPOSITORIES"
+    [ -n "$SPD_FILE_HOSTS" ] &&  _tef_copy_etc_file "$SPD_FILE_HOSTS" /etc/hosts
+    [ -n "$SPD_FILE_REPOSITORIES" ] && _tef_copy_etc_file "$SPD_FILE_REPOSITORIES" /etc/apk/repositories
+    _tef_cleanup_inittab
 
     echo
 }
@@ -74,12 +75,13 @@ _tef_expand_all_deploy_paths() {
 
 
 _tef_copy_etc_file() {
-    dst_file="$1"
-    src_file="$2"
+
+    src_file="$1"
+    dst_file="$2"
     surplus_param="$3"
-    [ -n "$surplus_param" ] && error_msg "_copy_etc_file($dst_file,$src_file) more than 2 params given!"
-    verbose_msg "_tef_copy_etc_file($dst_file,$src_file)"
-    [ -z "$dst_file" ] && error_msg "_tef_copy_etc_file() param 1 dst_file not supplied!"
+
+    [ -n "$surplus_param" ] && error_msg "_copy_etc_file($src_file, $dst_file) [$surplus_param] more than 2 params given!"
+    verbose_msg "_tef_copy_etc_file($src_file, $dst_file)"
     if [ -n "$src_file" ]; then
     	msg_3 "$dst_file"
         [ ! -f "$src_file" ] && error_msg "_tef_copy_etc_file() src_file[$src_file] NOT FOUND!\n$src_file"
@@ -99,12 +101,19 @@ _tef_copy_etc_file() {
 
 _tef_cleanup_inittab() {
     inittab_file="/etc/inittab"
+    verbose_msg "_tef_cleanup_inittab()"
+    msg_3 "Cleanup of $inittab_file"
 
-    msg_3 "Cleanup of $inittab_file
-    "
     # Since iSH has no concept of consoles getty lines are pointless
-    echo "removing getty's"
-    sed -i '/getty/d' "$inittab_file"
+    if grep -q 'getty' "$inittab_file"; then
+	msg_3 "removing getty's"
+    	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+	    sed -i '/getty/d' "$inittab_file"
+            echo "done!"
+    	else
+            echo "will happen"
+       fi
+    fi
 
     # Current iSH working
     # ::sysinit:/sbin/openrc default
@@ -114,13 +123,21 @@ _tef_cleanup_inittab() {
     # ::sysinit:/sbin/openrc boot
     # ::wait:/sbin/openrc default
 
-    echo "Fixing openrc related content"
     # Get rid of mostly non functional openrc config lines
-    sed -i '/openrc/d' "$inittab_file"
+    ok_line="::sysinit:/sbin/openrc default"
+    if grep openrc "$inittab_file" | grep -q -v "$ok_line"; then
+        msg_3 "Fixing openrc related content"
+        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+            sed -i '/openrc/d' "$inittab_file"
+            echo $ok_line  >> "$inittab_file"
+            echo "done!"
+        else
+            echo "will happen"
+       fi
+    fi
 
-    echo "::sysinit:/sbin/openrc default" > "$inittab_file"
-
-    unset $inittab_file
+    unset inittab_file
+    unset ok_line
 }
 
 
@@ -132,57 +149,42 @@ _tef_cleanup_inittab() {
 #
 # In standlone mode, this will be run from See "main" part at end of
 # extras/utils.sh, it first expands parameters,
-# then either displays help or runs the task(-s)
+# then either displays help or runs run_this
 #
-
 _run_this() {
     #
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    _tef_expand_all_deploy_paths
-
     [ -z "$SPD_FILE_HOSTS" ] && [ -z "$SPD_FILE_REPOSITORIES" ] \
-        && warning_msg "None of the relevant variables set, nothing will be done"
+        && error_msg "None of the relevant variables set, nothing will be done"
     task_replace_some_etc_files
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
 }
 
 
 _display_help() {
     _tef_expand_all_deploy_paths
 
-    echo "m_tasks_etc_files.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
+    echo "task_etc_files.sh [-v] [-c] [-h]"
     echo "  -h  - Displays help about this task."
+    echo "  -c  - reads config files for params"
     echo "  -x  - Run this task, otherwise just display what would be done"
-    echo
-    echo "Some tasks to change /etc files"
+    echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
-    echo " task_replace_some_etc_files - "
-    echo "   SPD_FILE_HOSTS will replace /etc/hots"
-    echo "   SPD_FILE_REPOSITORIES will replace /etc/apk/repositories"
-    echo "If the default /etc/inittab from iSH is detected it is replaced with one"
-    echo "where all gettys are disabled, since they arent used anyhow,"
-    echo "and openrc settings are corected. This will not happen on AOK filesystems"
-    echo "Their inittab is mostly ok"
+    echo " task_replace_some_etc_files"
+    echo
+    echo "Will fix /etc/inittab, and if so requested replace some /etc files"
     echo
     echo "Env paramas"
     echo "-----------"
     echo "SPD_FILE_HOSTS$(
         test -z "$SPD_FILE_HOSTS" \
-        && echo '        - custom /etc/hosts' \
+        && echo '        - will replace /etc/hots' \
         || echo "=$SPD_FILE_HOSTS" )"
     echo "SPD_FILE_REPOSITORIES$(
         test -z "$SPD_FILE_REPOSITORIES" \
-        && echo ' - repository_file_to_use' \
+        && echo ' - will replace /etc/apk/repositories' \
         || echo "=$SPD_FILE_REPOSITORIES" )"
     echo
     echo "SPD_TASK_DISPLAY$(

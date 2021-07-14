@@ -116,22 +116,15 @@ _run_this() {
     # and debugging.
     #
     task_hostname
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
 }
 
 
 _display_help() {
-    echo "m_tasks_hostname.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
+    echo "task_hostname.sh [-v] [-c] [-h]"
     echo "  -h  - Displays help about this task."
-    echo
-    echo "Give hostname -i suffix if not AOK filesystem"
+    echo "  -c  - reads config files for params"
+    echo "  -x  - Run this task, otherwise just display what would be done"
+    echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
     echo " task_hostname"
@@ -162,6 +155,10 @@ _display_help() {
         test -z "$SPD_TASK_DISPLAY" \
         && echo ' - if 1 will only display what will be done' \
         || echo "=$SPD_TASK_DISPLAY")"
+    echo "SPD_DISPLAY_NON_TASKS$(
+        test -z "$SPD_DISPLAY_NON_TASKS" \
+        && echo ' - if 1 will show what will NOT happen' \
+        || echo "=$SPD_DISPLAY_NON_TASKS")"
     echo
 }
 

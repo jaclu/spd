@@ -271,12 +271,6 @@ _run_this() {
     else
         warning_msg "Without SPD_UNAME none of the tasks can do anything"
     fi
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
 }
 
 
@@ -284,18 +278,21 @@ _display_help() {
     _mtu_expand_all_deploy_paths
     
     echo "m_tasks_user.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
+    echo "  -c  - reads config files for params"
+    echo "  -x  - Run this task, otherwise just display what would be done"
+    echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
     echo " task_restore_user      - creates user according to env variables"
     echo " task_user_pw_reminder  - displays a reminder if no password has been set"
     echo
-    echo "Creates a new user, ensuring it will not overwrite an existing one."
+    echo "Creates a new user."
+    echo "If SPD_UID and/or SPD_GID are given, previous occupants are migrated to the"
+    echo "first available ID at or above 1000 to ensure this user gets the desired IDS"
     echo
-    echo "Env variables used"
-    echo "------------------"
+    echo "Env paramas"
+    echo "-----------"
     echo "SPD_UNAME$(
         test -z "$SPD_UNAME" && echo ' - username to ensure exists' \
         || echo "=$SPD_UNAME" )"

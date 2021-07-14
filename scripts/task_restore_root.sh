@@ -118,28 +118,21 @@ _run_this() {
     # and debugging.
     #
     task_restore_root
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
 }
 
 
 _display_help() {
     _expand_all_deploy_paths_restore_root
     echo "task_restore_root.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
+    echo "  -c  - reads config files for params"
+    echo "  -x  - Run this task, otherwise just display what would be done"
+    echo "  -v  - verbose, display more progress info"
+    echo
+    echo "Tasks included:"
+    echo " task_restore_root"
     echo
     echo "Restores root environment. currently shell and /root content can be modified."            
-    echo "Can restore /root from a tgz file. Optional ptr to indicate if it has"
-    echo "already been unpacked."
-    echo "Normal operation is to just untar it into /root."
-    echo "SPD_ROOT_REPLACE=1 moves /root to /root-OLD (previous such removed)"
-    echo "Before unpacking."
     echo
     echo "Env paramas"
     echo "-----------"

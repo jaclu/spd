@@ -73,24 +73,22 @@ _run_this() {
     # and debugging.
     #
     task_timezone
-    #
-    # Always display this final message  in standalone,
-    # to indicate process terminated successfully.
-    # And did not die in the middle of things...
-    #
-    echo "Task Completed."
 }
 
 
 _display_help() {
     echo "task_timezone.sh [-v] [-c] [-h]"
-    echo "  -v  - verbose, display more progress info" 
-    echo "  -c  - reads config files for params"
     echo "  -h  - Displays help about this task."
+    echo "  -c  - reads config files for params"
+    echo "  -x  - Run this task, otherwise just display what would be done"
+    echo "  -v  - verbose, display more progress info"
+    echo
+    echo "Tasks included:"
+    echo " task_timezone"
     echo
     echo "Sets time-zone baesed on SPD_TIME_ZONE"
     echo "Content should be in tz database format, so typically Continent/Major_City"
-    echo "or a two/three letter acronymn like UTC."
+    echo "or a two/three letter acronymn like EST."
     echo "If undefined/empty timezone will not be altered."
     echo "If time_zone is not recgonized this will abort with an error."
     echo
