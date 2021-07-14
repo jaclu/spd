@@ -140,17 +140,12 @@ run_tasks() {
     # It is probably not a good idea to reshuffle their order too much
     # some of them depend on previous tasks
     #
-    task_hostname
-    
+    task_hostname    
     task_replace_some_etc_files
 
     # Do this early, so no risk of installation issues
     # with tasks needing to install dependencies
     task_apk_update
-
-    # Run as early as possible, so that one can switch away from iSH window
-    # during deploy.
-    task_runbg
 
     # do before upgrade to avoid time waste of upgrading
     # only to then remove it
@@ -158,13 +153,22 @@ run_tasks() {
 
     task_apk_upgrade
     task_apks_add
+
+    # Run as early as possible, so that one can switch away from iSH window
+    # during deploy.
+    # It should be possible to run this directly after task_apk_update
+    # but currently it has to be run after task_apks_add, need to investigate
+    # could be some unintended dependency complicating things...
+    # work after task_apks_add
+    task_runbg
+
     task_timezone
-    task_sshd
     task_dcron
+    task_sshd
     task_restore_root
-    task_nopasswd_sudo
+    task_nopasswd_sudo # must be before task_restore_user
     task_restore_user
-    task_do_extra_task
+    task_do_extra_task # must be after task_restore_user if user dir is refered
     task_user_pw_reminder
 }
 
