@@ -1,7 +1,5 @@
 # Simple Posix Deploy
 
-
-
 Deploying in place for simple Posix environs, where ansible and similar more advanced tools do not make much sense since getting to the point of being able to run it, would enforce a lot of painful touch typing.
 
 Especially since minimalistic linux/linux like devices should ideally be self contained and it should be possible to set them up with minimal preparations or dependency of deployment servers.
@@ -10,15 +8,21 @@ This toolset achieves this by only depending on a posix shell, and a small enoug
 
 It's current primary purpose is to be used for deployments of iSH environments, so it asumes apk packaging, but it should be possible to fairly easily adopt it to other systems.
 
-All that should be needed is to have this toolset mounted on the target system and run bin/deploy-ish
+All that should be needed is to have this toolset mounted on the target system and run `bin/deploy-ish`
 
-<br>
+`bin/deploy-ish` has two primary usage cases
 
+- To restore a fresh install into your prefeed state
+- To ensure any config changes are applied to this device
+
+It is not fully indempotent, since some tasks will be redone, but it is in the sense that repeated runs wont alter anything unless config changes requests so.
 
 ### Procedure to setup your environment
 
 I deploy this to iCloud, this way I can use it on any of my devices, and my configs are maintained
 if I go to a new device or delete - reinstall the iSH app. Any host based differences in config I can also setup in advance.
+
+Be aware that iCloud seems to often fail to keep iOS devices in sync, so please check out the section "Annoyances of iCloud" towards the end of this document, for some suggestions. Personally I always perfom the inbound sync fix before running this tool on a fresh FS in order to ensure iCloud mount points content are up to date.
 
 My procedure on a pristine iSH system (as root)
 
@@ -28,13 +32,6 @@ My procedure on a pristine iSH system (as root)
   takes one to a couple of minutes, depending on how many apks you install.
     - If user was defined, displays a reminder to set the user password if it has not been set yet.
 - Set the user password if requested to do so, following the instructions.
-- Usage once bin/deploy-ish is completed.
-    - default FS
-        - For local access, just do su - {your username}
-    - AOK FS
-        - For local access just exit the current session and login as {username} with or without password, depending on if one was set.
-    - Common for both
-        - For ssh access, asuming you have activated sshd, as soon as "sshd listening on port: xx" is displayed, you can login using the displayed port. Normally the intended user also must have a password defined.
 
 ### export / import FS
 
@@ -49,27 +46,14 @@ If I import a pristine FS and mount it, in ordeer to "get back to a clean env" t
 
 So when I later import this FS, all I need to do after bootup once I have a root prompt, is up-arrow, remove the -h and hit enter, and my environment will be restored with just 4 key-presses!
 
-<br>
 
-
-## Configuration is located in custom/config
+## Configuration is defined in custom/config
 
  1. Copy **samples/config** to **custom/config**
  1. Check the **Config.md** in that directory and adjust configs to your preferences
 
 Once the config is set up according to your preferences, redeploys will only require you to run 
 `bin/deploy-ish`, and your iSH will be in your prefered state. If you have multiple iSH instances you want to set up slightly differently, you can use hostname to identify wich host a given config is aimed for. See **custom/config/Config.md** for more details.
-
-
-
-**bin/deploy-ish** has two primary usage cases
-
-- To restore a fresh install into your prefeed state
-- To ensure any config changes are applied to this device
-
-It is not fully indempotent, since some tasks will be redone, but it is in the sense that repeated runs wont alter anything unless config changes requests so.
-
-<br>
 
 ## Filestructure
 
@@ -79,7 +63,19 @@ The main apps included in this repo.
 
 ### scripts
 
-The actual tasks, offered in a way to make them useable in a standalone fashion. Run any script with param -h to get a full list of options and info.
+All procedures are separated into task scripts
+
+```
+task_XXX.sh     - single task script
+m_tasks_XXX.sh  - multiple tasks script
+```
+
+Running a script with param -h will give info both about command line options, what tasks it performs, and what env variables controls its behaviour.
+
+This means that any task can be tested standalone, to ensure its functioning as intended. This hopefully makes it easier to create additional tasks, just copy one of them, keep the boiler plate code, and you should have a new task script with minimal fuzz, just add suitable config variables, test it out and your done!
+
+Remember that any script run without -h will perform all tasks it contains based on the variables that it finds.
+
 
 ### samples
 
@@ -116,7 +112,6 @@ This directory contains lists of all apks installed out of the box generated by 
 This way its simple to see what is needed to get all your stuff, and what you might want to remove in your restore procedure.
 
 
-
 ## Available tools
 
 ### bin/deploy-ish
@@ -132,27 +127,26 @@ Would probably run on any Alpine system, but I havent tried.
 
 Run with -h param to see options.
 
-<br>
+## Annoyances of iCloud
 
+Syncing between devices is pretty flawed at the moment. Both inbound and outbound sync struggles at times.
 
+- inbound sync -- ie items changed elsewhere.
 
-## Scripts
+    To some extent this also aplies to MacOS, but there inbound sync is less error prone, but from time to time you will need to do this action if syncing seems out of date, the procedure is the same as for iOS. It seems the only reliable way to ensure your iOS device retrieves changes from other devices is to do a full tree walk, the two methods I have found to solve this so far (from within iSH) are:
+    - `find . > /dev/null`
+    - `ls -laR . > /dev/null`
+    
+    Filteing out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necesarry but you can always run the command again, this time you should see no sync issues.
+    Either works, personally I ususally use `find` 
+    
+        - quicker to type
+        - If I also want to search for some file, I can combine the two tasks
 
-All procedures are separated into task scripts
+- outbound sync -- ie items changed localy.
 
-```
-task_XXX.sh     - single task script
-m_tasks_XXX.sh  - multiple tasks script
-```
+    Less error prone, but if it seems something changed on one device isn't picked up by other open Files/Finder on the device where the change has been done, if you see a cloud symbol in the iCloud entry point or in the location where the change was made, usually clicking on the changed file tends to resolve the issue and it is synced into iCloud
 
-Running a script with param -h will give info both about command line options, what tasks it performs, and what env variables controls its behaviour.
-
-This means that any task can be tested standalone, to ensure its functioning as intended. This hopefully makes it easier to create additional tasks, just copy one of them, keep the boiler plate code, and you should have a new task script with minimal fuzz, just add suitable config variables, test it out and your done!
-
-Remember that any script run without -h will perform all tasks it contains based on the variables that it finds.
-
-
-<br>
 
 ## sshd related things to be aware of
 
