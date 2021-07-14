@@ -285,7 +285,7 @@ ensure_shell_is_installed() {
 clear_work_dir() {
     new_space=$1
 
-    extract_location="/tmp/restore-ish-$$" # based on pid
+    extract_location="/tmp/deploy-ish-$$" # based on pid
     rm $extract_location -rf 2> /dev/null
     case "$new_space" in
     
@@ -450,9 +450,9 @@ parse_command_line() {
     done
     
     #
-    # This will not happen by default when run as bin/restore-ish.sh!
+    # This will not happen by default when run as bin/deploy-ish.sh!
     # So in that file read_config.sh is sourced directly.
-    # If you were to run bin/restore-ish.sh with -c nothing bad happens,
+    # If you were to run bin/deploy-ish.sh with -c nothing bad happens,
     # the configs will just be parsed twice
     #
     if [ $p_cfg -eq 1 ]; then

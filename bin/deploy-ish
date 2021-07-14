@@ -91,7 +91,7 @@ test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PAT
 # workaround: first script running sets SPD_INITIAL_SCRIPT=1,
 # any other detecting it is set will assume to be sourced.
 #
-[ -n "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: restore-ish can NOT be sourced!" 1
+[ -n "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: deploy-ish can NOT be sourced!" 1
 SPD_INITIAL_SCRIPT=1
 
 

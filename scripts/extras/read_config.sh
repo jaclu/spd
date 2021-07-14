@@ -24,6 +24,7 @@
 . "$DEPLOY_PATH/scripts/extras/detect_env.sh"
 
 
+CONFIG_PATH="$DEPLOY_PATH/custom/config"
 
 
 #==========================================================
@@ -98,7 +99,7 @@ _read_cfg_file() {
     must_exist="${2:-0}"
 
     [ -z "$cfg_file" ] && error_msg "_read_cfg_file() called with no param!"
-    cfg_file="$DEPLOY_PATH/custom/config/${cfg_file}.cfg"
+    cfg_file="$CONFIG_PATH/${cfg_file}.cfg"
 
     if [ -f "$cfg_file" ]; then
         verbose_msg "will read: $cfg_file"

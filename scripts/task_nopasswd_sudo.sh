@@ -44,10 +44,10 @@ task_nopasswd_sudo() {
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
         check_abort
         ensure_installed sudo
-        grep restore-ish /etc/sudoers > /dev/null
+        grep deploy-ish /etc/sudoers > /dev/null
         if [ $? -eq 1 ]; then
             msg_3 "adding %wheel NOPASSWD to /etc/sudoers"
-            echo "%wheel ALL=(ALL) NOPASSWD: ALL # added by restore-ish" >> /etc/sudoers
+            echo "%wheel ALL=(ALL) NOPASSWD: ALL # added by deploy-ish" >> /etc/sudoers
         else
             msg_3 "pressent"
         fi
