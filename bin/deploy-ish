@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
-# License: MIT
+v# License: MIT
 #
 # Version: 0.4.1 2021-07-14
 #                Cleanup of this script, ensured more consistent cross references
@@ -154,17 +154,17 @@ run_tasks() {
     task_apk_upgrade
     task_apks_add
 
+    task_timezone
+    task_dcron
+    task_sshd
     # Run as early as possible, so that one can switch away from iSH window
     # during deploy.
     # It should be possible to run this directly after task_apk_update
     # but currently it has to be run after task_apks_add, need to investigate
     # could be some unintended dependency complicating things...
-    # work after task_apks_add
+    # semi work after task_apks_add
     task_runbg
 
-    task_timezone
-    task_dcron
-    task_sshd
     task_restore_root
     task_nopasswd_sudo # must be before task_restore_user
     task_restore_user
