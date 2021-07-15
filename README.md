@@ -122,7 +122,6 @@ If you really want to change it, it is defined in **scripts/extras/read_config.s
 This is where I store some sample files that might be convenient to deploy, if so indicated in your config. Sample config lines refering to theese are present but not activated, to ensure no unintentional deploy happens. You can use your own such files by indicating so in your
 config.
 
- * etc_inittab -> /etc/inittab
  * repositories-Alpine-v3.12 -> /etc/apk/repositories
  * services/runbg -- See task_runbg.sh for details
  * extra_bins/hostname -- See task_hostname.sh for details
