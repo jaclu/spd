@@ -97,7 +97,7 @@ param example usages
 
     `./task_timezone.sh -c -h`
 
-    To read config files and display what was found
+    To read config files and display what was found. Please note that config file settings override env setting!
 
 
 ### samples
