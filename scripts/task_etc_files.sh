@@ -115,27 +115,13 @@ _tef_cleanup_inittab() {
        fi
     fi
 
-    # Current iSH working
-    # ::sysinit:/sbin/openrc default
-
-    # AOK 16 working
-    # ::sysinit:/sbin/openrc default
-    # ::sysinit:/sbin/openrc boot
-    # ::wait:/sbin/openrc default
-
     # Get rid of mostly non functional openrc config lines
     ok_line="::sysinit:/sbin/openrc default"
     if grep openrc "$inittab_file" | grep -q -v "$ok_line"; then
         msg_3 "Fixing openrc related content"
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-	    echo ">> 1"
-	    wc -l /etc/inittab
             sed -i '/::sysinit/d' "$inittab_file"
-	    echo ">> 2"
-	    wc -l /etc/inittab
             sed -i '/::wait:/d' "$inittab_file"
-	    echo ">> 3"
-	    wc -l /etc/inittab
             echo $ok_line  >> "$inittab_file"
             echo "done!"
         else
