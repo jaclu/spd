@@ -128,7 +128,14 @@ _tef_cleanup_inittab() {
     if grep openrc "$inittab_file" | grep -q -v "$ok_line"; then
         msg_3 "Fixing openrc related content"
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            sed -i '/openrc/d' "$inittab_file"
+	    echo ">> 1"
+	    wc -l /etc/inittab
+            sed -i '/::sysinit/d' "$inittab_file"
+	    echo ">> 2"
+	    wc -l /etc/inittab
+            sed -i '/::wait:/d' "$inittab_file"
+	    echo ">> 3"
+	    wc -l /etc/inittab
             echo $ok_line  >> "$inittab_file"
             echo "done!"
         else
