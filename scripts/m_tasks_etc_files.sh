@@ -44,14 +44,20 @@ task_replace_some_etc_files() {
 
     _tef_expand_all_deploy_paths
 
-    msg_2 "Doing some fixes to /etc"
+    msg_2 "Replacing some files in /etc"
     # If the config file is not found, no action will be taken
     check_abort
     
     [ -n "$SPD_FILE_HOSTS" ] &&  _tef_copy_etc_file "$SPD_FILE_HOSTS" /etc/hosts
     [ -n "$SPD_FILE_REPOSITORIES" ] && _tef_copy_etc_file "$SPD_FILE_REPOSITORIES" /etc/apk/repositories
-    _tef_cleanup_inittab
+    echo
+}
 
+task_patch_etc_files() {
+    msg_2 "Patching some /etc files"
+    check_abort
+    _tef_fix_inittab
+    _tef_fix_profile  # Need to run after apt update!!
     echo
 }
 
@@ -99,14 +105,14 @@ _tef_copy_etc_file() {
 }
 
 
-_tef_cleanup_inittab() {
+_tef_fix_inittab() {
     inittab_file="/etc/inittab"
     verbose_msg "_tef_cleanup_inittab()"
-    msg_3 "Cleanup of $inittab_file"
+     msg_3 "Inspecting $inittab_file"
 
     # Since iSH has no concept of consoles getty lines are pointless
     if grep -q 'getty' "$inittab_file"; then
-	msg_3 "removing getty's"
+        msg_3 "Removing gettys"
     	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
 	    sed -i '/getty/d' "$inittab_file"
             echo "done!"
@@ -119,19 +125,47 @@ _tef_cleanup_inittab() {
     ok_line="::sysinit:/sbin/openrc default"
     if grep openrc "$inittab_file" | grep -q -v "$ok_line"; then
         msg_3 "Fixing openrc related content"
-        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            sed -i '/::sysinit/d' "$inittab_file"
-            sed -i '/::wait:/d' "$inittab_file"
-            echo $ok_line  >> "$inittab_file"
-            echo "done!"
+        if ! grep -q "$ok_line" /etc/inittab ; then
+            if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+                sed -i '/::sysinit/d' "$inittab_file"
+                sed -i '/::wait:/d' "$inittab_file"
+                echo $ok_line  >> "$inittab_file"
+                echo "done!"
+            else
+                echo "will happen"
+            fi
         else
-            echo "will happen"
-       fi
+	    echo "Patch already applied!"
+        fi
     fi
 
     unset inittab_file
     unset ok_line
 }
+
+
+_tef_fix_profile() {
+    #
+    # As of 2021-07-16 profile is updated into a state where path is reversed,
+    # by apt update. To minimize the changes, this just throws in
+    # a corrected path after this segment
+    #
+    #
+    if grep -q append_path /etc/profile ; then
+	msg_3 "Fixing /etc/profile PATH"
+	if ! grep -q "export PATH=" /etc/profile ; then
+	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+		echo "broken /etc/profile detected, will be fixed"
+	    else
+		sed -i '/^export PATH/a \\n# Fix for broken reversed append_path\nexport PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n' /etc/profile
+                echo "done!"
+	    fi
+	else
+	    echo "Patch already applied!"
+	fi
+    fi
+}
+
 
 
 #=====================================================================
@@ -152,6 +186,7 @@ _run_this() {
     [ -z "$SPD_FILE_HOSTS" ] && [ -z "$SPD_FILE_REPOSITORIES" ] \
         && error_msg "None of the relevant variables set, nothing will be done"
     task_replace_some_etc_files
+    task_patch_etc_files
 }
 
 
@@ -165,7 +200,8 @@ _display_help() {
     echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
-    echo " task_replace_some_etc_files"
+    echo " task_replace_some_etc_files  - replaces hosts and repositories if so requested"
+    echo " task_patch_etc_files         - Fixes some files with issues"
     echo
     echo "Will fix /etc/inittab, and if so requested replace some /etc files"
     echo
