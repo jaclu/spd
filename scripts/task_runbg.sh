@@ -46,6 +46,13 @@ task_runbg() {
     check_abort
     
     #
+    # Name of service
+    #
+    service_name=runbg
+    service_fname="/etc/init.d/$service_name"
+    source_fname="$DEPLOY_PATH/files/services/$service_name"
+
+    #
     # source dependencies if not available
     #
     if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
@@ -53,18 +60,14 @@ task_runbg() {
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
 
-
     #
-    # Name of service
+    #  If param not set, ensure nothing will be changed
     #
-    service_name=runbg
-    service_fname="/etc/init.d/$service_name"
-    source_fname="$DEPLOY_PATH/files/services/$service_name"
-            
     if [ "$SPD_RUN_BG" = "" ]; then
         SPD_RUN_BG="0"
         warning_msg "SPD_RUN_BG not defined, service runbg will not be modified"
     fi
+
 
     case "$SPD_RUN_BG" in
         -1 ) # disable
@@ -73,10 +76,11 @@ task_runbg() {
 	           msg_3 "Will be disabled"
             else
                 check_abort
+                msg_3 "Disabling service"
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then		    
                     disable_service $service_name default
-                    msg_3 "was disabled"
+                    echo "now disabled"
                 else
                     echo "Service $service_name was not active, no action needed"
                 fi
