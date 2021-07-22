@@ -28,6 +28,23 @@ fi
 
 
 
+
+
+script_name=task_runbg
+
+
+script_description="Installs and Activates or Disables a service that monitors the iOS
+location this ensures that iSH will continue to run in the background."
+
+#
+# script_tasks='task_runbg - runs in background 
+# task_sune  -  does nothing'
+# task_foo  - description
+# task_bar
+#
+#
+
+
 #=====================================================================
 #
 # _run_this() & _display_help()
@@ -44,7 +61,18 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    $script_tasks
+    set -f; IFS=$'\n'
+    set -- $script_tasks
+    while [ -n "$1" ]; do
+        # only use first word on each line as function name to call
+        a=$1
+	IFS=' '
+	$1
+	# back to using LF as param separator
+	IFS=$'\n'
+	shift
+    done
+    set +f; unset IFS
 }
 
 
@@ -56,14 +84,22 @@ _display_help() {
     echo "  -v  - verbose, display more progress info"
     echo
     echo "Tasks included:"
-    echo " ${script_tasks}"
+
+    set -f; IFS=$'\n'
+    set -- $script_tasks
+    while [ -n "$1" ]; do
+        echo "  $1"
+	shift
+    done
+    set +f; unset IFS
     echo
-    echo "$script_description"
-    echo
-    echo
+    
     echo "Env paramas"
     echo "-----------"
+
     help_local_paramas
+    
+    echo
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
         && echo '      - if 1 will only display what will be done' \
