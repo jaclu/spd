@@ -142,13 +142,9 @@ _runbg_label() {
 
 #=====================================================================
 #
-#   Administrativia, they must exist but can return empty
-#      help_local_paramas - explains all params this module uses
+#   Describe additional paramas
 #
 #=====================================================================
-
-
-
 
 help_local_paramas() {
     echo "SPD_RUN_BG$(
@@ -158,5 +154,11 @@ help_local_paramas() {
 }
 
 
+
+#=====================================================================
+#
+#   Run this script via script_base
+#
+#=====================================================================
 
 . extras/script_base.sh

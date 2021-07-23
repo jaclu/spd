@@ -1,10 +1,21 @@
 #!/bin/sh
+#
+#  This script is controlled from extras/script_base.sh this specific
+#  script only contains settings and overrrides.
+#
+#   List tasks provided by this script. If multilple one per line single
+#   multi-line string
+#
+script_tasks="task_do_extra_task        - Runs user supplied script"
 
-
+#=====================================================================
+#
+#   Short summary what this script does (for the help display)
+#   Single multiline string.
+#
+#=====================================================================
 script_description="Runs additional script defined by SPD_EXTRA_TASK
 Script will be sourced so exiting functions and variables can be used"
-
-script_tasks="task_do_extra_task        - Runs user supplied script"
 
 
 
@@ -51,7 +62,6 @@ task_do_extra_task() {
 
 
 
-
 #=====================================================================
 #
 #   Internals, start with _ to make it obvious they should not be
@@ -69,4 +79,11 @@ _expand_do_extra_all_deploy_paths() {
 
 
 
+#=====================================================================
+#
+#   Run this script via script_base
+#
+#=====================================================================
+
 . extras/script_base.sh
+

@@ -1,12 +1,20 @@
 #!/bin/sh
 #
-
-
-script_description="Activates or Disables a cron service, defined by SPD_DCRON"
-
+#  This script is controlled from extras/script_base.sh this specific
+#  script only contains settings and overrrides.
+#
+#   List tasks provided by this script. If multilple one per line single
+#   multi-line string
+#
 script_tasks='task_dcron'
 
-
+#=====================================================================
+#
+#   Short summary what this script does (for the help display)
+#   Single multiline string.
+#
+#=====================================================================
+script_description="Activates or Disables a cron service, defined by SPD_DCRON"
 
 
 
@@ -125,7 +133,11 @@ _dcron_host_crontab() {
 
 
 
-
+#=====================================================================
+#
+#   Describe additional paramas
+#
+#=====================================================================
 
 help_local_paramas() {
     echo "SPD_DCRON$(
@@ -138,5 +150,12 @@ help_local_paramas() {
         || echo "=$SPD_DCRON_ROOT_CRONTAB")"
 }
 
+
+
+#=====================================================================
+#
+#   Run this script via script_base
+#
+#=====================================================================
 
 . extras/script_base.sh

@@ -1,28 +1,21 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
-# License: MIT
+#  This script is controlled from extras/script_base.sh this specific
+#  script only contains settings and overrrides.
 #
-# Version: 0.1.0 2021-04-30
-#    Initial release
+#   List tasks provided by this script. If multilple one per line single
+#   multi-line string
 #
-# Part of ishTools
-#
-# See explaination in the top of extras/utils.sh
-# for some recomendations on how to set up your modules!
-#
+script_tasks="task_nopasswd_sudo"
 
-if test -z "$DEPLOY_PATH" ; then
-    #
-    # This was most likely not sourced, define DEPLOY_PATH based
-    # on location of this script. This variable is used to find config
-    # files etc, so should always be set!
-    #
-    # First define it relative based on this scripts location
-    DEPLOY_PATH="$(dirname "$0")/.."
-    # Make it absolutized and normalized
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
-fi
+#=====================================================================
+#
+#   Short summary what this script does (for the help display)
+#   Single multiline string.
+#
+#=====================================================================
+script_description="Installs sudo and creates a no password sudo group wheel,
+if it does not allready exist. This task has no direct params."
 
 
 
@@ -70,73 +63,21 @@ task_nopasswd_sudo() {
 
 
 
-
 #=====================================================================
 #
-# _run_this() & _display_help()
-# are only run in standalone mode, so no risk for wrong same named function
-# being called...
+#   Describe additional paramas
 #
-# In standlone mode, this will be run from See "main" part at end of
-# extras/utils.sh, it first expands parameters,
-# then either displays help or runs the task(-s)
-#
+#=====================================================================
 
-_run_this() {
-    #
-    # Perform the task / tasks independently, convenient for testing
-    # and debugging.
-    #
-    task_nopasswd_sudo
-}
-
-
-_display_help() {
-    echo "task_nopasswd_sudo.sh [-v] [-c] [-h]"
-    echo "  -h  - Displays help about this task."
-    echo "  -c  - reads config files for params"
-    echo "  -x  - Run this task, otherwise just display what would be done"
-    echo "  -v  - verbose, display more progress info"
-    echo
-    echo "Tasks included:"
-    echo " task_nopasswd_sudo"
-    echo
-    echo "Installs sudo and creates a no password sudo group wheel, if it does not allready exist."
-    echo "This task has no direct params."
-    echo
-    echo "Env paramas"
-    echo "-----------"
-    #
-    # If the variable is defined show it, otherwise explain it!
-    #
-    echo
-    echo "SPD_TASK_DISPLAY$(
-        test -z "$SPD_TASK_DISPLAY" \
-        && echo '      - if 1 will only display what will be done' \
-        || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(
-        test -z "$SPD_DISPLAY_NON_TASKS" \
-        && echo ' - if 1 will show what will NOT happen' \
-        || echo "=$SPD_DISPLAY_NON_TASKS")"
-    echo
+help_local_paramas() {
 }
 
 
 
 #=====================================================================
 #
-#     main
+#   Run this script via script_base
 #
 #=====================================================================
 
-if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-
-    . "$DEPLOY_PATH/scripts/extras/utils.sh"
-
-    #
-    # Since sourced mode cant be detected in a practical way under ash,
-    # I use this workaround, first script is expected to set it, if set
-    # all other modules can assume to be sourced
-    #
-    SPD_INITIAL_SCRIPT=1
-fi
+. extras/script_base.sh
