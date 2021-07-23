@@ -30,12 +30,6 @@ fi
 
 
 
-script_name=task_runbg
-
-
-script_description="Installs and Activates or Disables a service that monitors the iOS
-location this ensures that iSH will continue to run in the background."
-
 #
 # script_tasks='task_runbg - runs in background 
 # task_sune  -  does nothing'
@@ -77,8 +71,7 @@ _run_this() {
 
 
 _display_help() {
-    echo ">>> $(basename "$0") <<<<"
-    echo "${script_name}.sh [-h] [-c] [-x] [-v]"
+    echo "$(basename "$0") [-h] [-c] [-x] [-v]"
     echo "  -h  - Displays help about this task."
     echo "  -c  - reads config files for params"
     echo "  -x  - Run this task, otherwise just display what would be done"
@@ -95,6 +88,9 @@ _display_help() {
     set +f; unset IFS
     echo
     
+    echo "$script_description"
+    echo
+
     echo "Env paramas"
     echo "-----------"
 

@@ -4,7 +4,6 @@
 # Some scripts/extras/script_base.sh
 #   settings.
 #
-script_name=task_runbg
 
 script_description="Installs and Activates or Disables a service that monitors the iOS
 location this ensures that iSH will continue to run in the background."
