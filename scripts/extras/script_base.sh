@@ -49,6 +49,7 @@ _run_this() {
 
 
 _display_help() {
+    echo ">>> $(basename "$0") <<<<"
     echo "${script_name}.sh [-h] [-c] [-x] [-v]"
     echo "  -h  - Displays help about this task."
     echo "  -c  - reads config files for params"
