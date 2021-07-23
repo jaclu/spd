@@ -4,10 +4,13 @@
 # Some scripts/extras/script_base.sh
 #   settings.
 #
-script_name=task2_runbg
-script_tasks='task_runbg task_sune'
+script_name=task_runbg
+
 script_description="Installs and Activates or Disables a service that monitors the iOS
 location this ensures that iSH will continue to run in the background."
+
+script_tasks='task_runbg - runs in background 
+task_sune  -  does nothing'
 
 
 
@@ -118,6 +121,7 @@ task_runbg() {
 
 
 task_sune() {
+    verbose_msg "task_sune()"
     msg_2 "Task sune"
     echo "Yay!"
 }
@@ -152,7 +156,6 @@ help_local_paramas() {
         test -z "$SPD_RUN_BG" \
         && echo ' -  location_tacker status (-1/0/1)' \
         || echo "=$SPD_RUN_BG")"
-    echo
 }
 
 
