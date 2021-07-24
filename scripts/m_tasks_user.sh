@@ -1,34 +1,70 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
-# License: MIT
-#
-# Version: 0.1.0 2021-04-30
-#    Initial release
-#
-# Part of ishTools
-#
-# See explaination in the top of extras/utils.sh
-# for some recomendations on how to set up your modules!
+#  This script is controlled from extras/script_base.sh this specific
+#  script only contains settings and overrrides.
 #
 
-if test -z "$DEPLOY_PATH" ; then
-    #
-    # This was most likely not sourced, define DEPLOY_PATH based
-    # on location of this script. This variable is used to find config
-    # files etc, so should always be set!
-    #
-    # First define it relative based on this scripts location
-    DEPLOY_PATH="$(dirname "$0")/.."
-    # Make it absolutized and normalized
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
-fi
+#=====================================================================
+#
+#  All task scripts must define the following two variables:
+#  script_tasks:
+#    List tasks provided by this script. If multilple one per line single
+#    multi-line string first word is task name, rest is optional
+#    description of task
+#  script_description
+#    Short summary what this script does (for the help display)
+#    Single multiline string.
+#
+#=====================================================================
+
+script_tasks="task_restore_user      - creates user according to env variables
+task_user_pw_reminder  - displays a reminder if no password has been set"
+script_description="Creates a new user.
+If SPD_UID and/or SPD_GID are given, previous occupants are migrated to the
+first available ID at or above 1000 to ensure this user gets the desired IDS"
 
 
 
 #=====================================================================
 #
-#   Public functions
+#   Describe additional paramas, if none are used don't define
+#   help_local_params() script_base.sh will handle that condition.
+#
+#=====================================================================
+
+help_local_paramas() {
+    echo "SPD_UNAME$(
+        test -z "$SPD_UNAME" && echo ' - username to ensure exists' \
+        || echo "=$SPD_UNAME" )"
+    echo "SPD_UID$(
+        test -z "$SPD_UID" && echo '   - userid to be used' \
+        || echo "=$SPD_UID" )"
+    echo "SPD_GID$(
+        test -z "$SPD_GID" && echo '   - groupid to be used' \
+        || echo "=$SPD_GID" )"
+    echo "SPD_SHELL$(
+        test -z "$SPD_SHELL" && echo ' - shell for username' \
+        || echo "=$SPD_SHELL" )"
+    echo "SPD_HOME_DIR_TGZ$(
+        test -z "$SPD_HOME_DIR_TGZ" \
+        && echo '          - unpack this tgz file if found' \
+        || echo "=$SPD_HOME_DIR_TGZ" )"
+    echo "SPD_HOME_DIR_UNPACKED_PTR$(
+        test -z "$SPD_HOME_DIR_UNPACKED_PTR" \
+        && echo ' -  Indicates home.tgz is unpacked' \
+        || echo "=$SPD_HOME_DIR_UNPACKED_PTR" )"
+}
+
+
+
+#=====================================================================
+#
+#  Task (public) functions
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
 #
 #=====================================================================
 
@@ -165,8 +201,8 @@ task_user_pw_reminder() {
 
 #=====================================================================
 #
-#   Internals, start with _ to make it obvious they should not be
-#   called by other modules.
+#   Internal functions, start with _ and abrevation of script name to make it
+#   obvious they should not be called by other modules.
 #
 #=====================================================================
 
@@ -244,103 +280,12 @@ _mtu_make_available_uid_gid() {
  }
 
 
-#=====================================================================
-#
-# _run_this() & _display_help()
-# are only run in standalone mode, so no risk for wrong same named function
-# being called...
-#
-# In standlone mode, this will be run from See "main" part at end of
-# extras/utils.sh, it first expands parameters,
-# then either displays help or runs the task(-s)
-#
-
-_run_this() {
-    #
-    # Perform the task / tasks independently, convenient for testing
-    # and debugging.
-    #
-    [ -z "$SPD_UNAME" ] && [ -z "$SPD_UID" ] && [ -z "$SPD_GID" ] \
-        && [ -z "$SPD_SHELL" ] && [ -z "$SPD_HOME_DIR_TGZ" ] \
-        && [ -z "$SPD_HOME_DIR_UNPACKED_PTR" ] \
-        && warning_msg "None of the params set!"
-
-    if [ -n "$SPD_UNAME" ]; then
-        task_restore_user
-        task_user_pw_reminder
-    else
-        warning_msg "Without SPD_UNAME none of the tasks can do anything"
-    fi
-}
-
-
-_display_help() {
-    _mtu_expand_all_deploy_paths
-    
-    echo "m_tasks_user.sh [-v] [-c] [-h]"
-    echo "  -h  - Displays help about this task."
-    echo "  -c  - reads config files for params"
-    echo "  -x  - Run this task, otherwise just display what would be done"
-    echo "  -v  - verbose, display more progress info"
-    echo
-    echo "Tasks included:"
-    echo " task_restore_user      - creates user according to env variables"
-    echo " task_user_pw_reminder  - displays a reminder if no password has been set"
-    echo
-    echo "Creates a new user."
-    echo "If SPD_UID and/or SPD_GID are given, previous occupants are migrated to the"
-    echo "first available ID at or above 1000 to ensure this user gets the desired IDS"
-    echo
-    echo "Env paramas"
-    echo "-----------"
-    echo "SPD_UNAME$(
-        test -z "$SPD_UNAME" && echo ' - username to ensure exists' \
-        || echo "=$SPD_UNAME" )"
-    echo "SPD_UID$(
-        test -z "$SPD_UID" && echo '   - userid to be used' \
-        || echo "=$SPD_UID" )"
-    echo "SPD_GID$(
-        test -z "$SPD_GID" && echo '   - groupid to be used' \
-        || echo "=$SPD_GID" )"
-    echo "SPD_SHELL$(
-        test -z "$SPD_SHELL" && echo ' - shell for username' \
-        || echo "=$SPD_SHELL" )"
-    echo "SPD_HOME_DIR_TGZ$(
-        test -z "$SPD_HOME_DIR_TGZ" \
-        && echo '          - unpack this tgz file if found' \
-        || echo "=$SPD_HOME_DIR_TGZ" )"
-    echo "SPD_HOME_DIR_UNPACKED_PTR$(
-        test -z "$SPD_HOME_DIR_UNPACKED_PTR" \
-        && echo ' -  Indicates home.tgz is unpacked' \
-        || echo "=$SPD_HOME_DIR_UNPACKED_PTR" )"
-    echo
-    echo "SPD_TASK_DISPLAY$(
-        test -z "$SPD_TASK_DISPLAY" \
-        && echo '      - if 1 will only display what will be done' \
-        || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(
-        test -z "$SPD_DISPLAY_NON_TASKS" \
-        && echo ' - if 1 will show what will NOT happen' \
-        || echo "=$SPD_DISPLAY_NON_TASKS")"
-    echo
-}
-
-
 
 #=====================================================================
 #
-#     main
+#   Run this script via script_base
 #
 #=====================================================================
 
-if [ -z "$SPD_INITIAL_SCRIPT" ]; then
 
-    . "$DEPLOY_PATH/scripts/extras/utils.sh"
-
-    #
-    # Since sourced mode cant be detected in a practical way under ash,
-    # I use this workaround, first script is expected to set it, if set
-    # all other modules can assume to be sourced
-    #
-    SPD_INITIAL_SCRIPT=1
-fi
+[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh

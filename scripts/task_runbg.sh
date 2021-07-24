@@ -3,17 +3,21 @@
 #  This script is controlled from extras/script_base.sh this specific
 #  script only contains settings and overrrides.
 #
-#   List tasks provided by this script. If multilple one per line single
-#   multi-line string
-#
-script_tasks="task_runbg"
 
 #=====================================================================
 #
-#   Short summary what this script does (for the help display)
-#   Single multiline string.
+#  All task scripts must define the following two variables:
+#  script_tasks:
+#    List tasks provided by this script. If multilple one per line single
+#    multi-line string first word is task name, rest is optional
+#    description of task
+#  script_description
+#    Short summary what this script does (for the help display)
+#    Single multiline string.
 #
 #=====================================================================
+
+script_tasks="task_runbg"
 script_description="Installs and Activates or Disables a service that monitors the iOS
 location this ensures that iSH will continue to run in the background."
 
@@ -21,7 +25,28 @@ location this ensures that iSH will continue to run in the background."
 
 #=====================================================================
 #
-#   Public functions
+#   Describe additional paramas, if none are used don't define
+#   help_local_params() script_base.sh will handle that condition.
+#
+#=====================================================================
+
+help_local_paramas() {
+    echo "SPD_RUN_BG$(
+        test -z "$SPD_RUN_BG" \
+        && echo ' -  location_tacker status (-1/0/1)' \
+        || echo "=$SPD_RUN_BG")"
+}
+
+
+
+#=====================================================================
+#
+#  Task (public) functions
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
 #
 #=====================================================================
 
@@ -126,8 +151,8 @@ task_runbg() {
 
 #=====================================================================
 #
-#   Internals, start with _ to make it obvious they should not be
-#   called by other modules.
+#   Internal functions, start with _ and abrevation of script name to make it
+#   obvious they should not be called by other modules.
 #
 #=====================================================================
 
@@ -140,23 +165,9 @@ _runbg_label() {
 
 #=====================================================================
 #
-#   Describe additional paramas
-#
-#=====================================================================
-
-help_local_paramas() {
-    echo "SPD_RUN_BG$(
-        test -z "$SPD_RUN_BG" \
-        && echo ' -  location_tacker status (-1/0/1)' \
-        || echo "=$SPD_RUN_BG")"
-}
-
-
-
-#=====================================================================
-#
 #   Run this script via script_base
 #
 #=====================================================================
 
-. extras/script_base.sh
+
+[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh

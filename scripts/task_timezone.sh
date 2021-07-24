@@ -1,26 +1,52 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
-# License: MIT
-#
-# Version: 0.1.0 2021-04-30
-#    Initial release
-#
-# Part of ishTools
+#  This script is controlled from extras/script_base.sh this specific
+#  script only contains settings and overrrides.
 #
 
+#=====================================================================
+#
+#  All task scripts must define the following two variables:
+#  script_tasks:
+#    List tasks provided by this script. If multilple one per line single
+#    multi-line string first word is task name, rest is optional
+#    description of task
+#  script_description
+#    Short summary what this script does (for the help display)
+#    Single multiline string.
+#
+#=====================================================================
 
-if test -z "$DEPLOY_PATH" ; then
-    # Most likely not sourced...
-    DEPLOY_PATH="$(dirname "$0")/.."               # relative
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
-fi
+script_tasks='task_timezone'
+script_description="Sets time-zone baesed on SPD_TIME_ZONE
+Content should be in tz database format, so typically Continent/Major_City
+or a two/three letter acronymn like EST.
+If undefined/empty timezone will not be altered.
+If time_zone is not recgonized this will abort with an error."
+
+
+
+#=====================================================================
+#
+#   Describe additional paramas, if none are used don't define
+#   help_local_params() script_base.sh will handle that condition.
+#
+#=====================================================================
+
+help_local_paramas() {
+    echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo "=$SPD_TIME_ZONE" )"
+}
 
 
 
 #==========================================================
 #
-#   Public functions
+#  Task (public) functions
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
 #
 #==========================================================
 
@@ -58,65 +84,8 @@ task_timezone() {
 
 #=====================================================================
 #
-# _run_this() & _display_help()
-# are only run in standalone mode, so no risk for wrong same named function
-# being called...
-#
-# In standlone mode, this will be run from See "main" part at end of
-# extras/utils.sh, it first expands parameters,
-# then either displays help or runs the task(-s)
-#
-
-_run_this() {
-    #
-    # Perform the task / tasks independently, convenient for testing
-    # and debugging.
-    #
-    task_timezone
-}
-
-
-_display_help() {
-    echo "task_timezone.sh [-v] [-c] [-h]"
-    echo "  -h  - Displays help about this task."
-    echo "  -c  - reads config files for params"
-    echo "  -x  - Run this task, otherwise just display what would be done"
-    echo "  -v  - verbose, display more progress info"
-    echo
-    echo "Tasks included:"
-    echo " task_timezone"
-    echo
-    echo "Sets time-zone baesed on SPD_TIME_ZONE"
-    echo "Content should be in tz database format, so typically Continent/Major_City"
-    echo "or a two/three letter acronymn like EST."
-    echo "If undefined/empty timezone will not be altered."
-    echo "If time_zone is not recgonized this will abort with an error."
-    echo
-    echo "Env paramas"
-    echo "-----------"
-    echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo "=$SPD_TIME_ZONE" )"
-    echo
-    echo "SPD_TASK_DISPLAY$(test -z "$SPD_TASK_DISPLAY" && echo '      - if 1 will only display what will be done' || echo "=$SPD_TASK_DISPLAY")"
-    echo "SPD_DISPLAY_NON_TASKS$(test -z "$SPD_DISPLAY_NON_TASKS" && echo ' - if 1 will show what will NOT happen' || echo "=$SPD_DISPLAY_NON_TASKS")"
-    echo
-}
-
-
-
-#==========================================================
-#
-#     main
+#   Run this script via script_base
 #
 #=====================================================================
 
-if [ "$SPD_INITIAL_SCRIPT" = "" ]; then
-
-    . "$DEPLOY_PATH/scripts/extras/utils.sh"
-
-    #
-    # Since sourced mode cant be detected in a practical way under ash,
-    # I use this workaround, first script is expected to set it, if set
-    # all other modules can assume to be sourced
-    #
-    SPD_INITIAL_SCRIPT=1
-fi
+[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh

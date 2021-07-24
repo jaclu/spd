@@ -3,17 +3,21 @@
 #  This script is controlled from extras/script_base.sh this specific
 #  script only contains settings and overrrides.
 #
-#   List tasks provided by this script. If multilple one per line single
-#   multi-line string
-#
-script_tasks="task_nopasswd_sudo"
 
 #=====================================================================
 #
-#   Short summary what this script does (for the help display)
-#   Single multiline string.
+#  All task scripts must define the following two variables:
+#  script_tasks:
+#    List tasks provided by this script. If multilple one per line single
+#    multi-line string first word is task name, rest is optional
+#    description of task
+#  script_description
+#    Short summary what this script does (for the help display)
+#    Single multiline string.
 #
 #=====================================================================
+
+script_tasks="task_nopasswd_sudo"
 script_description="Installs sudo and creates a no password sudo group wheel,
 if it does not allready exist. This task has no direct params."
 
@@ -21,7 +25,12 @@ if it does not allready exist. This task has no direct params."
 
 #=====================================================================
 #
-#   Public functions
+#  Task (public) functions
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
 #
 #=====================================================================
 
@@ -54,25 +63,6 @@ task_nopasswd_sudo() {
 
 
 
-#=====================================================================
-#
-#   Internals, start with _ to make it obvious they should not be
-#   called by other modules.
-#
-#=====================================================================
-
-
-
-#=====================================================================
-#
-#   Describe additional paramas
-#
-#=====================================================================
-
-help_local_paramas() {
-}
-
-
 
 #=====================================================================
 #
@@ -80,4 +70,5 @@ help_local_paramas() {
 #
 #=====================================================================
 
-. extras/script_base.sh
+
+[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh

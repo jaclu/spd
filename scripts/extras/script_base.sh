@@ -26,17 +26,9 @@ if test -z "$DEPLOY_PATH" ; then
     DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
 fi
 
+# Param/env check
+: "${script_tasks:?Variable script_tasks not set}"
 
-
-
-
-#
-# script_tasks='task_runbg - runs in background 
-# task_sune  -  does nothing'
-# task_foo  - description
-# task_bar
-#
-#
 
 
 #=====================================================================
@@ -55,18 +47,19 @@ _run_this() {
     # Perform the task / tasks independently, convenient for testing
     # and debugging.
     #
-    set -f; IFS=$'\n'
-    set -- $script_tasks
+    # loop over lines in $script_tasks
+    #
+    IFS=$'\n'
+    set -- "$script_tasks"
     while [ -n "$1" ]; do
-        # only use first word on each line as function name to call
-        a=$1
-	IFS=' '
-	$1
-	# back to using LF as param separator
-	IFS=$'\n'
-	shift
+        # execute first word from line
+        IFS=' '
+        $1
+        # pop first line from lines
+        IFS=$'\n'
+        shift
     done
-    set +f; unset IFS
+    unset IFS
 }
 
 
@@ -79,24 +72,35 @@ _display_help() {
     echo
     echo "Tasks included:"
 
-    set -f; IFS=$'\n'
-    set -- $script_tasks
+    # loop over lines in $script_tasks
+    IFS=$'\n'
+    set -- "$script_tasks"
     while [ -n "$1" ]; do
+        # print first line
         echo "  $1"
-	shift
+        shift
     done
-    set +f; unset IFS
+    unset IFS
     echo
     
-    echo "$script_description"
-    echo
+    if [ -n "$script_description" ]; then
+        echo "$script_description"
+        echo
+    fi
 
     echo "Env paramas"
     echo "-----------"
-
-    help_local_paramas
+    #
+    # This executes help_local_params if defined, otherwise makes a
+    # dummy assignment
+    #
+    {
+        # removing stderr prevents printing error if undefined
+        2> /dev/null help_local_paramas
+        # Only do extra LF if help_local_params existed...
+        [ $? = 0 ]  && echo
+    } || _=0 # generic dummy statement
     
-    echo
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
         && echo '      - if 1 will only display what will be done' \

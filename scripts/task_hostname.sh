@@ -3,17 +3,21 @@
 #  This script is controlled from extras/script_base.sh this specific
 #  script only contains settings and overrrides.
 #
-#   List tasks provided by this script. If multilple one per line single
-#   multi-line string
-#
-script_tasks="task_hostname"
 
 #=====================================================================
 #
-#   Short summary what this script does (for the help display)
-#   Single multiline string.
+#  All task scripts must define the following two variables:
+#  script_tasks:
+#    List tasks provided by this script. If multilple one per line single
+#    multi-line string first word is task name, rest is optional
+#    description of task
+#  script_description
+#    Short summary what this script does (for the help display)
+#    Single multiline string.
 #
 #=====================================================================
+
+script_tasks="task_hostname"
 script_description="Give non AOK filesystem hostname suffix -i to make it more obvious
 to indicate a default iSH filesystem.
 Since hostname can't be changed inside iSH, we set /etc/hostname to the
@@ -23,79 +27,18 @@ desired name and use a custom hostname binary to display this instead."
 
 #=====================================================================
 #
-#   Public functions
+# Additional variables
 #
 #=====================================================================
 
-#
-#  Assumed to start with task_ and then describe the task in a suficiently
-#  unique way to give an idea of what this task does,
-#  and not collide with other modules.
-#  Use a short prefix unique for your module.
-#
-
-task_hostname() {
-    [ "$SPD_HOSTNAME_SET" != "1" ] && return # skip this task requested
-
-    msg_2 "Setting hostname if this is not AOK"    
-    check_abort
-     _th_expand_all_deploy_paths     
-    [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
-    _th_setup_env
-
-    if [ -d "/AOK" ]; then 
-        msg_3 "AOK filesystem"
-        echo "hostname will not be altered."
-    else
-        _th_alternate_host_name
-    fi
-    echo
-}
-
+_th_alternate_hostname_bin_source=files/extra_bins/hostname
+_th_alternate_hostname_bin_destination=/usr/local/bin/hostname
 
 
 #=====================================================================
 #
-#   Internals, start with _ to make it obvious they should not be
-#   called by other modules.
-#
-#=====================================================================
-
-_th_expand_all_deploy_paths() {
-    _th_alternate_hostname_bin_source=$(expand_deploy_path "$_th_alternate_hostname_bin_source")
-}
-
-_th_setup_env() {
-    if [ "$SPD_TASK_DISPLAY" != 1 ]; then
-        if [ ! -f "$SPD_HOSTNAME_BIN" ]; then
-            echo "Copying custom hostname binary to $SPD_HOSTNAME_BIN"
-            cp "$_th_alternate_hostname_bin_source"  "$SPD_HOSTNAME_BIN"
-        fi
-        if [ ! -f /etc/hostname ] || [ "$(cat /etc/hostname)" = 'localhost' ]; then
-            echo "Setting default content for /etc/hostname"
-            /bin/hostname >  /etc/hostname
-        fi
-    fi
-}
-
-_th_alternate_host_name() {
-    new_hostname="$(/bin/hostname)-i"
-    msg_verbose "New hostname: $new_hostname"
-    if [ "$SPD_TASK_DISPLAY" = 1 ]; then
-        echo "hostname will be changed into $new_hostname"
-    else
-        [ ! -x "$SPD_HOSTNAME_BIN" ] && error_msg "SPD_HOSTNAME_BIN not executable, aborting"
-        echo  "$new_hostname" > /etc/hostname
-        msg_3 "hostname: $(hostname)"
-    fi
-    unset new_hostname
-}
-
-
-
-#=====================================================================
-#
-#   Describe additional paramas
+#   Describe additional paramas, if none are used don't define
+#   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
@@ -120,8 +63,79 @@ help_local_paramas() {
 
 #=====================================================================
 #
+#  Task (public) functions
+#
+#  Assumed to start with task_ and then describe the task in a suficiently
+#  unique way to give an idea of what this task does,
+#  and not collide with other modules.
+#  Use a short prefix unique for your module.
+#
+#=====================================================================
+
+task_hostname() {
+    [ "$SPD_HOSTNAME_SET" != "1" ] && return # skip this task requested
+
+    msg_2 "Setting hostname if this is not AOK"    
+    check_abort
+     _th_expand_all_deploy_paths     
+    [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
+    _th_setup_env
+
+    if [ -d "/AOK" ]; then 
+        msg_3 "AOK filesystem"
+        echo "hostname will not be altered."
+    else
+        _th_alternate_host_name
+    fi
+    echo
+}
+
+
+
+#=====================================================================
+#
+#   Internal functions, start with _ and abrevation of script name to make it
+#   obvious they should not be called by other modules.
+#
+#=====================================================================
+
+_th_expand_all_deploy_paths() {
+    _th_alternate_hostname_bin_source=$(expand_deploy_path "$_th_alternate_hostname_bin_source")
+}
+
+_th_setup_env() {
+    if [ "$SPD_TASK_DISPLAY" != 1 ]; then
+        if [ ! -f "$SPD_HOSTNAME_BIN" ]; then
+            echo "Copying custom hostname binary to $SPD_HOSTNAME_BIN"
+            cp "$_th_alternate_hostname_bin_source"  "$SPD_HOSTNAME_BIN"
+        fi
+        if [ ! -f /etc/hostname ] || [ "$(cat /etc/hostname)" = 'localhost' ]; then
+            echo "Setting default content for /etc/hostname"
+            /bin/hostname >  /etc/hostname
+        fi
+    fi
+}
+
+_th_alternate_host_name() {
+    new_hostname="$(/bin/hostname)-i"
+    verbose_msg "New hostname: $new_hostname"
+    if [ "$SPD_TASK_DISPLAY" = 1 ]; then
+        echo "hostname will be changed into $new_hostname"
+    else
+        [ ! -x "$SPD_HOSTNAME_BIN" ] && error_msg "SPD_HOSTNAME_BIN not executable, aborting"
+        echo  "$new_hostname" > /etc/hostname
+        msg_3 "hostname: $(hostname)"
+    fi
+    unset new_hostname
+}
+
+
+
+#=====================================================================
+#
 #   Run this script via script_base
 #
 #=====================================================================
 
-. extras/script_base.sh
+
+[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
