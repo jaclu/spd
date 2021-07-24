@@ -21,7 +21,6 @@ script_tasks="task_apk_update   - updates repository
 task_apk_upgrade  - upgrades all installed apks
 task_apks_delete  - deletes all apks listed in SPD_APKS_DEL
 task_apks_add     - adds all apks listed in SPD_APKS_ADD"
-#script_description=""
 
 
 

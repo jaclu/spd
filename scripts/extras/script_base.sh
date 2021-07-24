@@ -49,8 +49,9 @@ _run_this() {
     #
     # loop over lines in $script_tasks
     #
-    IFS=$'\n'
-    set -- "$script_tasks"
+    set -f; IFS=$'\n'
+    # next line can not use quotes
+    set -- $script_tasks
     while [ -n "$1" ]; do
         # execute first word from line
         IFS=' '
@@ -59,7 +60,7 @@ _run_this() {
         IFS=$'\n'
         shift
     done
-    unset IFS
+    set +f; unset IFS
 }
 
 
@@ -73,14 +74,15 @@ _display_help() {
     echo "Tasks included:"
 
     # loop over lines in $script_tasks
-    IFS=$'\n'
-    set -- "$script_tasks"
+    set -f; IFS=$'\n'
+    # next line can not use quotes
+    set -- $script_tasks
     while [ -n "$1" ]; do
         # print first line
         echo "  $1"
         shift
     done
-    unset IFS
+    set +f; unset IFS
     echo
     
     if [ -n "$script_description" ]; then
