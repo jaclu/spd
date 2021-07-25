@@ -1,2 +1,8 @@
 #!/bin/sh
+#
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# License: MIT
+#
+# Part of https://github.com/jaclu/spd
+#
 2> /dev/null cat /etc/hostname

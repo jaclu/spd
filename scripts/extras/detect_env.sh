@@ -1,12 +1,10 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
 #
-# Version: 0.1.0 2021-04-30
-#    Initial release
+# Part of https://github.com/jaclu/spd
 #
-# Part of ishTools
 
 #
 # No need to run more than once

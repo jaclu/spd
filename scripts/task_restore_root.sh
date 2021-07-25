@@ -1,7 +1,9 @@
 #!/bin/sh
 #
-#  This script is controlled from extras/script_base.sh this specific
-#  script only contains settings and overrrides.
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# License: MIT
+#
+# Part of https://github.com/jaclu/spd
 #
 
 #=====================================================================

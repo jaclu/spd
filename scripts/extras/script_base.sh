@@ -1,14 +1,9 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
 #
-# Version: 0.2.0 2021-05-xx
-#    Created a propper openrc daemn service (files/bgrun)
-# 0.1.0 2021-04-30
-#    Initial release
-#
-# Part of ishTools
+# Part of https://github.com/jaclu/spd
 #
 # See explaination in the top of extras/utils.sh
 # for some recomendations on how to set up your modules!
