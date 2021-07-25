@@ -77,14 +77,14 @@ task_hostname() {
 
     msg_2 "Setting hostname if this is not AOK"    
     check_abort
-     _th_expand_all_deploy_paths     
-    [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
-    _th_setup_env
+    _th_expand_all_deploy_paths     
 
     if [ -d "/AOK" ]; then 
         msg_3 "AOK filesystem"
         echo "hostname will not be altered."
     else
+    	[ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
+    	_th_setup_env
         _th_alternate_host_name
     fi
     echo
