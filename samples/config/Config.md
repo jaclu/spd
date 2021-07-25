@@ -58,7 +58,7 @@ Sample config files
     [3-2] debian.cfg
         [3-3] ubuntu.cfg
 ```
-I haven included sample files in ***samples/config*** can be used as a starting point
+I have included sample files in ***samples/config*** can be used as a starting point
 
 - ish-family.cfg
 - ish.cfg
