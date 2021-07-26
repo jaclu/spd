@@ -6,22 +6,21 @@
 # Part of https://github.com/jaclu/spd
 
 
-
-#_local_error_msg() {
-#    printf '\n\nERROR: %b\n' "$1"
-#    exit 1
-#}
-    
-
 #
 # This should only be sourced...
 #
-[ -z "$DEPLOY_PATH" ] && error_msg "Not meant to be run standalone: scripts/extras/read_config.sh"
-    
+_this_script="read_config.sh"
+if [ "$(basename "$0")" = ${_this_script} ]; then
+    echo "ERROR: ${_this_script} is not meant to be run stand-alone!"
+    exit 1
+fi
+unset _this_script
+
+
 . "$DEPLOY_PATH/scripts/extras/detect_env.sh"
 
-
 CONFIG_PATH="$DEPLOY_PATH/custom/config"
+
 
 
 #==========================================================
@@ -30,30 +29,10 @@ CONFIG_PATH="$DEPLOY_PATH/custom/config"
 #
 #==========================================================
 
-
-
 #
-# Order of reading config files, all lowercased:
-#  1 defaults.cfg
-#     Here initial defaults are set, like 22 for sshd port etc
-#  2 settings-pre.cfg
-#     This one is read before parsing os/distro type related configs,
-#     here you can set defaults, that might get overridden.
-#     Normally this would be the safe location for general settings,
-#     Since everything that does not work for a given os/distro will
-#     Later be removed or changed.
-#  3 $os_type such as linux.cfg / darwin.cfg
-#  4 $distro_family such as debian.cfg / ish.cfg
-#  5 $distro   such as ubuntu.cfg / ish-aok.cfg
-#     If $distro_family is enough to identify a distro, then there will
-#     typically not be a matching $distro config file to read
-#  6 settings-post.cfg
-#     This one is read after the os/distro configs have been read, so this
-#     can override os/distro settings.
-#  7 $(hostname) up to first dot of hostname such as jacpad.cfg
-#     Will always be the last config processed, so what goes here stays.
+# See samplesm/config/Config.md for explaination how config files are
+# processed.
 #
-
 read_config() {
     #
     # the config files are located in $DEPLOY_PATH/custom/config/
@@ -78,10 +57,6 @@ read_config() {
     
     [ -n "$p_verbose" ] && echo  # Whitespace after listing config files parsed
 }
-
-
-
-
 
 
 
@@ -111,5 +86,3 @@ _read_cfg_file() {
     unset cfg_file
     unset musut_exist
 }
-
-

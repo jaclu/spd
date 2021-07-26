@@ -9,20 +9,23 @@
 # for some recomendations on how to set up your modules!
 #
 
-if test -z "$DEPLOY_PATH" ; then
-    #
-    # This was most likely not sourced, define DEPLOY_PATH based
-    # on location of this script. This variable is used to find config
-    # files etc, so should always be set!
-    #
-    # First define it relative based on this scripts location
-    DEPLOY_PATH="$(dirname "$0")/.."
-    # Make it absolutized and normalized
-    DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
+#
+# This should only be sourced...
+#
+_this_script="script_base.sh"
+if [ "$(basename "$0")" = ${_this_script} ]; then
+    echo "ERROR: ${_this_script} is not meant to be run stand-alone!"
+    exit 1
 fi
+unset _this_script
+
 
 # Param/env check
 : "${script_tasks:?Variable script_tasks not set}"
+
+
+
+
 
 
 
@@ -123,6 +126,18 @@ _display_help() {
 #=====================================================================
 
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
+    if test -z "$DEPLOY_PATH" ; then
+        #
+        # This was most likely not sourced, define DEPLOY_PATH based
+        # on location of this script. This variable is used to find config
+        # files etc, so should always be set!
+        #
+        # First define it relative based on this scripts location
+        DEPLOY_PATH="$(dirname "$0")/.."
+        # Make it absolutized and normalized
+        DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
+    fi
+
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #

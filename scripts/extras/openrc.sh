@@ -9,7 +9,12 @@
 #
 # This should only be sourced...
 #
-[ "$(basename "$0")" = "openrc.sh" ] && error_msg "utils.sh is not meant to be run stand-alone!"
+_this_script="openrc.sh"
+if [ "$(basename "$0")" = ${_this_script} ]; then
+    echo "ERROR: ${_this_script} is not meant to be run stand-alone!"
+    exit 1
+fi
+unset _this_script
 
 
 # If you intend to work at a service in another runlevel change this variable

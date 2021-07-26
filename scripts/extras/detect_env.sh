@@ -14,21 +14,21 @@
 
 
 #
+# This should only be sourced...
+#
+_this_script="detect_env.sh"
+if [ "$(basename "$0")" = ${_this_script} ]; then
+    echo "ERROR: ${_this_script} is not meant to be run stand-alone!"
+    exit 1
+fi
+unset _this_script
+
+
+
+#
 #  disable if unset
 #
 [ -z ${p_verbose+x} ] && p_verbose=0
-
-
-
-#
-#  Will set the following variables
-#
-# os_type       - Basic OS type Linux/Darwin
-# distro_family - General distro type, debian/ish etc
-# distro        - Specific distro Ubuntu/ish-AOK etc
-#
-
-
 
 
 
