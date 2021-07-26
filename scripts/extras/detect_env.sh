@@ -45,6 +45,15 @@ os_type_Darwin='Darwin'
 distro_MacOS='MacOS'
 
 
+
+#
+#  Will set the following variables
+#
+# os_type       - Basic OS type Linux/Darwin
+# distro_family - General distro type, debian/ish etc
+# distro        - Specific distro Ubuntu/ish-AOK etc
+#
+
 #
 #  Detect environ
 #
