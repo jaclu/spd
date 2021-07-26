@@ -53,13 +53,6 @@ help_local_paramas() {
 #
 #=====================================================================
 
-#
-#  Assumed to start with task_ and then describe the task in a suficiently
-#  unique way to give an idea of what this task does,
-#  and not collide with other modules.
-#  Use a short prefix unique for your module.
-#
-
 task_runbg() { 
     verbose_msg "task_runbg($SPD_RUN_BG)"
     check_abort

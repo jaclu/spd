@@ -56,13 +56,6 @@ help_local_paramas() {
 #
 #=====================================================================
 
-#
-#  Assumed to start with task_ and then describe the task in a suficiently
-#  unique way to give an idea of what this task does,
-#  and not collide with other modules.
-#  Use a short prefix unique for your module.
-#
-
 task_dcron() { 
     verbose_msg "task_dcron($SPD_DCRON)"
     check_abort

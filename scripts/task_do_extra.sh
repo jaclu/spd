@@ -37,13 +37,6 @@ Script will be sourced so exiting functions and variables can be used"
 #
 #==========================================================
 
-#
-#  Assumed to start with task_ and then describe the task in a suficiently
-#  unique way to give an idea of what this task does,
-#  and not collide with other modules.
-#  Use a short prefix unique for your module.
-#
-
 task_do_extra_task() {
     _tde_expand_deploy_paths
     msg_txt="Running custom task"

@@ -37,13 +37,6 @@ if it does not allready exist. This task has no direct params."
 #
 #=====================================================================
 
-#
-#  Assumed to start with task_ and then describe the task in a suficiently
-#  unique way to give an idea of what this task does,
-#  and not collide with other modules.
-#  Use a short prefix unique for your module.
-#
-
 task_nopasswd_sudo() {
     msg_2 "no-pw sudo for group wheel"
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
