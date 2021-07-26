@@ -19,6 +19,7 @@
 #
 #=====================================================================
 
+# shellcheck disable=SC2034
 script_tasks="task_nopasswd_sudo"
 script_description="Installs sudo and creates a no password sudo group wheel,
 if it does not allready exist. This task has no direct params."
@@ -65,12 +66,11 @@ task_nopasswd_sudo() {
 
 
 
-
 #=====================================================================
 #
 #   Run this script via extras/script_base.sh
 #
 #=====================================================================
 
-
-[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
+# shellcheck disable=SC1091
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh

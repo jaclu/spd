@@ -19,6 +19,7 @@
 #
 #=====================================================================
 
+# shellcheck disable=SC2034
 script_tasks='task_sshd'
 script_description="Activates or Disables sshd."
 
@@ -216,5 +217,5 @@ _ts_unpack_ssh_host_keys() {
 #
 #=====================================================================
 
-
-[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
+# shellcheck disable=SC1091
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh

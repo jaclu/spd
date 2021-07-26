@@ -19,6 +19,7 @@
 #
 #=====================================================================
 
+# shellcheck disable=SC2034
 script_tasks="task_hostname"
 script_description="Give non AOK filesystem hostname suffix -i to make it more obvious
 to indicate a default iSH filesystem.
@@ -139,5 +140,5 @@ _th_alternate_host_name() {
 #
 #=====================================================================
 
-
-[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
+# shellcheck disable=SC1091
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh

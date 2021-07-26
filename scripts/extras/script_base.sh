@@ -44,7 +44,9 @@ _run_this() {
     #
     # loop over lines in $script_tasks
     #
-    set -f; IFS=$'\n'
+    set -f; IFS='
+'
+    # shellcheck disable=SC2086
     # next line can not use quotes
     set -- $script_tasks
     while [ -n "$1" ]; do
@@ -52,7 +54,8 @@ _run_this() {
         IFS=' '
         $1
         # pop first line from lines
-        IFS=$'\n'
+        IFS='
+'
         shift
     done
     set +f; unset IFS
@@ -69,7 +72,9 @@ _display_help() {
     echo "Tasks included:"
 
     # loop over lines in $script_tasks
-    set -f; IFS=$'\n'
+    set -f; IFS='
+'
+    # shellcheck disable=SC2086
     # next line can not use quotes
     set -- $script_tasks
     while [ -n "$1" ]; do

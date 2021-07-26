@@ -19,6 +19,7 @@
 #
 #=====================================================================
 
+# shellcheck disable=SC2034
 script_tasks="task_do_extra_task        - Runs user supplied script"
 script_description="Runs additional script defined by SPD_EXTRA_TASK
 Script will be sourced so exiting functions and variables can be used"
@@ -96,6 +97,5 @@ _tde_expand_deploy_paths() {
 #
 #=====================================================================
 
-
-[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
-
+# shellcheck disable=SC1091
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh

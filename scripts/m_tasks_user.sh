@@ -19,6 +19,7 @@
 #
 #=====================================================================
 
+# shellcheck disable=SC2034
 script_tasks="task_restore_user      - creates user according to env variables
 task_user_pw_reminder  - displays a reminder if no password has been set"
 script_description="Creates a new user.
@@ -289,5 +290,5 @@ _mtu_make_available_uid_gid() {
 #
 #=====================================================================
 
-
-[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
+# shellcheck disable=SC1091
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh

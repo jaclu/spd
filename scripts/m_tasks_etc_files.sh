@@ -17,6 +17,7 @@
 #
 #=====================================================================
 
+# shellcheck disable=SC2034
 script_tasks="task_replace_some_etc_files  - replaces hosts and repositories if so requested
 task_patch_etc_files         - Fixes some files with issues"
 script_description="Will fix /etc/inittab, and if so requested replace some /etc files"
@@ -53,13 +54,6 @@ help_local_paramas() {
 #  Use a short prefix unique for your module.
 #
 #=====================================================================
-
-#
-#  Assumed to start with task_ and then describe the task in a suficiently
-#  unique way to give an idea of what this task does,
-#  and not collide with other modules.
-#  Use a short prefix unique for your module.
-#
 
 task_replace_some_etc_files() {
     verbose_msg "task_replace_some_etc_files()"
@@ -196,5 +190,5 @@ _tef_fix_profile() {
 #
 #=====================================================================
 
-
-[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
+# shellcheck disable=SC1091
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh

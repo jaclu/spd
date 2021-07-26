@@ -444,7 +444,14 @@ parse_command_line() {
 #
 #  Identify fiilesystem, some operations depend on it
 # SPD_FILE_SYSTEM -> SPD_ISH_KERNEL
-test grep -q ish-AOK /proc/version && SPD_ISH_KERNEL='AOK' || SPD_ISH_KERNEL='iSH'
+if 2>/dev/null grep -q ish-AOK /proc/version; then
+    SPD_ISH_KERNEL='AOK'
+else
+    # shellcheck disable=SC2034
+    SPD_ISH_KERNEL='iSH'
+fi
+
+
 
 #
 # Since sourced mode can't be detected in a practical way using a posix shell,

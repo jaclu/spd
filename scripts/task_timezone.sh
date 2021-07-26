@@ -19,6 +19,7 @@
 #
 #=====================================================================
 
+# shellcheck disable=SC2034
 script_tasks='task_timezone'
 script_description="Sets time-zone baesed on SPD_TIME_ZONE
 Content should be in tz database format, so typically Continent/Major_City
@@ -90,4 +91,5 @@ task_timezone() {
 #
 #=====================================================================
 
-[ -z "$SPD_INITIAL_SCRIPT" ] && . extras/script_base.sh
+# shellcheck disable=SC1091
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh
