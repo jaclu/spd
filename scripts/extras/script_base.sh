@@ -100,10 +100,8 @@ _display_help() {
     # dummy assignment
     #
     {
-        # removing stderr prevents printing error if undefined
-        2> /dev/null help_local_paramas
         # Only do extra LF if help_local_params existed...
-        [ $? = 0 ]  && echo
+        2> /dev/null help_local_paramas && echo
     } || _=0 # generic dummy statement
     
     echo "SPD_TASK_DISPLAY$(
