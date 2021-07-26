@@ -212,7 +212,7 @@ _ts_unpack_ssh_host_keys() {
 
 #=====================================================================
 #
-#   Run this script via script_base
+#   Run this script via extras/script_base.sh
 #
 #=====================================================================
 

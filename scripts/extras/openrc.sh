@@ -114,7 +114,7 @@ _orc_disable_unset() {
 
 
 _NOT_problematic_service_hwdrivers() {
-    if [ "$SPD_FILE_SYSTEM" = "AOK" ]; then
+    if [ "$SPD_ISH_KERNEL" = "AOK" ]; then
         # AOK fs version of this service no longer displays warnings
         return
     fi
@@ -163,8 +163,8 @@ _NOT_patch_rc_cgroup_sh() {
 
     msg_3 "Examining if $fname needs patching"
 
-    if [ "$SPD_FILE_SYSTEM" = "AOK" ]; then
-        echo "This patch is not needed on recent AOK file systems"
+    if [ "$SPD_ISH_KERNEL" = "AOK" ]; then
+        echo "This patch is not needed on recent AOK systems"
         return
     fi
     

@@ -92,7 +92,7 @@ _tde_expand_deploy_paths() {
 
 #=====================================================================
 #
-#   Run this script via script_base
+#   Run this script via extras/script_base.sh
 #
 #=====================================================================
 

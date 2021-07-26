@@ -87,9 +87,9 @@ test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PAT
 
 
 #
-# Since sourced mode cant be detected in a practiacl way under ash, I use this
-# workaround: first script running sets SPD_INITIAL_SCRIPT=1,
-# any other detecting it is set will assume to be sourced.
+# Since sourced mode can't be detected in a practical way using a posix shell,
+# I use this workaround. First script run is expected to set it,
+# if set all other modules can assume to be sourced.
 #
 [ -n "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: deploy-ish can NOT be sourced!" 1
 SPD_INITIAL_SCRIPT=1

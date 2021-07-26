@@ -121,9 +121,10 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #
-    # Since sourced mode cant be detected in a practical way under ash,
-    # I use this workaround, first script is expected to set it, if set
-    # all other modules can assume to be sourced
+    # Since sourced mode cant be detected in a practical way under a
+    # posix shell, I use this workaround.
+    # First script is expected to set it, if set all other modules
+    # can assume to be sourced.
     #
     SPD_INITIAL_SCRIPT=1
 fi

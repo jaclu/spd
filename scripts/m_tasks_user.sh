@@ -285,7 +285,7 @@ _mtu_make_available_uid_gid() {
 
 #=====================================================================
 #
-#   Run this script via script_base
+#   Run this script via extras/script_base.sh
 #
 #=====================================================================
 

@@ -135,7 +135,7 @@ _th_alternate_host_name() {
 
 #=====================================================================
 #
-#   Run this script via script_base
+#   Run this script via extras/script_base.sh
 #
 #=====================================================================
 

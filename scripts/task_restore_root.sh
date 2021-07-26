@@ -135,7 +135,7 @@ _trr_update_root_shell() {
 
 #=====================================================================
 #
-#   Run this script via script_base
+#   Run this script via extras/script_base.sh
 #
 #=====================================================================
 

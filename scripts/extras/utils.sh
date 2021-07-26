@@ -14,55 +14,12 @@
 #
 # Global variables should also be given thought, since if multiple modules
 # are being loaded, then a task is called, a generically labeled global
-# migh have been changed by another module.
+# migh have been changed by another module, so try to prefix globals with
+# something unique for that module.
 #
-# Variables set inside a function can use shortish names since
-# you assigned it during processing.
-# Try to be a good citizen and unset them as much as possible
-# at exit of a function, since ash does not hanlde local variables :(
+# Try to be a good citizen and unset "local" variables inside functions,
+# when it is exited, since ash does not have the concept of local variables :(
 #
-# The only exceptions are the following two functions that are only
-# called in stand alone mode, their names will not collide, and are
-# expected to allways be the same.
-#
-# _run_this()
-#    Process this task(-s), called when param -h is not present
-#
-# _display_help()
-#    Displays help for this task, called when param -h is present
-#
-# In testing you can either give -c then the config files will be read
-# and all defined variables will be assigned before this is called.
-# Be aware that if -c is given, all variables in the configs will
-# get assigned, and most likely override variables set before running
-# the module.
-#
-# You can set the variables you want to assign on the command line,
-# something like:
-#
-# SPD_APKS_DEL='fortune' SPD_AKS_ADD='emacs-nox' ./m_tasks_apk.sh
-#
-# Finally a "main" block, as its last entry should allways look like this:
-#
-# To make them easier to find I recomend to define _display_help() and
-# _run_this() at the end of your module. After those two you also need
-# this main block, that triggers command line parsing, and stand alone
-# run mode.
-#
-# if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-#
-#     . "$DEPLOY_PATH/scripts/extras/utils.sh"
-#
-#     #
-#     # Since sourced mode cant be detected in a practical way under ash,
-#     # I use this workaround, first script is expected to set it, if set
-#     # all other modules can assume to be sourced
-#     #
-#     SPD_INITIAL_SCRIPT=1
-# fi
-#
-
-
 
 #
 # This should only be sourced...
@@ -486,15 +443,18 @@ parse_command_line() {
 
 #
 #  Identify fiilesystem, some operations depend on it
-#
-# shellcheck disable=SC2034
-test -d /AOK && SPD_FILE_SYSTEM='AOK' || SPD_FILE_SYSTEM='iSH' 
-
+# SPD_FILE_SYSTEM -> SPD_ISH_KERNEL
+test grep -q ish-AOK /proc/version && SPD_ISH_KERNEL='AOK' || SPD_ISH_KERNEL='iSH'
 
 #
-# 
+# Since sourced mode can't be detected in a practical way using a posix shell,
+# I use this workaround; First script run is expected to set it,
+# if set all other modules can assume to be sourced.
 #
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
+    #
+    # Asume current script is the "base" script being run
+    #
     parse_command_line "$@"
 
     if [ $p_help = 1 ]; then
@@ -518,6 +478,6 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
         # And did not die in the middle of things...
         #
         echo "Task Completed."
-	echo
+        echo
     fi
 fi
