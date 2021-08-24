@@ -39,13 +39,12 @@ Script will be sourced so exiting functions and variables can be used"
 
 task_do_extra_task() {
     _tde_expand_deploy_paths
-    msg_txt="Running custom task"
     if [ -n "$SPD_EXTRA_TASK" ]; then
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-            msg_2 "$msg_txt"
+            msg_2 "Will run custom task"
             echo "$SPD_EXTRA_TASK"
         else
-            msg_1 "$msg_txt"
+            msg_2 "Running custom task"
         fi
         test -f "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not found"
         test -x "$SPD_EXTRA_TASK" || error_msg "$SPD_EXTRA_TASK not executable"
