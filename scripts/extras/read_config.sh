@@ -16,7 +16,7 @@ if [ "$(basename "$0")" = ${_this_script} ]; then
 fi
 unset _this_script
 
-
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/extras/detect_env.sh"
 
 CONFIG_PATH="$DEPLOY_PATH/custom/config"

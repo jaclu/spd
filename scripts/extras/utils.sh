@@ -426,6 +426,7 @@ parse_command_line() {
     # the configs will just be parsed twice
     #
     if [ $p_cfg -eq 1 ]; then
+	# shellcheck disable=SC1091
     	. "$DEPLOY_PATH/scripts/extras/read_config.sh"
     	read_config
     fi

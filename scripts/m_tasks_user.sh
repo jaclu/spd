@@ -283,5 +283,9 @@ _mtu_make_available_uid_gid() {
 #
 #=====================================================================
 
+script_dir="$(dirname "$0")"
+
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+
+unset script_dir

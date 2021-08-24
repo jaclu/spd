@@ -136,6 +136,7 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
         DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
     fi
 
+    # shellcheck disable=SC1091
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     #

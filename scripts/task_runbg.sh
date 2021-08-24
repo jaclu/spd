@@ -69,6 +69,7 @@ task_runbg() {
     #
     if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         verbose_msg "task_runbg() needs to source openrc to satisfy dependencies"
+	# shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
 
@@ -165,5 +166,9 @@ _runbg_label() {
 #
 #=====================================================================
 
+script_dir="$(dirname "$0")"
+
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+
+unset script_dir

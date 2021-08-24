@@ -145,7 +145,7 @@ _tef_fix_inittab() {
             if [ "$SPD_TASK_DISPLAY" != "1" ]; then
                 sed -i '/::sysinit/d' "$inittab_file"
                 sed -i '/::wait:/d' "$inittab_file"
-                echo $ok_line  >> "$inittab_file"
+                echo "$ok_line"  >> "$inittab_file"
                 echo "done!"
             else
                 echo "will happen"
@@ -190,5 +190,9 @@ _tef_fix_profile() {
 #
 #=====================================================================
 
+script_dir="$(dirname "$0")"
+
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "$(dirname "$0")"/extras/script_base.sh
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+
+unset script_dir
