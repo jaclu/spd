@@ -238,9 +238,12 @@ _mtu_make_available_uid_gid() {
     #
     # getting the first id free in both users and groups
     #
+    over1k="^1...$" # need to be a variable to pass checkbashisms test
     id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | \
-        grep "^1...$" | sort -n | tail -n 1 | \
+        grep "$over1k" | sort -n | tail -n 1 | \
         awk '{ print $1+1 }')"
+    unset over1k
+
     # If no ids were in the 1xxx range nothing was found, so pick 1000
     test -z "$id_available" && id_available=1000
 
