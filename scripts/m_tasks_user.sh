@@ -259,18 +259,20 @@ _mtu_make_available_uid_gid() {
         chown_home=1
     fi
     if [ "$chown_home" = 1 ]; then
-        msg_3 "changing home ownership"
-        echo "/home/$user_name -> $id_available:$id_available"
-        chown "$id_available":"$id_available" /home/"$user_name"
+        other_u_home="$(eval echo ~${user_name})"
+	if [ -d "$other_u_home"  ]; then
+            msg_3 "changing home ownership recursively"
+            echo "~$other_u_home -> $id_available:$id_available"
+            chown -R "$id_available":"$id_available" "$other_u_home"
+	    echo "If $user_name is logged in you might need to correct file privs in: $other_u_home"
+	fi
+	test -f /var/mail/"$user_name" && \
+            chown -R "$user_name":"$user_name" /var/mail/"$user_name"
     fi
     #
     # Even if the GID of the offending user wasnt the offending GID
     # this is still a safe action
     #
-    test -f /home/"$user_name" && \
-        chown "$user_name":"$user_name" /home/"$user_name" -R
-    test -f /var/mail/"$user_name" && \
-        chown "$user_name":"$user_name" /var/mail/"$user_name" -R
 
     unset user_name
     unset group_name
