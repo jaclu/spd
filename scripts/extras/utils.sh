@@ -222,6 +222,7 @@ ensure_installed() {
 #
 # If in display mode, mentions if shell is missing,
 # in work mode, this fails if SPD_SHELL is not pressent.
+# This does not install the shell, it just verifies if it is there or not.
 #
 ensure_shell_is_installed() {
     SHELL_NAME=$1
