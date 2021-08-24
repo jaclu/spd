@@ -187,6 +187,8 @@ expand_deploy_path() {
 # Installs listed apk if not already installed, 2nd optional param is
 # a message that is displayed if this is installed, default is to use
 # "Installing dependency xxx"
+# So only one dependency per line!
+#
 # returns
 #     0 if package was already installed
 #     1 if package was installed now
