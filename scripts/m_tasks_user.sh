@@ -235,6 +235,10 @@ _mtu_make_available_uid_gid() {
     fi
     msg_3 "Intended uid/gid is beeing used"
     echo "Will try to free up desired uid & gid"
+    
+    # check if user who will get an id change is logged int
+    is_logged_in="$(ps axu | cut -d " " -f 1 | grep "$user_name" |grep -v grep)"
+
     #
     # getting the first id free in both users and groups
     #
@@ -259,12 +263,20 @@ _mtu_make_available_uid_gid() {
         chown_home=1
     fi
     if [ "$chown_home" = 1 ]; then
-        other_u_home="$(eval echo ~${user_name})"
+        other_u_home="$(eval echo "~${user_name}")"
 	if [ -d "$other_u_home"  ]; then
             msg_3 "changing home ownership recursively"
             echo "~$other_u_home -> $id_available:$id_available"
             chown -R "$id_available":"$id_available" "$other_u_home"
-	    echo "If $user_name is logged in you might need to correct file privs in: $other_u_home"
+	    #
+	    # If user who got id change is logged in, display warning that
+	    # file privs might need to be fixed after logout
+	    #
+	    if [ -n "$is_logged_in"  ]; then
+		echo
+		echo "WARNING: $user_name seems to be logged in, you might need to correct file privs in: $other_u_home once user has logged out!"
+		echo
+	    fi
 	fi
 	test -f /var/mail/"$user_name" && \
             chown -R "$user_name":"$user_name" /var/mail/"$user_name"
