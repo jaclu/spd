@@ -24,13 +24,13 @@ debug() {
     output=$1
     eol=${2:-"\n"}
     if [ $debug_flag -eq 1 ]; then
-        printf "$output$eol"
+        printf "%s%s" "$output" "$eol"
     fi
 }
 
 display_help() {
     debug_flag=1
-    echo $prog_description
+    echo "$prog_description"
     echo "Options:"
     echo "  -d, --debug     Display status during processing."
     echo "  -o, --out-file  If given, the list of apk leaves will be written to this file,"
@@ -50,7 +50,7 @@ display_help() {
 #
 #  Param parsing
 #
-while [[ $# -gt 0 ]]; do
+while [ -n "$1" ]; do
     param=$1
     case $param in
         -h|--help)
@@ -81,8 +81,8 @@ debug "$prog_description"
 #
 # Clearing $out_file if it existed.
 #
-if [ "$out_file" != "" ] && [ -f $out_file ]; then
-    rm -i $out_file
+if [ "$out_file" != "" ] && [ -f "$out_file" ]; then
+    rm -i "$out_file"
 fi
 
 #
@@ -110,10 +110,10 @@ for apk_long in $apk_list; do
     # If there are any words after line two in the output of apk info -r apkname,
     # it would indicate this apk has a dependency, so we skip those.
     #
-    if [ $(apk info -r $apk_short | tail -n +2 | wc -w) -eq 0 ]; then
+    if [ "$(apk info -r "$apk_short" | tail -n +2 | wc -w)" -eq 0 ]; then
         if [ "$out_file" != "" ]; then
-            echo $apk_short >> $out_file
+            echo "$apk_short" >> "$out_file"
         fi
-        echo $apk_short
+        echo "$apk_short"
     fi
 done

@@ -101,20 +101,32 @@ SPD_INITIAL_SCRIPT=1
 #  Include all dependencies
 #
 
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/extras/utils.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/extras/read_config.sh"
 
-
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_dcron.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_do_extra.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_hostname.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_timezone.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_restore_root.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_runbg.sh"
+# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
 
 
@@ -185,8 +197,8 @@ if false; then
     # only those listed below will be run
     msg_1 "custom restore"
     run_tasks() {
-    	task_runbg
-    	task_sshd
+        task_runbg
+        task_sshd
     }
     # no need to wait if you are testing tasks...
     wait_after_summary=0
@@ -211,6 +223,7 @@ echo
 msg_1 "Displaying what tasks will be performed"
 run_tasks
 
+# shellcheck disable=SC2154
 if [ "$p_help" = "1" ]; then
     echo
     echo "param -h indicates that you only want to see what will be done"
@@ -231,6 +244,8 @@ sleep $wait_after_summary
 #
 # Do all tasks
 #
+
+# shellcheck disable=SC2034
 SPD_TASK_DISPLAY=0
 msg_1 "Restore begins"
 run_tasks

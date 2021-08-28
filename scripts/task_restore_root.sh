@@ -115,13 +115,12 @@ _trr_update_root_shell() {
         fi
         echo
  
-    elif       [ "$SPD_TASK_DISPLAY" = "1" ] \
-            && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif     [ "$SPD_TASK_DISPLAY" = "1" ] \
+          && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_3 "root shell unchanged"
         echo "$current_shell"
         echo
     fi
-
     unset current_shell
 }
 

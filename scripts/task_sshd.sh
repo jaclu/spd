@@ -70,7 +70,7 @@ task_sshd() {
     #
     if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         verbose_msg "task_sshd() needs to source openrc to satisfy dependencies"
-	# shellcheck disable=SC1091
+        # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
 
@@ -83,17 +83,17 @@ task_sshd() {
         SPD_SSHD_SERVICE="0"
         warning_msg "SPD_SSHD_SERVICE not defined, service sshd will not be modified"
     fi
-    
+
     case "$SPD_SSHD_SERVICE" in
 
         "-1" ) # disable
             _ts_task_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-	           msg_3 "Will be disabled"
+               msg_3 "Will be disabled"
             else
                 check_abort
                 service_installed="$(rc-service -l |grep $service_name )"
-                if [ "$service_installed"  != "" ]; then		    
+                if [ "$service_installed"  != "" ]; then
                     disable_service $service_name default
                     msg_3 "was disabled"
                 else
@@ -191,7 +191,6 @@ _ts_unpack_ssh_host_keys() {
                 cd /etc/ssh || error_msg "Failed to cd into /etc/ssh"
                 # remove any previous host keys
                 2> /dev/null rm /etc/ssh/ssh_host_*
-
                 2> /dev/null tar xfz "$SPD_SSH_HOST_KEYS" || error_msg "Untar failed!"
             fi
         else

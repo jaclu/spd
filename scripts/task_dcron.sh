@@ -65,7 +65,7 @@ task_dcron() {
     #
     if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         verbose_msg "task_dcron() needs to source openrc to satisfy dependencies"
-	# shellcheck disable=SC1091
+        # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
 
@@ -73,21 +73,22 @@ task_dcron() {
     # Name of service
     #
     service_name=dcron
-            
+
     if [ "$SPD_DCRON" = "" ]; then
         SPD_DCRON="0"
         warning_msg "SPD_DCRON not defined, service dcron will not be modified"
     fi
 
     case "$SPD_DCRON" in
+
         -1 ) # disable
             _dcron_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-	           msg_3 "Will be disabled"
+               msg_3 "Will be disabled"
             else
                 check_abort
                 service_installed="$(rc-service -l |grep $service_name )"
-                if [ "$service_installed"  != "" ]; then		    
+                if [ "$service_installed"  != "" ]; then
                     disable_service $service_name default
                     msg_3 "was disabled"
                 else
@@ -96,15 +97,15 @@ task_dcron() {
             fi
             echo
             ;;
-    
+
         0 )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
                 _dcron_label
                 echo "Will NOT be changed"
             fi
             ;;
-    
-        1 )  # activate 
+
+        1 )  # activate
             _dcron_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
@@ -117,10 +118,12 @@ task_dcron() {
                 msg_3 "Activating service"
                 ensure_service_is_added $service_name default restart
             fi
-	    _dcron_host_crontab
+            _dcron_host_crontab
             ;;
 
-       *) error_msg "task_dcron($SPD_DCRON) invalid option, must be one of -1, 0, 1"
+       *)
+            error_msg "task_dcron($SPD_DCRON) invalid option, must be one of -1, 0, 1"
+
     esac
     echo
 
@@ -147,11 +150,11 @@ _dcron_host_crontab() {
     msg_3 "root crontab"
     if [ "$SPD_DCRON_ROOT_CRONTAB" != "" ] &&  [ -f "$SPD_DCRON_ROOT_CRONTAB" ]; then
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-	    echo "Will use: $SPD_DCRON_ROOT_CRONTAB"
-	else
-	    echo "Using: $SPD_DCRON_ROOT_CRONTAB"
+            echo "Will use: $SPD_DCRON_ROOT_CRONTAB"
+        else
+            echo "Using: $SPD_DCRON_ROOT_CRONTAB"
             crontab "$SPD_DCRON_ROOT_CRONTAB"
-	fi
+        fi
     else
         echo "Not setting any root crontab"
     fi

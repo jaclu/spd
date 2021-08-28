@@ -69,7 +69,7 @@ task_runbg() {
     #
     if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         verbose_msg "task_runbg() needs to source openrc to satisfy dependencies"
-	# shellcheck disable=SC1091
+        # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
 
@@ -81,17 +81,17 @@ task_runbg() {
         warning_msg "SPD_RUN_BG not defined, service runbg will not be modified"
     fi
 
-
     case "$SPD_RUN_BG" in
+
         -1 ) # disable
             _runbg_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-	           msg_3 "Will be disabled"
+               msg_3 "Will be disabled"
             else
                 check_abort
                 msg_3 "Disabling service"
                 service_installed="$(rc-service -l |grep $service_name )"
-                if [ "$service_installed"  != "" ]; then		    
+                if [ "$service_installed"  != "" ]; then
                     disable_service $service_name default
                     echo "now disabled"
                 else
@@ -134,7 +134,8 @@ task_runbg() {
             fi
             ;;
 
-       *) error_msg "task_runbg($SPD_RUN_BG) invalid option, must be one of -1, 0, 1"
+        *)
+            error_msg "task_runbg($SPD_RUN_BG) invalid option, must be one of -1, 0, 1"
     esac
     echo
 

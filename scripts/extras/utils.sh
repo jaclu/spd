@@ -46,6 +46,7 @@ error_msg() {
     [ -z "$msg" ] && error_msg "error_msg() with no param"
 
     case $err_code in
+
         ''|*[!0-9]*)
             printf "PARAM ERROR: error_msg() Non numeric err_code given "
             echo "[$err_code] changed into 1"
@@ -64,7 +65,7 @@ error_msg() {
 
 warning_msg() {
     msg=$1
-    
+
     [ -z "$msg" ] && error_msg "warning_msg() with no param"
     printf '\nWARNING: %b\n\n' "$msg"
 
@@ -77,7 +78,7 @@ warning_msg() {
 #
 verbose_msg() {
     msg=$1
-    
+
     [ -z "$msg" ] && error_msg "verbose_msg() with no param"
     [ "$p_verbose" = "1" ] && printf 'VERBOSE: %b\n' "$msg"
 
@@ -119,14 +120,14 @@ msg_1() {
     # all spaces are generated
     #
     #spacer_line="|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
-    
+
     echo "$border_line"
     echo "|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
     echo "|$pad_str$msg$pad_str|"
     echo "|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
     echo "$border_line"
     echo
-    
+
     unset msg
     unset max_length
     unset pad_str
@@ -174,9 +175,9 @@ expand_deploy_path() {
     elif [ -n "$this_path" ]; then
         expanded_path="$DEPLOY_PATH/$this_path"
         echo "$expanded_path"
-	    >/dev/stderr verbose_msg "$this_path expanded into: $expanded_path"
+        >/dev/stderr verbose_msg "$this_path expanded into: $expanded_path"
     fi
-    
+
     unset this_path
     unset char_1
     unset expanded_path
@@ -197,6 +198,7 @@ ensure_installed() {
     pkg=$1
     msg=$2
     ret_val=0
+
     test -z "$pkg" && error_msg "ensure_installed() called with no param!"
     test -z "$msg" && msg="Installing dependency $pkg"
     [ -z "$(apk info -e "$pkg")" ] && msg_3 "$msg"
@@ -205,7 +207,7 @@ ensure_installed() {
         apk add "$pkg"
         ret_val=1
     fi
-    
+
     unset pkg
     unset msg
 
@@ -213,6 +215,7 @@ ensure_installed() {
         unset ret_val
         return 1
     fi
+
     unset ret_val
     return 0
 }
@@ -226,7 +229,7 @@ ensure_installed() {
 #
 ensure_shell_is_installed() {
     SHELL_NAME=$1
-     
+
     [ -z "$SHELL_NAME" ] && error_msg "ensure_shell_is_installed() - no shell paraam!"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed! ><<\n"
@@ -251,21 +254,22 @@ clear_work_dir() {
 
     extract_location="/tmp/deploy-ish-$$" # based on pid
     rm $extract_location -rf 2> /dev/null
+
     case "$new_space" in
-    
+
         "1")
             mkdir -p $extract_location
             cd $extract_location || error_msg "clear_work_dir() could not cd !"
             ;;
-            
+
         "")
             ;;
-            
+
         *)
             echo
             echo "ERROR: clear_work_dir() accepted params: nothing|1"
             exit 1
-            
+
     esac
 
     unset new_space
@@ -318,16 +322,15 @@ unpack_home_dir() {
     ! test -f "$fname_tgz" && error_msg "tar file not found:\n[$fname_tgz]"
 
     case "$unpacked_ptr" in
-    
+
         "0"|"1" )
             # Not actual error, no unpacked_ptr given so save_current got shifted here"
             unpacked_ptr=""
             ;;
 
         *)
-        
+
     esac
-    
     #
     #  Actual work starts
     #
@@ -359,7 +362,7 @@ unpack_home_dir() {
                 error_msg "Content outside intended destination found, check the tarfile!"
             fi
             echo "Successfully extracted content"
-            
+
             if [ "$save_current" = "1" ]; then
                 rm "$old_home_dir" -rf
                 mv "$home_dir" "$old_home_dir"
@@ -395,16 +398,20 @@ parse_command_line() {
     p_verbose=0
     SPD_TASK_DISPLAY=1
     while [ -n "$1" ]; do
+
         case "$1" in
+
             "-?" | "-h" | "--help")
                 p_help=1
                 unset SPD_TASK_DISPLAY
                 ;;
-		
+
+
             "-v" | "--verbose")
                 p_verbose=1
                 ;;
-                
+
+
             "-c")
                 p_cfg=1
                 ;;
@@ -415,31 +422,33 @@ parse_command_line() {
 
             *)
                 echo "WARNING: Unsupported param!: [$1]"
+
         esac
         shift
     done
-    
+
     #
     # This will not happen by default when run as bin/deploy-ish.sh!
     # So in that file read_config.sh is sourced directly.
     # If you were to run bin/deploy-ish.sh with -c nothing bad happens,
     # the configs will just be parsed twice
     #
+
     if [ $p_cfg -eq 1 ]; then
-	# shellcheck disable=SC1091
-    	. "$DEPLOY_PATH/scripts/extras/read_config.sh"
-    	read_config
+        # shellcheck disable=SC1091
+        . "$DEPLOY_PATH/scripts/extras/read_config.sh"
+        read_config
     fi
 
     #
     # This is checked after all config files are processed, so if you really want to, you can
     # override this in a later config file....
     # If help is requested we will continue despite SPD_ABORT=1
-    # Since nothing will be changed, and it helps testting scipts on non supported platforms. 
+    # Since nothing will be changed, and it helps testting scipts on non supported platforms.
     #
     if [ "$SPD_TASK_DISPLAY" = "0" ] && [ $p_help = 0 ]; then
         [ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system."
-    fi    
+    fi
 }
 
 
@@ -482,8 +491,9 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
         # time.
         #
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            [ "$SPD_ABORT" = "1" ] && \
+            if [ "$SPD_ABORT" = "1" ]; then
                 error_msg "Detected SPD_ABORT=1  Your settings prevent this device to be modified"
+            fi
             [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
             [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
         fi

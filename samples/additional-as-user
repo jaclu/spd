@@ -3,16 +3,12 @@
 #
 # Simulating the ish output style, since this is not sourced
 #
-function msg_2() {
-    local msg=$1
-
-    echo "=== $msg ==="
+msg_2() {
+    echo "=== $1 ==="
 }
 
-function msg_3() {
-    local msg=$1
-
-    echo "--- $msg ---"
+msg_3() {
+    echo "--- $1 ---"
 }
 
 

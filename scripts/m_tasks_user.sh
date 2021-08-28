@@ -153,7 +153,7 @@ task_restore_user() {
                     echo "new shell: $SPD_SHELL"
                 fi
             else
-	           echo "$current_shell"
+               echo "$current_shell"
             fi
         fi
         echo
@@ -235,7 +235,7 @@ _mtu_make_available_uid_gid() {
     fi
     msg_3 "Intended uid/gid is beeing used"
     echo "Will try to free up desired uid & gid"
-    
+
     # check if user who will get an id change is logged int
     is_logged_in="$(ps axu | cut -d " " -f 1 | grep "$user_name" |grep -v grep)"
 
@@ -264,22 +264,22 @@ _mtu_make_available_uid_gid() {
     fi
     if [ "$chown_home" = 1 ]; then
         other_u_home="$(eval echo "~${user_name}")"
-	if [ -d "$other_u_home"  ]; then
+        if [ -d "$other_u_home"  ]; then
             msg_3 "changing home ownership recursively"
             echo "~$other_u_home -> $id_available:$id_available"
             chown -R "$id_available":"$id_available" "$other_u_home"
-	    #
-	    # If user who got id change is logged in, display warning that
-	    # file privs might need to be fixed after logout
-	    #
-	    if [ -n "$is_logged_in"  ]; then
-		echo
-		echo "WARNING: $user_name seems to be logged in, you might need to correct file privs in: $other_u_home once user has logged out!"
-		echo
-	    fi
-	fi
-	test -f /var/mail/"$user_name" && \
-            chown -R "$user_name":"$user_name" /var/mail/"$user_name"
+            #
+            # If user who got id change is logged in, display warning that
+            # file privs might need to be fixed after logout
+            #
+            if [ -n "$is_logged_in"  ]; then
+                echo
+                echo "WARNING: $user_name seems to be logged in, you might need to correct file privs in: $other_u_home once user has logged out!"
+                echo
+            fi
+        fi
+        test -f /var/mail/"$user_name" && \
+                chown -R "$user_name":"$user_name" /var/mail/"$user_name"
     fi
     #
     # Even if the GID of the offending user wasnt the offending GID

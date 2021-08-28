@@ -105,15 +105,15 @@ _tef_copy_etc_file() {
     [ -n "$surplus_param" ] && error_msg "_copy_etc_file($src_file, $dst_file) [$surplus_param] more than 2 params given!"
     verbose_msg "_tef_copy_etc_file($src_file, $dst_file)"
     if [ -n "$src_file" ]; then
-    	msg_3 "$dst_file"
+        msg_3 "$dst_file"
         [ ! -f "$src_file" ] && error_msg "_tef_copy_etc_file() src_file[$src_file] NOT FOUND!\n$src_file"
-    	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             cp "$src_file" "$dst_file"
             echo "$src_file"
-    	elif [ "$SPD_TASK_DISPLAY" = "1" ] \
+        elif [ "$SPD_TASK_DISPLAY" = "1" ] \
                 && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
             echo "Will NOT be modified"
-    	fi
+        fi
     fi
     unset dst_file
     unset src_file
@@ -129,10 +129,10 @@ _tef_fix_inittab() {
     # Since iSH has no concept of consoles getty lines are pointless
     if grep -q 'getty' "$inittab_file"; then
         msg_3 "Removing gettys"
-    	if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-	    sed -i '/getty/d' "$inittab_file"
+        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+           sed -i '/getty/d' "$inittab_file"
             echo "done!"
-    	else
+        else
             echo "will happen"
        fi
     fi
@@ -151,7 +151,7 @@ _tef_fix_inittab() {
                 echo "will happen"
             fi
         else
-	    echo "Patch already applied!"
+        echo "Patch already applied!"
         fi
     fi
 
@@ -168,17 +168,17 @@ _tef_fix_profile() {
     #
     #
     if grep -q append_path /etc/profile ; then
-	msg_3 "Fixing /etc/profile PATH"
-	if ! grep -q "export PATH=" /etc/profile ; then
-	    if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-		echo "broken /etc/profile detected, will be fixed"
-	    else
-		sed -i '/^export PATH/a \\n# Fix for broken reversed append_path\nexport PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n' /etc/profile
+    msg_3 "Fixing /etc/profile PATH"
+    if ! grep -q "export PATH=" /etc/profile ; then
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+        echo "broken /etc/profile detected, will be fixed"
+        else
+        sed -i '/^export PATH/a \\n# Fix for broken reversed append_path\nexport PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n' /etc/profile
                 echo "done!"
-	    fi
-	else
-	    echo "Patch already applied!"
-	fi
+        fi
+    else
+        echo "Patch already applied!"
+    fi
     fi
 }
 

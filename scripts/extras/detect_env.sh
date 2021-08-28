@@ -58,27 +58,27 @@ distro_MacOS='MacOS'
 #  Detect environ
 #
 case "$(uname)" in
+
     "$os_type_Linux")
         os_type=$os_type_Linux
-		if [ "$(uname -r | grep ish)" != "" ]; then
-			distro_family=$distro_family_ish
-			if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
-				distro=$distro_ish_AOK
-			else
-				distro=$distro_ish
-			fi
-			#elif [ "$(uname -r) | grep ish" != "" ]; then
-		fi
-    	;;
-	
-    "$os_type_Darwin")
-	    os_type=$os_type_Darwin
-	    distro_family=""
-	    distro=$distro_MacOS
-    	;;
-	
-esac
+        if [ "$(uname -r | grep ish)" != "" ]; then
+            distro_family=$distro_family_ish
+            if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
+                distro=$distro_ish_AOK
+            else
+                distro=$distro_ish
+            fi
+            #elif [ "$(uname -r) | grep ish" != "" ]; then
+        fi
+        ;;
 
+    "$os_type_Darwin")
+        os_type=$os_type_Darwin
+        distro_family=""
+        distro=$distro_MacOS
+        ;;
+
+esac
 
 #
 # show what was detected if verbose mode

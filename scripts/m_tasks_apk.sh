@@ -115,7 +115,6 @@ task_apks_delete() {
     echo
 
     unset msg_txt
-    unset msg
 }
 
 

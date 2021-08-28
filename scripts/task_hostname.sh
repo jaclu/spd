@@ -87,8 +87,8 @@ task_hostname() {
         msg_3 "AOK filesystem"
         echo "hostname will not be altered."
     else
-    	[ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
-    	_th_setup_env
+        [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
+        _th_setup_env
         _th_alternate_host_name
     fi
     echo
