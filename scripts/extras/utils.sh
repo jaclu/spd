@@ -52,6 +52,7 @@ error_msg() {
             echo "[$err_code] changed into 1"
             err_code=1
             ;;
+
     esac
 
     printf '\nERROR: %b\n\n' "$msg"
@@ -155,11 +156,16 @@ msg_3() {
 
 
 check_abort() {
+    #
+    # Check if actions can be done in this environment
+    #
     [ "$SPD_ABORT" != "1" ] && return
+    
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
         msg_2 "SPD_ABORT=1"
         error_msg "This prevents any action from being taken"
     fi
+    return 0 # indicate the check indicated unsuitable envionment
 }
 
 expand_deploy_path() {
@@ -449,6 +455,41 @@ parse_command_line() {
     if [ "$SPD_TASK_DISPLAY" = "0" ] && [ $p_help = 0 ]; then
         [ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system."
     fi
+}
+
+
+#=====================================================================
+#
+# _run_this() & _display_help()
+# are only run in standalone mode, so no risk for wrong same named function
+# being called...
+#
+# In standlone mode, this will be run from See "main" part at end of
+# extras/utils.sh, it first expands parameters,
+# then either displays help or runs the task(-s)
+#
+_run_this() {
+    #
+    # Perform the task / tasks independently, convenient for testing
+    # and debugging.
+    #
+    # loop over lines in $script_tasks
+    #
+    set -f; IFS='
+'
+    # shellcheck disable=SC2086
+    # next line can not use quotes
+    set -- $script_tasks
+    while [ -n "$1" ]; do
+        # execute first word from line
+        IFS=' '
+        $1
+        # pop first line from lines, including potential description of task
+        IFS='
+'
+        shift
+    done
+    set +f; unset IFS
 }
 
 
