@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-09-02
 # License: MIT
 #
 # Part of https://github.com/jaclu/spd
@@ -25,44 +25,6 @@ unset _this_script
 
 
 
-
-
-
-
-#=====================================================================
-#
-# _run_this() & _display_help()
-# are only run in standalone mode, so no risk for wrong same named function
-# being called...
-#
-# In standlone mode, this will be run from See "main" part at end of
-# extras/utils.sh, it first expands parameters,
-# then either displays help or runs the task(-s)
-#
-
-_run_this() {
-    #
-    # Perform the task / tasks independently, convenient for testing
-    # and debugging.
-    #
-    # loop over lines in $script_tasks
-    #
-    set -f; IFS='
-'
-    # shellcheck disable=SC2086
-    # next line can not use quotes
-    set -- $script_tasks
-    while [ -n "$1" ]; do
-        # execute first word from line
-        IFS=' '
-        $1
-        # pop first line from lines
-        IFS='
-'
-        shift
-    done
-    set +f; unset IFS
-}
 
 
 _display_help() {
