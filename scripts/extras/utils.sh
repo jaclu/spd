@@ -477,8 +477,8 @@ _run_this() {
     #
     set -f; IFS='
 '
-    # shellcheck disable=SC2086
     # next line can not use quotes
+    # shellcheck disable=SC2086,SC2154
     set -- $script_tasks
     while [ -n "$1" ]; do
         # execute first word from line
