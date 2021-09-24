@@ -15,7 +15,7 @@ All that should be needed is to have this toolset mounted on the target system a
 - To restore a fresh install into your prefeed state
 - To ensure any config changes are applied to this device
 
-It is not fully indempotent, since some tasks will be redone, but it is in the sense that repeated runs wont alter anything unless config changes requests so.
+It is not fully idempotent, since some tasks will be redone, but it is in the sense that repeated runs wont alter anything unless config changes requests so.
 
 ### Procedure to setup your environment
 
