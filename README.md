@@ -1,41 +1,60 @@
 # Simple Posix Deploy
 
-Deploying in place for simple Posix environs, where ansible and similar more advanced tools do not make much sense since getting to the point of being able to run it, would enforce a lot of painful touch typing.
+Deploying in place for simple Posix environs, where ansible and similar more
+advanced tools do not make much sense since getting to the point of being able
+to run it, would enforce a lot of painful touch typing.
 
-Especially since minimalistic linux/linux like devices should ideally be self contained and it should be possible to set them up with minimal preparations or dependency of deployment servers.
+Especially since minimalistic linux/linux like devices should ideally be self
+contained and it should be possible to set them up with minimal preparations
+or dependency of deployment servers.
 
-This toolset achieves this by only depending on a posix shell, and a small enough number of generic nix tools, that it should hopefully be able to run out of the box on anything.
+This toolset achieves this by only depending on a posix shell, and a small
+enough number of generic nix tools, that it should hopefully be able to run
+out of the box on anything.
 
-It's current primary purpose is to be used for deployments of iSH environments, so it asumes apk packaging, but it should be possible to fairly easily adopt it to other systems.
+It's current primary purpose is to be used for deployments of
+iSH environments, so it asumes apk packaging, but it should be possible to
+fairly easily adopt it to other systems.
 
-All that should be needed is to have this toolset mounted on the target system and run `bin/deploy-ish`
+All that should be needed is to have this toolset mounted on the target system
+and run `bin/deploy-ish`
 
 `bin/deploy-ish` has two primary usage cases
 
 - To restore a fresh install into your prefeed state
 - To ensure any config changes are applied to this device
 
-It is not fully idempotent, since some tasks will be redone, but it is in the sense that repeated runs wont alter anything unless config changes requests so.
+It is not fully idempotent, since some tasks will be redone, but it is in the
+sense that repeated runs wont alter anything unless config changes requests so.
 
 ### Procedure to setup your environment
 
-I deploy this to iCloud, this way I can use it on any of my devices, and my configs are maintained
-if I go to a new device or delete - reinstall the iSH app. Any host based differences in config I can also setup in advance.
+I deploy this to iCloud, this way I can use it on any of my devices, and my
+configs are maintained if I go to a new device or delete - reinstall
+the iSH app. Any host based differences in config I can also setup in advance.
 
-Be aware that iCloud seems to often fail to keep iOS devices in sync, so please check out the section "Annoyances of iCloud" towards the end of this document, for some suggestions. Personally I always perfom the inbound sync fix before running this tool on a fresh FS in order to ensure the iCloud content is up to date.
+Be aware that iCloud seems to often fail to keep iOS devices in sync, so
+please check out the section "Annoyances of iCloud" towards the end of this 
+document, for some suggestions. Personally I always perfom the inbound sync
+fix before running this tool on a fresh FS in order to ensure the iCloud
+content is up to date.
 
 My procedure on a pristine iSH system (as root)
 
 - `mount -t ios . /spd` (or any other local path)
-    - Chose where this is located on your devices iCloud in the popup
-- `/spd/bin/deploy-ish`  
-  takes one to a couple of minutes, depending on how many apks you install.
-    - If user was defined, displays a reminder to set the user password if it has not been set yet.
+      - Chose where this is located on your devices iCloud in the popup
+- `/spd/bin/deploy-ish` takes one to a couple of minutes, depending on how
+many apks you install.
+    - If user was defined, displays a reminder to set the user password if 
+        it has not been set yet.
 - Set the user password if requested to do so, following the instructions.
 
 ### export / import FS
 
-If I import a pristine FS and mount it, in ordeer to "get back to a clean env" the procedure is somewhat simpler, since the mount is remembered between reboots, even if the FS is replaced. The mountpoint must however exist, so I typically do a delete / install cycle every now and then:
+If I import a pristine FS and mount it, in ordeer to "get back to a clean env"
+the procedure is somewhat simpler, since the mount is remembered between
+reboots, even if the FS is replaced. The mountpoint must however exist,
+so I typically do a delete / install cycle every now and then:
 
 - create the mount point dir if it does not exist
 - mount the intended location
@@ -45,16 +64,22 @@ If I import a pristine FS and mount it, in ordeer to "get back to a clean env" t
 - export the FS
 - run `/[MountPoint]/bin/deploy-ish` 
 
-So when I later import this FS, all I need to do after bootup once I have a root prompt, is up-arrow and hit enter, and my environment will be restored with just 2 key-presses!
+So when I later import this FS, all I need to do after bootup once I have
+a root prompt, is up-arrow and hit enter, and my environment will be restored
+with just 2 key-presses!
 
 
 ## Configuration is defined in custom/config
 
  1. Copy **samples/config** to **custom/config**
- 1. Check the **Config.md** in that directory and adjust configs to your preferences
+ 1. Check the **Config.md** in that directory and adjust configs to your 
+    preferences
 
-Once the config is set up according to your preferences, redeploys will only require you to run 
-`bin/deploy-ish`, and your iSH will be in your prefered state. If you have multiple iSH instances you want to set up slightly differently, you can use hostname to identify wich host a given config is aimed for. See **custom/config/Config.md** for more details.
+Once the config is set up according to your preferences, redeploys will
+only require you to run `bin/deploy-ish`, and your iSH will be in your
+prefered state. If you have multiple iSH instances you want to set up
+slightly differently, you can use hostname to identify wich host a given
+config is aimed for. See **custom/config/Config.md** for more details.
 
 ## Filestructure
 
@@ -71,10 +96,15 @@ task_XXX.sh     - single task script
 m_tasks_XXX.sh  - multiple tasks script
 ```
 
-Any task can be tested standalone, to ensure its functioning as intended. This hopefully makes it easier to examine configs and debug issues. In order to create additional task scripts, just copy one of them, keep the boiler plate code, and you should have a new task script with minimal fuzz, test it out and your done!
-Once it works as intended add the task(-s) to `bin/deploy-ish`
+Any task can be tested standalone, to ensure its functioning as intended.
+This hopefully makes it easier to examine configs and debug issues. In order
+to create additional task scripts, just copy one of them, keep the boiler
+plate code, and you should have a new task script with minimal fuzz, 
+test it out and your done! Once it works as intended add the task(-s)
+to `bin/deploy-ish`
 
-All 3 "run modes" also can use the option -c  This will read the config files, ie
+All 3 "run modes" also can use the option -c  This will read the config files,
+ie
 
 - [-h] display help -- For params not defined a description is printed, if the param is defined its content will be displayed
 - [no option for this mode] info about what actions will be performed
