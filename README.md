@@ -51,7 +51,7 @@ many apks you install.
 
 ### export / import FS
 
-If I import a pristine FS and mount it, in ordeer to "get back to a clean env"
+If I import a pristine FS and mount it, in order to "get back to a clean env"
 the procedure is somewhat simpler, since the mount is remembered between
 reboots, even if the FS is replaced. The mountpoint must however exist,
 so I typically do a delete / install cycle every now and then:
