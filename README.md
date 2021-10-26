@@ -195,8 +195,8 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
     Filteing out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necesarry but you can always run the command again for ease of mind, this time you should see no output.
     Either works, personally I ususally use `find` 
     
-    - quicker to type
-    - If I also want to search for some file, I can combine the two tasks
+    - quicker to type, since I can't rely on aliases at this point.
+    - If I also want to search for some file, I can combine the two tasks by just not piping to /dev/null
 
 - outbound sync -- ie items changed localy.
 
