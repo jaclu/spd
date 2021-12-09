@@ -43,7 +43,7 @@ check_for_other_polling() {
 start_pre() {
     check_for_other_polling
     if [ "$other_pids" != "" ]; then
-	eerror "ERROR: Other processes polling GPS [ $other_pids]"
+        eerror "ERROR: Other processes polling GPS [ $other_pids]"
    fi
 }
 
@@ -51,6 +51,6 @@ start_pre() {
 stop_post() {
     check_for_other_polling
     if [ "$other_pids" != "" ]; then
-	ewarn "WARNING: Other processes polling GPS [ $other_pids]"
+        ewarn "WARNING: Other processes polling GPS [ $other_pids]"
    fi
 }
