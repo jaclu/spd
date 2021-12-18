@@ -51,7 +51,7 @@ many apks you install.
 
 ### export / import FS
 
-If I import a pristine FS and mount it, in ordeer to "get back to a clean env"
+If I import a pristine FS and mount it, in order to "get back to a clean env"
 the procedure is somewhat simpler, since the mount is remembered between
 reboots, even if the FS is replaced. The mountpoint must however exist,
 so I typically do a delete / install cycle every now and then:
@@ -190,13 +190,13 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
     To some extent this also aplies to MacOS, but there inbound sync is less error prone, but from time to time you will need to do this action if syncing seems out of date, the procedure is the same as for iOS. It seems the only reliable way to ensure your iOS device retrieves changes from other devices is to do a full tree walk, the two methods I have found to solve this so far (from within iSH) are:
 
     - `find . > /dev/null`
-    - `ls -laR . > /dev/null`
+    - `ls -laR . > /dev/null` If using ls, ensure you also "display" the dot-files to make sure they are synced.
     
     Filteing out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necesarry but you can always run the command again for ease of mind, this time you should see no output.
     Either works, personally I ususally use `find` 
     
-    - quicker to type
-    - If I also want to search for some file, I can combine the two tasks
+    - quicker to type, since I can't rely on aliases at this point.
+    - If I also want to search for some file, I can combine the two tasks by just not piping to /dev/null
 
 - outbound sync -- ie items changed localy.
 
