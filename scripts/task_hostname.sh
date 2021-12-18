@@ -1,7 +1,12 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com
 # License: MIT
+#
+# Version: 1.2.1 2021-07-14
+#                Improved check for AOK kernel
+#          1.2.0 2021-07-25
+#                Added this header
 #
 # Part of https://github.com/jaclu/spd
 #
@@ -83,7 +88,7 @@ task_hostname() {
     check_abort
     _th_expand_all_deploy_paths     
 
-    if [ -d "/AOK" ]; then 
+    if [ -n "$(uname -a | grep -i AOK)" ]; then 
         msg_3 "AOK filesystem"
         echo "hostname will not be altered."
     else
