@@ -361,7 +361,11 @@ unpack_home_dir() {
             msg_3 "Extracting"
             echo "$fhome_packed"
             if [ "${fhome_packed#*zip}" != "$fhome_packed" ]; then
-                unzip $fhome_packed && error_msg "Failed to unzip"
+                unzip -q $fhome_packed
+                e_code="$?"
+                if [ "$e_code" -ne 0 ]; then
+                    error_msg "Failed to unzip ($e_code)"
+                fi
             else
                 ! tar xfz "$fhome_packed" 2> /dev/null && error_msg "Failed to unpack tarball"
             fi
