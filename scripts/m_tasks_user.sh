@@ -48,13 +48,13 @@ help_local_paramas() {
     echo "SPD_SHELL$(
         test -z "$SPD_SHELL" && echo ' - shell for username' \
         || echo "=$SPD_SHELL" )"
-    echo "SPD_HOME_DIR_TGZ$(
-        test -z "$SPD_HOME_DIR_TGZ" \
-        && echo '          - unpack this tgz file if found' \
-        || echo "=$SPD_HOME_DIR_TGZ" )"
+    echo "SPD_HOME_DIR_CONTENT$(
+        test -z "$SPD_HOME_DIR_CONTENT" \
+        && echo '          - unpack this file if found' \
+        || echo "=$SPD_HOME_DIR_CONTENT" )"
     echo "SPD_HOME_DIR_UNPACKED_PTR$(
         test -z "$SPD_HOME_DIR_UNPACKED_PTR" \
-        && echo ' -  Indicates home.tgz is unpacked' \
+        && echo ' -  Indicates home content is unpacked' \
         || echo "=$SPD_HOME_DIR_UNPACKED_PTR" )"
 }
 
@@ -161,9 +161,9 @@ task_restore_user() {
         #
         # Restore user home
         #
-        if [ -n "$SPD_HOME_DIR_TGZ" ]; then
+        if [ -n "$SPD_HOME_DIR_CONTENT" ]; then
             unpack_home_dir "Restoration of /home/$SPD_UNAME" "$SPD_UNAME" \
-                /home/"$SPD_UNAME" "$SPD_HOME_DIR_TGZ" \
+                /home/"$SPD_UNAME" "$SPD_HOME_DIR_CONTENT" \
                 "$SPD_HOME_DIR_UNPACKED_PTR"
 
         fi
@@ -207,7 +207,7 @@ _mtu_expand_all_deploy_paths() {
     # Expanding path variables that are either absolute or relative
     # related to the deploy-path
     #
-    SPD_HOME_DIR_TGZ=$(expand_deploy_path "$SPD_HOME_DIR_TGZ")
+    SPD_HOME_DIR_CONTENT=$(expand_deploy_path "$SPD_HOME_DIR_CONTENT")
 }
 
 

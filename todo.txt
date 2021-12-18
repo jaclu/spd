@@ -18,7 +18,7 @@ SPD_ROOT_UNPACKED_PTR
 SPD_ROOT_REPLACE
 SPD_UNAME                   my_uname
 SPD_SHELL                   my_shell
-SPD_HOME_DIR_TGZ            my_home_dir_tgz
+SPD_HOME_DIR_CONTENT            my_home_dir_tgz
 SPD_HOME_DIR_UNPACKED_PTR   my_home_dir_unpacked_ptr
 
 SPD_LOCATION_SERVICE

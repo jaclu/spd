@@ -292,7 +292,7 @@ unpack_home_dir() {
     msg_txt=$1
     username=$2
     home_dir=$3
-    fname_tgz=$4
+    fhome_packed=$4
     unpacked_ptr=$5
     save_current=$6
     old_home_dir="$home_dir-OLD"
@@ -300,11 +300,11 @@ unpack_home_dir() {
     [ "$save_current" != "1" ] && save_current=0
 
     # (mostly) unverified params
-    #verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fname_tgz=$fname_tgz, unpacked_ptr=$unpacked_ptr, save_current=$save_current)"
+    #verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fhome_packed=$fhome_packed, unpacked_ptr=$unpacked_ptr, save_current=$save_current)"
     # TODO: verify that this split param aproach displays as intended!
     verbose_msg "$(
         printf "unpack_home_dir(username=%s, home=" "$username"
-        printf "%s, fname_tgz=%s, , unpacked_ptr=" "$home_dir" "$fname_tgz"
+        printf "%s, fhome_packed=%s, , unpacked_ptr=" "$home_dir" "$fhome_packed"
         echo "$unpacked_ptr, save_current=$save_current)")"
 
     #
@@ -322,10 +322,10 @@ unpack_home_dir() {
     if [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ -z "$(find "$home_dir" -maxdepth 0 -user "$username")" ]; then
         error_msg "unpack_home_dir($username, $home_dir) - username does not own home_dir"
     fi
-    if [ -z "$fname_tgz" ] || [ "$fname_tgz" = "1" ]; then
-        error_msg "unpack_home_dir($username, $home_dir,) - No tar file to be extracted given"
+    if [ -z "$fhome_packed" ] || [ "$fhome_packed" = "1" ]; then
+        error_msg "unpack_home_dir($username, $home_dir,) - No file to be extracted given"
     fi
-    ! test -f "$fname_tgz" && error_msg "tar file not found:\n[$fname_tgz]"
+    ! test -f "$fhome_packed" && error_msg "file not found:\n[$fhome_packed]"
 
     case "$unpacked_ptr" in
 
@@ -359,8 +359,12 @@ unpack_home_dir() {
         else
             clear_work_dir 1
             msg_3 "Extracting"
-            echo "$fname_tgz"
-            ! tar xfz "$fname_tgz" 2> /dev/null && error_msg "Failed to unpack tarball"
+            echo "$fhome_packed"
+            if [ "${fhome_packed#*zip}" != "$fhome_packed" ]; then
+                unzip $fhome_packed && error_msg "Failed to unzip"
+            else
+                ! tar xfz "$fhome_packed" 2> /dev/null && error_msg "Failed to unpack tarball"
+            fi
             if [ ! -d "$extract_location/$username" ]; then
                 error_msg "No $username top dir found in the tarfile!"
             elif [ "$(find . -maxdepth 1 | wc -l)" != "2" ]; then
@@ -388,7 +392,7 @@ unpack_home_dir() {
 
     unset username
     unset home_dir
-    unset fname_tgz
+    unset fhome_packed
     unset unpacked_ptr
     unset save_current
     unset old_home_dir
