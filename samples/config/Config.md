@@ -43,9 +43,9 @@ config files
 
 Read depending on the running machines OS / distro etc.
 ```
-3-1	os_type
-3-2	distro_family
-3-3	distro
+3-1 os_type
+3-2 distro_family
+3-3 distro
 ```
 Sample config files 
 ```
