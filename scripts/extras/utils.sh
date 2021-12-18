@@ -361,8 +361,15 @@ unpack_home_dir() {
             msg_3 "Extracting"
             echo "$fhome_packed"
             if [ "${fhome_packed#*zip}" != "$fhome_packed" ]; then
-                unzip -q $fhome_packed && error_msg "Failed to unzip ($e_code)"
+                # Seems to be a zip file
+                # Give username access to extract location, so that
+                # the right user can unzip the files
+                chown "$username":"$username" $extract_location
+                su "$username" -c "unzip -q $fhome_packed"
+                err_code="$?"
+                [ "$err_code" -ne 0 ] && error_msg "Failed to unzip ($err_code)"
             else
+                # Seems to be a tar ball
                 ! tar xfz "$fhome_packed" 2> /dev/null && error_msg "Failed to unpack tarball"
             fi
             if [ ! -d "$extract_location/$username" ]; then
@@ -390,6 +397,7 @@ unpack_home_dir() {
         fi
     fi
 
+    unset err_code
     unset username
     unset home_dir
     unset fhome_packed
