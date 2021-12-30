@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 
 # License: MIT
 #
 # Part of https://github.com/jaclu/spd
@@ -20,9 +20,8 @@
 #=====================================================================
 
 # shellcheck disable=SC2034
-script_tasks="task_runbg"
-script_description="Installs and Activates or Disables a service that monitors the iOS
-location this ensures that iSH will continue to run in the background."
+script_tasks="task_mon_sshd"
+script_description="Monitors and restarts sshd if no longer responsive"
 
 
 
@@ -34,10 +33,10 @@ location this ensures that iSH will continue to run in the background."
 #=====================================================================
 
 help_local_paramas() {
-    echo "SPD_RUN_BG$(
-        test -z "$SPD_RUN_BG" \
+    echo "SPD_MON_SSHD$(
+        test -z "$SPD_MON_SSHD" \
         && echo ' -  location_tacker status (-1/0/1)' \
-        || echo "=$SPD_RUN_BG")"
+        || echo "=$SPD_MON_SSHD")"
 }
 
 
@@ -53,14 +52,14 @@ help_local_paramas() {
 #
 #=====================================================================
 
-task_runbg() { 
-    verbose_msg "task_runbg($SPD_RUN_BG)"
+task_mon_sshd() { 
+    verbose_msg "task_mon_sshd($SPD_MON_SSHD)"
     check_abort
     
     #
     # Name of service
     #
-    service_name=runbg
+    service_name=mon_sshd
     service_fname="/etc/init.d/$service_name"
     source_fname="$DEPLOY_PATH/files/services/$service_name"
 
@@ -68,7 +67,7 @@ task_runbg() {
     # source dependencies if not available
     #
     if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
-        verbose_msg "task_runbg() needs to source openrc to satisfy dependencies"
+        verbose_msg "task_mon_sshd() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/extras/openrc.sh"
     fi
@@ -76,15 +75,15 @@ task_runbg() {
     #
     #  If param not set, ensure nothing will be changed
     #
-    if [ "$SPD_RUN_BG" = "" ]; then
-        SPD_RUN_BG="0"
-        warning_msg "SPD_RUN_BG not defined, service runbg will not be modified"
+    if [ "$SPD_MON_SSHD" = "" ]; then
+        SPD_MON_SSHD="0"
+        warning_msg "SPD_MON_SSHD not defined, service mon_sshd will not be modified"
     fi
 
-    case "$SPD_RUN_BG" in
+    case "$SPD_MON_SSHD" in
 
         -1 ) # disable
-            _runbg_label
+            _mon_sshd_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                msg_3 "Will be disabled"
             else
@@ -104,13 +103,13 @@ task_runbg() {
     
         0 )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-                _runbg_label
+                _mon_sshd_label
                 echo "Will NOT be changed"
             fi
             ;;
     
         1 )  # activate 
-            _runbg_label
+            _mon_sshd_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
             else
@@ -135,7 +134,7 @@ task_runbg() {
             ;;
 
         *)
-            error_msg "task_runbg($SPD_RUN_BG) invalid option, must be one of -1, 0, 1"
+            error_msg "task_mon_sshd($SPD_MON_SSHD) invalid option, must be one of -1, 0, 1"
     esac
     echo
 
@@ -154,9 +153,9 @@ task_runbg() {
 #
 #=====================================================================
 
-_runbg_label() {
-    msg_2 "runbg service"
-    echo "  Ensuring iSH continues to run in the background."
+_mon_sshd_label() {
+    msg_2 "mon_sshd service"
+    echo "  Ensuring sshd is responsive, restarts it if not."
 }
 
 
