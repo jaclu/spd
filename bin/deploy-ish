@@ -128,6 +128,8 @@ SPD_INITIAL_SCRIPT=1
 . "$DEPLOY_PATH/scripts/task_runbg.sh"
 # shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
+# shellcheck disable=SC1091
+. "$DEPLOY_PATH/scripts/task_mon_sshd.sh"
 
 
 parse_command_line "$@"
@@ -171,6 +173,7 @@ run_tasks() {
     task_timezone
     task_dcron
     task_sshd
+    task_mon_sshd
     # Run as early as possible, so that one can switch away from iSH window
     # during deploy.
     # It should be possible to run this directly after task_apk_update
