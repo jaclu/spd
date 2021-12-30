@@ -1,0 +1,64 @@
+#!/bin/sh
+#
+#  Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-12-30
+#  License: MIT
+#
+#  Part of https://github.com/jaclu/spd
+#
+#  This script is normally controlled by the service mon_sshd.
+#
+#  Purpose is to restart sshd in case it is no longer responsive
+#  Side bonus is that if sshd doesn't start up on boot, this will notice
+#  it is not running, and ensure that it is started.
+#  If no prompt is seen, stops the service, kills the daemon process if it
+#  is still running, then starts the service again.
+#
+
+#
+#  Set to /dev/null if no logging is desired, or a file if logging is prefered.
+#
+log_file="/tmp/sshd_monitor.log"
+
+#
+# How many seconds to sleep between each check
+#
+check_intervall=5
+
+#
+#  Grab port number from /etc/ssh/sshd_config, if not found, default to 22
+#
+port="$(grep -w Port /etc/ssh/sshd_config | awk '{ print $2 }')"
+[ -z "$port" ] && port=22
+
+
+echo "[$(date +%H:%M:%S)] Starting sshd monitor on port: ($port)"  >> $log_file
+
+
+while true; do
+    prompt="$(printf '\n' | nc localhost $port)"
+    
+    if [ -z "$prompt" ]; then
+        /etc/init.d/sshd stop
+
+	#
+	#  Should only kill the sshd daemon process, not any logged in sessions
+	#  though they are probably also dead, but leave that 
+	#  to the owner of the process to decide, the task of this script
+	#  is just to ensure that one can log in to this device.
+	#
+	kill "$(ps axu |grep "sshd: /usr" | grep -v grep |awk '{ print $2}')"
+
+        /etc/init.d/sshd start
+        echo "[$(date +%H:%M:%S)] restarted sshd"  >> $log_file
+    else
+        #
+    	#  If you think that notifiations that all is good grows the logfile 
+	#  too much, and you only want loggs of when action is taken,
+	#  comment this out.
+	#  I prefer to have it active since this displays that the monitor
+	#  is active.
+	#
+        echo "sshd is running" >> $log_file
+    fi
+    sleep $check_intervall
+done

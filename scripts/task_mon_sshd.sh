@@ -35,7 +35,7 @@ script_description="Monitors and restarts sshd if no longer responsive"
 help_local_paramas() {
     echo "SPD_MON_SSHD$(
         test -z "$SPD_MON_SSHD" \
-        && echo ' -  location_tacker status (-1/0/1)' \
+        && echo ' -  service enabled status (-1/0/1)' \
         || echo "=$SPD_MON_SSHD")"
 }
 
@@ -62,7 +62,7 @@ task_mon_sshd() {
     service_name=mon_sshd
     service_fname="/etc/init.d/$service_name"
     source_fname="$DEPLOY_PATH/files/services/$service_name"
-
+    service_bin="$DEPLOY_PATH/files/extra_bins/sshd_monitor"
     #
     # source dependencies if not available
     #
@@ -124,6 +124,8 @@ task_mon_sshd() {
                 #
                 #  Ensure that the latest service is deployed
                 #
+                msg_3 "Deploying sshd_monitor"
+                cp "$service_bin" /usr/local/bin
                 msg_3 "Deploying service file"
                 cp "$source_fname" "$service_fname"
                 chmod 755 "$service_fname"
