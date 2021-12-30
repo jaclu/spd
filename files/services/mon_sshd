@@ -1,0 +1,44 @@
+#!/sbin/openrc-run
+
+#
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-05-20
+# License: MIT
+#
+# This service reads the GPS and discards the output to /dev/null. 
+# So this is not tracking you in any way. The sole purpose of this
+# is that this is the only way to ensure an iOS program continues to run
+# in the background.
+# This process has no noticeable impact on battery life.
+#
+
+ensure_sshd_is_responding() {
+    local port=2023
+    while true; do
+        prompt="$(printf '\n' | nc localhost $port)"
+        
+        if [ -z "$prompt" ]; then
+            /etc/init.d/sshd stop
+            sleep 2
+            /etc/init.d/sshd start
+            echo "restarted sshd"
+        else
+            echo "sshd is running"
+        fi
+        sleep 5
+    done
+}
+
+name="run in background"
+description="Reads GPS to ensure iSH continues to run when in background"
+
+command="ensure_sshd_is_responding"
+command_background="YES"
+
+pidfile="/run/$RC_SVCNAME.pid"
+
+
+
+# use nc/telnet localhost port
+# if no output restart sshd
+
+
