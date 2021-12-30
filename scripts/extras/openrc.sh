@@ -62,8 +62,8 @@ ensure_service_is_added() {
     
     verbose_msg "ensure_service_is_added(srvc=$srvc, runlevel=$runlevel, restart=$restart)"
 
-    [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called without param srvc"
-    [ "$runlevel" = "" ] && error_msg "ensure_service_is_added() called without param runlevel"
+    [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called with param srvc"
+    [ "$runlevel" = "" ] && error_msg "ensure_service_is_added() called with param runlevel"
     if [ "$(rc-status -u | grep "$srvc")" != "" ]; then
         echo "assigning [$srvc] to runlvl: [$runlevel]"
         # activate service
