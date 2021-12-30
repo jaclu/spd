@@ -357,6 +357,7 @@ unpack_home_dir() {
             msg_3 "Will be restored"
             [ "$save_current" = "1" ] && msg_3 "Previous content will be moved to ${old_home_dir}"
         else
+            ensure_installed unzip
             clear_work_dir 1
             msg_3 "Extracting"
             echo "$fhome_packed"
