@@ -30,7 +30,7 @@ CONFIG_PATH="$DEPLOY_PATH/custom/config"
 #==========================================================
 
 #
-# See samplesm/config/Config.md for explaination how config files are
+# See samples/config/Config.md for explaination how config files are
 # processed.
 #
 read_config() {
