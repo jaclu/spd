@@ -4,12 +4,14 @@
 #  Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-12-30
 #  License: MIT
 #
-# Part of https://github.com/jaclu/spd
+#  Part of https://github.com/jaclu/spd
 #
-# This service monitors that sshd is responsive.
-# If no prompt is seen, stops the service, kills the daemon process if it
-# is still running, then starts the service again.
-# Tweak polling intervall and logging in the sshd_monitor command.
+#  This service monitors that sshd is responsive.
+#  Side bonus, at least on my iPad is that sshd more often than not fails to
+#  come up during boot, this will restart it in such cases.
+#  If no prompt is seen, stops the service, kills the daemon process if it
+#  is still running, then starts the service again.
+#  Tweak polling intervall and logging in the sshd_monitor command.
 #
 
 name="sshd monitor"
