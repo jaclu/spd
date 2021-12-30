@@ -40,24 +40,24 @@ while true; do
     if [ -z "$prompt" ]; then
         /etc/init.d/sshd stop
 
-	#
-	#  Should only kill the sshd daemon process, not any logged in sessions
-	#  though they are probably also dead, but leave that 
-	#  to the owner of the process to decide, the task of this script
-	#  is just to ensure that one can log in to this device.
-	#
-	kill "$(ps axu |grep "sshd: /usr" | grep -v grep |awk '{ print $2}')"
+    	#
+    	#  Should only kill the sshd daemon process, not any logged in sessions
+    	#  though they are probably also dead, but leave that 
+    	#  to the owner of the process to decide, the task of this script
+    	#  is just to ensure that one can log in to this device.
+    	#
+    	kill "$(ps axu |grep "sshd: /usr" | grep -v grep |awk '{ print $2}')"
 
         /etc/init.d/sshd start
         echo "[$(date +%H:%M:%S)] restarted sshd"  >> $log_file
     else
         #
-    	#  If you think that notifiations that all is good grows the logfile 
-	#  too much, and you only want loggs of when action is taken,
-	#  comment this out.
-	#  I prefer to have it active since this displays that the monitor
-	#  is active.
-	#
+        #  If you think that notifiations that all is good grows the logfile 
+    	#  too much, and you only want loggs of when action is taken,
+    	#  comment this out.
+    	#  I prefer to have it active since this displays that the monitor
+    	#  is active, at least during debugging :)
+    	#
         echo "sshd is running" >> $log_file
     fi
     sleep $check_intervall
