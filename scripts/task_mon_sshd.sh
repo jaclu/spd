@@ -89,6 +89,7 @@ task_mon_sshd() {
             else
                 check_abort
                 msg_3 "Disabling service"
+                ensure_installed openrc
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then
                     disable_service $service_name default
@@ -113,8 +114,8 @@ task_mon_sshd() {
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
             else
-                msg_3 "Enabeling service"
                 check_abort
+                msg_3 "Enabeling service"
                 ensure_installed openrc
                 ensure_runlevel_default
 

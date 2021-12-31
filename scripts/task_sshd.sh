@@ -92,6 +92,8 @@ task_sshd() {
                msg_3 "Will be disabled"
             else
                 check_abort
+                msg_3 "Disabling service"
+                ensure_installed openrc
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then
                     disable_service $service_name default
@@ -123,11 +125,11 @@ task_sshd() {
                 echo "port: $SPD_SSHD_PORT"
                 echo
             else
-                msg_3 "Enabeling service"
                 check_abort
-                ensure_runlevel_default
+                msg_3 "Enabeling service"
                 ensure_installed openrc
                 ensure_installed openssh
+                ensure_runlevel_default
                 #
                 #  Preparational steps
                 #
