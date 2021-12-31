@@ -17,7 +17,7 @@
 #
 #  Set to /dev/null if no logging is desired, or a file if logging is prefered.
 #
-log_file="/tmp/sshd_monitor.log"
+log_file="/var/log/sshd_monitor.log"
 
 #
 # How many seconds to sleep between each check
