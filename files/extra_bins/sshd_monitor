@@ -57,6 +57,8 @@ while true; do
     	#  comment this out.
     	#  I prefer to have it active since this displays that the monitor
     	#  is active, at least during debugging :)
+        #  If you comment out the echo, you also need to comment out the
+        #  else above since enpty else clauses are not allowed.
     	#
         echo "sshd is running" >> $log_file
     fi
