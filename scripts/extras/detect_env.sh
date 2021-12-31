@@ -63,7 +63,8 @@ case "$(uname)" in
         os_type=$os_type_Linux
         if [ "$(uname -r | grep ish)" != "" ]; then
             distro_family=$distro_family_ish
-            if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
+            #if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
+            if [ -f "/usr/local/bin/aok" ]; then
                 distro=$distro_ish_AOK
             else
                 distro=$distro_ish
