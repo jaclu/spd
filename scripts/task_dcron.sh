@@ -82,11 +82,16 @@ task_dcron() {
     case "$SPD_DCRON" in
 
         -1 ) # disable
+            echo ">> A"
             _dcron_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                msg_3 "Will be disabled"
             else
+                echo ">> B"
                 check_abort
+                echo ">> C"
+                ensure_installed openrc
+                echo ">> D"
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then
                     disable_service $service_name default
@@ -112,6 +117,7 @@ task_dcron() {
             else
                 msg_3 "Enabeling service"
                 check_abort
+                ensure_installed openrc
                 ensure_runlevel_default
                 ensure_installed $service_name
 

@@ -116,6 +116,7 @@ task_runbg() {
             else
                 msg_3 "Enabeling service"
                 check_abort
+                ensure_installed openrc
 
                 ensure_runlevel_default
 

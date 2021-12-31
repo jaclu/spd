@@ -126,6 +126,7 @@ task_sshd() {
                 msg_3 "Enabeling service"
                 check_abort
                 ensure_runlevel_default
+                ensure_installed openrc
                 ensure_installed openssh
                 #
                 #  Preparational steps

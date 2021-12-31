@@ -115,7 +115,7 @@ task_mon_sshd() {
             else
                 msg_3 "Enabeling service"
                 check_abort
-
+                ensure_installed openrc
                 ensure_runlevel_default
 
                 #diff "$source_fname" "$service_fname" > /dev/null 2>&1
