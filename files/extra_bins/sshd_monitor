@@ -50,7 +50,7 @@ while true; do
 
         /etc/init.d/sshd start
         echo "[$(date +%H:%M:%S)] restarted sshd"  >> $log_file
-    else
+    #else
         #
         #  If you think that notifiations that all is good grows the logfile 
     	#  too much, and you only want loggs of when action is taken,
@@ -60,7 +60,7 @@ while true; do
         #  If you comment out the echo, you also need to comment out the
         #  else above since enpty else clauses are not allowed.
     	#
-        echo "sshd is running" >> $log_file
+        #echo "sshd is running" >> $log_file
     fi
     sleep $check_intervall
 done
