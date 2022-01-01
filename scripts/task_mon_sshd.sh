@@ -89,7 +89,7 @@ task_mon_sshd() {
             else
                 check_abort
                 msg_3 "Disabling service"
-                ensure_installed openrc
+                ensure_installed openrc  # needed to handle services
                 service_installed="$(rc-service -l |grep $service_name )"
                 if [ "$service_installed"  != "" ]; then
                     disable_service $service_name default
@@ -116,7 +116,8 @@ task_mon_sshd() {
             else
                 check_abort
                 msg_3 "Enabeling service"
-                ensure_installed openrc
+                ensure_installed openrc  # needed to handle services
+                ensure_installed procps  # needed for pgrep
                 ensure_runlevel_default
 
                 #diff "$source_fname" "$service_fname" > /dev/null 2>&1
