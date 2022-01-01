@@ -22,7 +22,7 @@ log_file="/var/log/sshd_monitor.log"
 #
 # How many seconds to sleep between each check
 #
-check_intervall=5
+check_intervall=15
 
 #
 #  Grab port number from /etc/ssh/sshd_config, if not found, default to 22
