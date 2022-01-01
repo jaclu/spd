@@ -65,7 +65,7 @@ while true; do
         fi
 
         #
-        #  Attempt two, HUP fidn't help, restart sshd
+        #  Attempt two, HUP didn't help, restart sshd
         #
         /etc/init.d/sshd stop
         sleep 1
