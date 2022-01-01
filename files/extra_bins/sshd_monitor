@@ -1,6 +1,7 @@
 #!/bin/sh
+_version="0.2.2 2022-01-01"
 #
-#  Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-12-30
+#  Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
 #
 #  Part of https://github.com/jaclu/spd
@@ -22,7 +23,21 @@ log_file="/var/log/sshd_monitor.log"
 #
 # How many seconds to sleep between each check
 #
-check_intervall=15
+check_intervall=10
+
+
+get_prompt() {
+    prompt="$(printf '\n' | nc localhost "$port")"
+    [ -z "$prompt" ] && return 1  # Error, no response
+    return 0  # OK, got a prompt
+}
+
+get_pid() {
+    #sshd_pid="$(ps axu |grep "sshd: /usr" | grep -v grep |awk '{ print $2}')"
+    sshd_pid="$(pgrep -f 'sshd: /usr')"
+}
+
+
 
 #
 #  Grab port number from /etc/ssh/sshd_config, if not found, default to 22
@@ -31,36 +46,39 @@ port="$(grep -w Port /etc/ssh/sshd_config | awk '{ print $2 }')"
 [ -z "$port" ] && port=22
 
 
-echo "[$(date +%H:%M:%S)] Starting sshd monitor on port: ($port)"  >> $log_file
+echo "[$(date +%H:%M:%S)] Starting sshd monitor version: $_version on port: ($port)"  >> $log_file
 
 
 while true; do
     prompt="$(printf '\n' | nc localhost $port)"
     
-    if [ -z "$prompt" ]; then
-        /etc/init.d/sshd stop
+    if  ! get_prompt; then        
+        #
+        #  Attempt one, send a HUP
+        #
+        get_pid        
+        if [ -n "$sshd_pid" ]; then
+            kill -HUP "$sshd_pid"
+            echo "[$(date +%H:%M:%S)] sent HUP to non-responsive sshd"  >> $log_file
+            sleep 1
+            get_prompt && continue
+        fi
 
         #
-        #  Should only kill the sshd daemon process, not any logged in sessions
-        #  though they are probably also dead, but leave that 
-        #  to the owner of the process to decide, the task of this script
-        #  is just to ensure that one can log in to this device.
+        #  Attempt two, HUP fidn't help, restart sshd
         #
-        kill "$(ps axu |grep "sshd: /usr" | grep -v grep |awk '{ print $2}')"
+        /etc/init.d/sshd stop
+        sleep 1
+
+        get_pid
+        if [ -n "$sshd_pid" ]; then
+            echo "[$(date +%H:%M:%S)] sshd still present after stop, doing kill -9"  >> $log_file
+            kill -9 "$sshd_pid"
+        fi
 
         /etc/init.d/sshd start
         echo "[$(date +%H:%M:%S)] restarted sshd"  >> $log_file
-    #else
-        #
-        #  If you think that notifiations that all is good grows the logfile 
-        #  too much, and you only want loggs of when action is taken,
-        #  comment this out.
-        #  I prefer to have it active since this displays that the monitor
-        #  is active, at least during debugging :)
-        #  If you comment out the echo, you also need to comment out the
-        #  else above since enpty else clauses are not allowed.
-        #
-        #echo "sshd is running" >> $log_file
+    else
+        sleep $check_intervall
     fi
-    sleep $check_intervall
 done
