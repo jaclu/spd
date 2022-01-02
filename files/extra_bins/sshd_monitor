@@ -1,5 +1,5 @@
 #!/bin/sh
-_version="0.2.2 2022-01-01"
+_version="0.2.3 2022-01-02"
 #
 #  Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -78,7 +78,6 @@ while true; do
 
         /etc/init.d/sshd start
         echo "[$(date +%H:%M:%S)] restarted sshd"  >> $log_file
-    else
-        sleep $check_intervall
     fi
+    sleep $check_intervall
 done
