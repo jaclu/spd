@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 
+# Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com 
 # License: MIT
 #
 # Part of https://github.com/jaclu/spd
@@ -117,7 +117,6 @@ task_mon_sshd() {
                 check_abort
                 msg_3 "Enabeling service"
                 ensure_installed openrc  # needed to handle services
-                ensure_installed procps  # needed for pgrep
                 ensure_runlevel_default
 
                 #diff "$source_fname" "$service_fname" > /dev/null 2>&1
