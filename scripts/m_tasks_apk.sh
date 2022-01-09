@@ -20,9 +20,9 @@
 #=====================================================================
 
 # shellcheck disable=SC2034
-script_tasks="task_apk_update   - updates repository
-task_apk_upgrade  - upgrades all installed apks
+script_tasks="task_apk_update   - update and fix repository
 task_apks_delete  - deletes all apks listed in SPD_APKS_DEL
+task_apk_upgrade  - upgrades all installed apks
 task_apks_add     - adds all apks listed in SPD_APKS_ADD"
 
 
@@ -122,14 +122,16 @@ task_apks_add() {
     msg_txt="Installing my selection of software"
     if [ -n "$SPD_APKS_ADD" ]; then
         msg_2 "$msg_txt"
+        _filter_dels_from_add
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-            echo "$SPD_APKS_ADD"
+            echo "$items_add"
         else
             # TODO: see in task_apks_delete() for description
             # about why this seems needed ATM
             check_abort
-            echo "$SPD_APKS_ADD"
-            cmd="apk add $SPD_APKS_ADD"
+            echo "$items_add"
+	    
+            cmd="apk add $items_add"
             verbose_msg "Will run: $cmd"
             $cmd || error_msg "Failed to install requested software - network issue?"
 
@@ -140,6 +142,30 @@ task_apks_add() {
         echo "nothing listed, no action to take"
         echo
     fi
+}
+
+
+
+#
+#  Remove anything that should not be here from adds, to avoid repeated deletes and adds
+#
+_filter_dels_from_add() {
+    lst="$SPD_APKS_ADD"
+    while true; do
+        item="${lst%% *}"  # upto first colon excluding it
+        lst="${lst#* }"    # after fist colon
+
+	if [ "${SPD_APKS_DEL#*$item}" != "$SPD_APKS_DEL" ]; then
+	    echo "WARNING: $item in both SPD_APK_ADD and SPD_APK_DEL - will not be added!"
+        else
+            if [ -n "$items_add" ]; then
+                export items_add="$items_add $item"
+            else
+                export items_add="$item"
+            fi
+        fi
+        [ "$lst" = "$item" ] && break  # we have processed last item
+    done
 }
 
 
