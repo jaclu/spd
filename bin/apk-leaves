@@ -1,10 +1,12 @@
 #!/bin/sh
 # Yes bash not required, works with the ash from busybox!
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-01-31
+# Copyright (c) 2021, 2022: Jacob.Lundqvist@gmail.com 2021-01-31
 # License: MIT
-# Version: 0.1.0 2021-01-31
-#                Initial release, I am using it and it seems to do its thing
+# Version: 0.1.1 2022-01-09
+#     Default eol param for debug() had issues, fixed.
+#   0.1.0 2021-01-31
+#     Initial release, I am using it and it seems to do its thing
 #
 #
 # This script does the same as: brew leaves
@@ -22,9 +24,14 @@ out_file=""
 
 debug() {
     output=$1
-    eol=${2:-"\n"}
+    eol="${2:-\n}"
     if [ $debug_flag -eq 1 ]; then
-        printf "%s%s" "$output" "$eol"
+        printf "%s" "$output"
+        if [ "$eol" = "\n" ]; then
+            printf "\n"
+        else
+            printf "%s" "$eol"
+        fi
     fi
 }
 
@@ -117,3 +124,4 @@ for apk_long in $apk_list; do
         echo "$apk_short"
     fi
 done
+
