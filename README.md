@@ -190,7 +190,7 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
     To some extent this also aplies to MacOS, but there inbound sync is less error prone, but from time to time you will need to do this action if syncing seems out of date, the procedure is the same as for iOS. It seems the only reliable way to ensure your iOS device retrieves changes from other devices is to do a full tree walk, the two methods I have found to solve this so far (from within iSH) are:
 
     - `find . > /dev/null`
-    - `ls -laR . > /dev/null` If using ls, ensure you also "display" the dot-files to make sure they are synced.
+    - `ls -laR . > /dev/null` If using ls, ensure you also "display" the dot-files to make sure they are synced, so better keep the -la params, even if you dont really care that much about dot-files in every situation.
     
     Filteing out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necesarry but you can always run the command again for ease of mind, this time you should see no output.
     Either works, personally I ususally use `find` 
