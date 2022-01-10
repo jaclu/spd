@@ -207,4 +207,4 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
 
 Remember that even if you login using pubkeys, you still need to define a password, since by default sshd does not allow logins to passwordless accounts.
 
-For both filesystems it will take a little while for ssshd to be started after a reboot. On my iPad 5th gen, its arround 10-15s but depending on device that will differ. Pretty soon you will have a feeling for how long you need to wait. If you try to early you will be rejected "Connection refused", so you can always repeatedly try to login until it succeeds, with no negative impact.
+It will take a little while for ssshd to be started after a reboot. On my iPad 5th gen, its arround 10s but depending on device that will differ. Pretty soon you will have a feeling for how long you need to wait. If you try to early you will be rejected "Connection refused", so you can always repeatedly try to login until it succeeds, with no negative impact.
