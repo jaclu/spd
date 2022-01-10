@@ -202,6 +202,8 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
 
     Less error prone, but if it seems something changed on one device isn't picked up by other devices, open Files/Finder on the device where the change has been done, if you see a cloud symbol in the iCloud entry point or in the location where the change was made, usually clicking on the changed file tends to resolve the issue and it is synced into iCloud.
 
+Not sure if this is due to some iSH glitch, or that the status "wait for iOS to sync the file" gets mistaken for a file access error, since iOS doesn't seem to have problems with files not being locally present. For changes on other devices iOS is just as bad and gladly displays the old content instead of forcing an update right away. Eventually iOS will get the new file, but between an update has been "uploaded" and when it is pressent on the other device iOS will show the old version and be happy about it.
+
 
 ## sshd related things to be aware of
 
