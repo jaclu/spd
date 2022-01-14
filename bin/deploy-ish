@@ -203,33 +203,16 @@ else
     # only those listed below will be run
     msg_1 "custom restore"
     run_tasks() {
-        # take 8
-        # 4 5 7  repeated crash within an hour or so
-        # 2      crached after 2h
-        # 1 3 6 ok after 2h
-        # For testing/debugging any of the tasks can be commented out
-        # It is probably not a good idea to reshuffle their order too much
-        # some of them depend on previous tasks
-        #
-        task_hostname         # 1 2 3 4 5 6 7 8
-        task_replace_some_etc_files  # 1 5 8
-        task_apk_update       # 1 2 3 4 5 6 7 8
-        #  task_apks_delete      # 1 2 5
-        task_apk_upgrade      # 1 2 3 4 5 6 7 8
-        #  task_apks_add        # 1 5
-        task_patch_etc_files # 1 5 8  needs to happen after task_apk_upgrade
-        task_timezone         # 1 2 3 4 5 6 7 8
-        # task_dcron            # 4
-        # task_sshd             # 1 2 5 7
-        task_runbg            # 1 2 3 4 5 6 7 8
-        task_restore_root     # 5 6 7 8
-        task_nopasswd_sudo    # 1 5 6 7 8  must be before task_restore_user
-        task_restore_user     # 5 6 7 8
-        task_do_extra_task    # 5 6 7 8  must be after task_restore_user if user dir is refered
-        task_user_pw_reminder # 5 6 7 8
+        #task_apk_update
+	# do before upgrade to avoid time waste of upgrading
+    	# only to then remove it
+    	task_apks_delete
+
+    	#task_apk_upgrade
+    	task_apks_add
     }
     # no need to wait if you are testing tasks...
-    wait_after_summary=0
+    wait_after_summary=5
 fi
 
 
