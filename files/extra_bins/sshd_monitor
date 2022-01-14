@@ -48,6 +48,8 @@ port="$(grep -w Port /etc/ssh/sshd_config | awk '{ print $2 }')"
 
 echo "[$(date +%H:%M:%S)] Starting sshd monitor version: $_version on port: ($port)"  >> $log_file
 
+# At startup wait a bit to give sshd time to actually start up
+sleep 10
 
 while true; do
     prompt="$(printf '\n' | nc localhost $port)"
