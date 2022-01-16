@@ -1,12 +1,14 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com
+# Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
 # License: MIT
 #
-# Version: 1.2.1 2021-07-14
-#                Improved check for AOK kernel
-#          1.2.0 2021-07-25
-#                Added this header
+# Version: 1.2.2 2022-01-16
+#      Corrected information that AOK kernel was detected not filesystem
+#  1.2.1 2021-07-14
+#      Improved check for AOK kernel
+#  1.2.0 2021-07-25
+#       Added this header
 #
 # Part of https://github.com/jaclu/spd
 #
@@ -89,7 +91,7 @@ task_hostname() {
     _th_expand_all_deploy_paths     
 
     if [ -n "$(uname -a | grep -i AOK)" ]; then 
-        msg_3 "AOK filesystem"
+        msg_3 "AOK kernel"
         echo "hostname will not be altered."
     else
         [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
@@ -125,6 +127,10 @@ _th_setup_env() {
     fi
 }
 
+#
+#
+#  Add -i if the kernel is not AOK, to indicate regular iSH
+#
 _th_alternate_host_name() {
     new_hostname="$(/bin/hostname)-i"
     verbose_msg "New hostname: $new_hostname"
