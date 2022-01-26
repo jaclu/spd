@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com 2022-01-26
 # License: MIT
 #
 # Part of https://github.com/jaclu/spd
@@ -145,7 +145,7 @@ task_dcron() {
 
 _dcron_label() {
     msg_2 "dcron service"
-    echo "  Enabeling tasks to be done at selected times"
+    echo "  Runs tasks at selected times"
 }
 
 
