@@ -192,8 +192,8 @@ run_tasks() {
 
 #
 #  Debug tasks, set condition as 
-#    false for normal operation
-#    true  to run the test case
+#    true  for normal operation
+#    false to run the test case
 #
 if true; then
     # Normal operation
