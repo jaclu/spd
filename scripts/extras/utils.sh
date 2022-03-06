@@ -14,7 +14,7 @@
 #
 # Global variables should also be given thought, since if multiple modules
 # are being loaded, then a task is called, a generically labeled global
-# migh have been changed by another module, so try to prefix globals with
+# might have been changed by another module, so try to prefix globals with
 # something unique for that module.
 #
 # Try to be a good citizen and unset "local" variables inside functions,
@@ -230,7 +230,7 @@ ensure_installed() {
 
 #
 # If in display mode, mentions if shell is missing,
-# in work mode, this fails if SPD_SHELL is not pressent.
+# in work mode, this fails if SPD_SHELL is not present.
 # This does not install the shell, it just verifies if it is there or not.
 #
 ensure_shell_is_installed() {
@@ -309,7 +309,7 @@ clear_work_dir() {
 
 #
 #  Restore $home_dir unless $unpacked_ptr points to an existing file.
-#  If $save_current is 1, curent home dir is moved to $home_dir-OLD and
+#  If $save_current is 1, current home dir is moved to $home_dir-OLD and
 #  kept, otherwise current home-dir is emptied if extract succeeds.
 #
 unpack_home_dir() {
@@ -493,22 +493,30 @@ parse_command_line() {
     fi
 }
 
+show_params() {
+    echo ">> Params detected"
+    echo ">> p_help [$p_help]"
+    echo ">> p_verbose [$p_verbose]"
+    echo ">> p_cfg [$p_cfg]"
+    echo ">> SPD_TASK_DISPLAY [$SPD_TASK_DISPLAY]"
+}
 
 #
 # Run a task, called from script_base.sh
 #
 run_task() {
     #
-    # Asume current script is the "base" script being run
+    # Assume current script is the "base" script being run
     #
     parse_command_line "$@"
+    show_params
 
     if [ $p_help = 1 ]; then
         _display_help
     else
         #
         # Limit in what conditions script can be executed
-        # Displaying what will happen is harmelss and can run at any
+        # Displaying what will happen is harmless and can run at any
         # time.
         #
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
@@ -536,7 +544,7 @@ run_task() {
 # are only run in standalone mode, so no risk for wrong same named function
 # being called...
 #
-# In standlone mode, this will be run from See "main" part at end of
+# In standalone mode, this will be run from See "main" part at end of
 # extras/utils.sh, it first expands parameters,
 # then either displays help or runs the task(-s)
 #
