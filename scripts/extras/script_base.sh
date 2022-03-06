@@ -109,7 +109,5 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     # shellcheck disable=SC1091
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
-    echo ">> will do run_task"
-    run_task $*
-    echo ">> run_task done"
+    run_task "$@"
 fi
