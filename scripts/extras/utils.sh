@@ -508,13 +508,8 @@ run_task() {
     #
     # Assume current script is the "base" script being run
     #
-    echo ">> cmdline:"
-    for i in $*; do
-      echo "$i"
-    done
 
     parse_command_line "$@"
-    show_params
 
     if [ $p_help = 1 ]; then
         _display_help
