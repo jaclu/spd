@@ -49,7 +49,7 @@ _display_help() {
     done
     set +f; unset IFS
     echo
-    
+
     if [ -n "$script_description" ]; then
         echo "$script_description"
         echo
@@ -65,7 +65,7 @@ _display_help() {
         # Only do extra LF if help_local_params existed...
         2> /dev/null help_local_paramas && echo
     } || _=0 # generic dummy statement
-    
+
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
         && echo '      - if 1 will only display what will be done' \
@@ -98,14 +98,16 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
         DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
     fi
 
+    #
+    #  Since sourced mode cant be detected in a practical way under a
+    #  posix shell, I use this workaround.
+    #  First script is expected to set it, if set all other modules
+    #  can assume to be sourced.
+    #
+    SPD_INITIAL_SCRIPT=1
+
     # shellcheck disable=SC1091
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
-    #
-    # Since sourced mode cant be detected in a practical way under a
-    # posix shell, I use this workaround.
-    # First script is expected to set it, if set all other modules
-    # can assume to be sourced.
-    #
-    SPD_INITIAL_SCRIPT=1
+    run_task
 fi

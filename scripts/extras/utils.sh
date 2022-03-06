@@ -150,7 +150,7 @@ msg_3() {
 
 #==========================================================
 #
-#     General public functions
+#     Published functions
 #
 #==========================================================
 
@@ -160,7 +160,7 @@ check_abort() {
     # Check if actions can be done in this environment
     #
     [ "$SPD_ABORT" != "1" ] && return
-    
+
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
         msg_2 "SPD_ABORT=1"
         error_msg "This prevents any action from being taken"
@@ -247,6 +247,30 @@ ensure_shell_is_installed() {
     unset SHELL_NAME
 }
 
+apk_list_add() {
+    apk_lst="$1"
+    items_add="$2"
+
+    if [ "$apk_lst" = "" ]; then
+        echo "ERROR: apk_list_add() apk_lst param empty"
+        exit 1
+    fi
+    if [ "$items_add" = "" ]; then
+        echo "ERROR: apk_list_add() items_add param empty"
+        exit 1
+    fi
+
+    add_lst="$items_add"
+    while true; do
+        add_item="${add_lst%% *}"  # up to first colon excluding it
+        add_lst="${add_lst#* }"    # after fist colon
+        if [ "${apk_lst#*$apk_item}" != "$apk_lst" ]; then
+            apk_item="$apk_item $add_item"
+        fi
+        [ "$add_lst" = "$add_item" ] && break  # we have processed last item
+    done
+    return "$apk_lst"
+}
 
 
 #
@@ -407,7 +431,6 @@ unpack_home_dir() {
     unset old_home_dir
 }
 
-
 parse_command_line() {
     #
     # Only process cmd line for initial_script
@@ -471,6 +494,42 @@ parse_command_line() {
 }
 
 
+#
+# Run a task, called from script_base.sh
+#
+run_task() {
+    #
+    # Asume current script is the "base" script being run
+    #
+    parse_command_line "$@"
+
+    if [ $p_help = 1 ]; then
+        _display_help
+    else
+        #
+        # Limit in what conditions script can be executed
+        # Displaying what will happen is harmelss and can run at any
+        # time.
+        #
+        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+            if [ "$SPD_ABORT" = "1" ]; then
+                error_msg "Detected SPD_ABORT=1  Your settings prevent this device to be modified"
+            fi
+            [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
+            [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
+        fi
+        _run_this
+        #
+        # Always display this final message  in standalone,
+        # to indicate process terminated successfully.
+        # And did not die in the middle of things...
+        #
+        echo "Task Completed."
+        echo
+    fi
+}
+
+
 #=====================================================================
 #
 # _run_this() & _display_help()
@@ -514,50 +573,14 @@ _run_this() {
 
 
 #
-#  Identify fiilesystem, some operations depend on it
+#  Identify ish kernel, some operations depend on it
 # SPD_FILE_SYSTEM -> SPD_ISH_KERNEL
-if 2>/dev/null grep -q ish-AOK /proc/version; then
+if 2>/dev/null grep -qi ish-aok /proc/version; then
     SPD_ISH_KERNEL='AOK'
-else
+elif 2>/dev/null grep -q ish /proc/version; then
     # shellcheck disable=SC2034
     SPD_ISH_KERNEL='iSH'
-fi
-
-
-
-#
-# Since sourced mode can't be detected in a practical way using a posix shell,
-# I use this workaround; First script run is expected to set it,
-# if set all other modules can assume to be sourced.
-#
-if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-    #
-    # Asume current script is the "base" script being run
-    #
-    parse_command_line "$@"
-
-    if [ $p_help = 1 ]; then
-        _display_help
-    else
-        #
-        # Limit in what conditions script can be executed
-        # Displaying what will happen is harmelss and can run at any
-        # time.
-        #
-        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            if [ "$SPD_ABORT" = "1" ]; then
-                error_msg "Detected SPD_ABORT=1  Your settings prevent this device to be modified"
-            fi
-            [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
-            [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
-        fi
-        _run_this
-        #
-        # Always display this final message  in standalone,
-        # to indicate process terminated successfully.
-        # And did not die in the middle of things...
-        #
-        echo "Task Completed."
-        echo
-    fi
+else
+    # Not iSH
+    SPD_ISH_KERNEL=""
 fi

@@ -130,7 +130,7 @@ task_apks_add() {
             # about why this seems needed ATM
             check_abort
             echo "$items_add"
-	    
+
             cmd="apk add $items_add"
             verbose_msg "Will run: $cmd"
             $cmd || error_msg "Failed to install requested software - network issue?"
