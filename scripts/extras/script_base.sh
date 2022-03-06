@@ -110,6 +110,6 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     . "$DEPLOY_PATH/scripts/extras/utils.sh"
 
     echo ">> will do run_task"
-    run_task
+    run_task $*
     echo ">> run_task done"
 fi
