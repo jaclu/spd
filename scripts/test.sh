@@ -29,7 +29,7 @@ fi
 
 env | grep "APK"
 echo "$SPD_APKS_ADD before [$SPD_APKS_ADD]"
-SPD_APKS_ADD="$(apk_list_add $SPD_APKS_ADD 'foo1 foo2')"
+SPD_APKS_ADD="$(apk_list_add "$SPD_APKS_ADD" "foo1 foo2")"
 echo
 echo "$SPD_APKS_ADD after [$SPD_APKS_ADD]"
 exit 1
