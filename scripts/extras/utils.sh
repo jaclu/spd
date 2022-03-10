@@ -269,7 +269,7 @@ apk_list_add() {
         fi
         [ "$add_lst" = "$add_item" ] && break  # we have processed last item
     done
-    return "$apk_lst"
+    echo "$apk_lst"
 }
 
 
