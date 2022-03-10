@@ -27,7 +27,7 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     SPD_INITIAL_SCRIPT=1
 fi
 
-env | grep "APK"
+SPD_APKS_ADD="app1 app2"
 echo "$SPD_APKS_ADD before [$SPD_APKS_ADD]"
 SPD_APKS_ADD="$(apk_list_add "$SPD_APKS_ADD" "foo1 foo2")"
 echo
