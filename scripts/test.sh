@@ -1,7 +1,6 @@
 #!/bin/sh
 
 
-
 if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     if test -z "$DEPLOY_PATH" ; then
         #
@@ -27,9 +26,13 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     SPD_INITIAL_SCRIPT=1
 fi
 
-SPD_APKS_ADD="app1 app2"
-echo "$SPD_APKS_ADD before [$SPD_APKS_ADD]"
-SPD_APKS_ADD="$(apk_list_add "$SPD_APKS_ADD" "foo1 foo2")"
+SPD_APKS_ADD="app1 app2 app1 foo2 foo2"
+echo ">> SPD_APKS_ADD before [$SPD_APKS_ADD]"
+
+
+de_dupe_list "$SPD_APKS_ADD"
+
 echo
-echo "$SPD_APKS_ADD after [$SPD_APKS_ADD]"
+echo ">> SPD_APKS_ADD after de-dupe [$SPD_APKS_ADD]"
+
 exit 1

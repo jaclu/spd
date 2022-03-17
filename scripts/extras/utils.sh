@@ -247,16 +247,52 @@ ensure_shell_is_installed() {
     unset SHELL_NAME
 }
 
-apk_list_add() {
-    apk_lst="$1"
+
+#
+#  Remove all duplicates from a list
+#
+de_dupe_list() {
+    orig_lst="$1"
+    
+    if [ "$orig_lst" = "" ]; then
+        echo "ERROR: de_dupe_list() lst param empty"
+        exit 1
+    fi
+    
+    # echo ">> orig_lst [$orig_lst"
+    lst="$orig_lst"
+    filtered_lst=""
+    while true; do
+        lst_item="${lst%% *}"  # up to first colon excluding it
+        lst="${lst#* }"    # after fist colon
+        echo ">> cheking if [$lst_item] should be kept"
+        if [ "${filtered_lst#*$lst_item}" = "$filtered_lst" ]; then
+            echo ">> keeping: [$lst_item]"
+            if [ -z "$filtered_lst" ]; then
+                filtered_lst="$lsy_item"
+            else
+                filtered_lst="$filtered_lst $lst_item"
+            fi
+        fi
+        [ "$lst" = "$lst_item" ] && break  # we have processed last item
+    done
+    echo "$filtered_lst"
+    
+    
+}
+
+
+
+list_add() {
+    lst="$1"
     items_add="$2"
 
-    if [ "$apk_lst" = "" ]; then
-        echo "ERROR: apk_list_add() apk_lst param empty"
+    if [ "$lst" = "" ]; then
+        echo "ERROR: list_add() lst param empty"
         exit 1
     fi
     if [ "$items_add" = "" ]; then
-        echo "ERROR: apk_list_add() items_add param empty"
+        echo "ERROR: list_add() items_add param empty"
         exit 1
     fi
 
@@ -264,14 +300,44 @@ apk_list_add() {
     while true; do
         add_item="${add_lst%% *}"  # up to first colon excluding it
         add_lst="${add_lst#* }"    # after fist colon
-        if [ "${apk_lst#*$apk_item}" != "$apk_lst" ]; then
-            apk_item="$apk_item $add_item"
+        # echo ">> cheking if [$add_item] is new"
+        if [ "${lst#*$add_item}" = "$lst" ]; then
+            # echo ">> adding: [$add_item]"
+            lst="$lst $add_item"
         fi
         [ "$add_lst" = "$add_item" ] && break  # we have processed last item
     done
-    echo "$apk_lst"
+    echo "$lst"
 }
 
+
+list_del() {
+    lst="$1"
+    items_del="$2"
+
+    if [ "$lst" = "" ]; then
+        echo "ERROR: list_del() lst param empty"
+        exit 1
+    fi
+    if [ "$items_del" = "" ]; then
+        echo "ERROR: list_del() items_del param empty"
+        exit 1
+    fi
+
+    filtered_lst=""
+    while true; do
+        lst_item="${lst%% *}"  # up to first colon excluding it
+        lst="${lst#* }"    # after fist colon
+        # echo ">> cheking if [$lst_item] should be kept"
+        if [ "${items_del#*$lst_item}" = "$items_del" ]; then
+            # echo ">> keeping: [$lst_item]"
+            filtered_lst="$filtered_lst $lst_item"
+        fi
+        [ "$lst" = "$lst_item" ] && break  # we have processed last item
+    done
+    echo "$filtered_lst"
+    
+}
 
 #
 #  Handles a temp dir, for untaring stuff etc
