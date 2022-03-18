@@ -134,6 +134,7 @@ _th_setup_env() {
 #  Add -i if the kernel is not AOK, to indicate regular iSH
 #
 _th_alternate_host_name() {
+    echo ">> _th_alternate_host_name()"
     new_hostname="$(/bin/hostname)-i"
     verbose_msg "New hostname: $new_hostname"
     if [ "$SPD_TASK_DISPLAY" = 1 ]; then
@@ -141,7 +142,7 @@ _th_alternate_host_name() {
     else
         [ ! -x "$SPD_HOSTNAME_BIN" ] && error_msg "SPD_HOSTNAME_BIN not executable, aborting"
         echo  "$new_hostname" > /etc/hostname
-        msg_3 "hostname: $(hostname)"
+        msg_3 "hostname: $($SPD_HOSTNAME_BIN)"
     fi
     unset new_hostname
 }
