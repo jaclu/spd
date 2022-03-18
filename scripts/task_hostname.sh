@@ -41,8 +41,8 @@ desired name and use a custom hostname binary to display this instead."
 #
 #=====================================================================
 
-_th_alternate_hostname_bin_source=files/extra_bins/hostname
-_th_alternate_hostname_bin_destination=/usr/local/bin/hostname
+_th_relative_hostname_bin_source=files/extra_bins/hostname
+_th_alternate_hostname_bin=/usr/local/bin/hostname
 
 
 
@@ -93,8 +93,8 @@ task_hostname() {
     if [ -n "$(uname -a | grep -i AOK)" ]; then 
         msg_3 "AOK kernel"
         echo "hostname will not be altered."
+        rm "$_th_alternate_hostname_bin"
     else
-        [ -z "$SPD_HOSTNAME_BIN" ] && SPD_HOSTNAME_BIN="$_th_alternate_hostname_bin_destination"
         _th_setup_env
         _th_alternate_host_name
     fi
@@ -111,14 +111,15 @@ task_hostname() {
 #=====================================================================
 
 _th_expand_all_deploy_paths() {
-    _th_alternate_hostname_bin_source=$(expand_deploy_path "$_th_alternate_hostname_bin_source")
+    _th_alternate_hostname_bin_source=$(expand_deploy_path "$_th_relative_hostname_bin_source")
+    echo ">> _th_alternate_hostname_bin_source [$_th_alternate_hostname_bin_source]"
 }
 
 _th_setup_env() {
     if [ "$SPD_TASK_DISPLAY" != 1 ]; then
-        if [ ! -f "$SPD_HOSTNAME_BIN" ]; then
-            echo "Copying custom hostname binary to $SPD_HOSTNAME_BIN"
-            cp "$_th_alternate_hostname_bin_source"  "$SPD_HOSTNAME_BIN"
+        if [ ! -f "$_th_alternate_hostname_bin_source" ]; then
+            echo "Copying custom hostname binary to $_th_alternate_hostname_bin"
+            cp "$_th_alternate_hostname_bin_source" "$_th_alternate_hostname_bin"
         else
             error_msg "Failed to find alternate hostname bin!" 1
         fi
@@ -140,9 +141,9 @@ _th_alternate_host_name() {
     if [ "$SPD_TASK_DISPLAY" = 1 ]; then
         echo "hostname will be changed into $new_hostname"
     else
-        [ ! -x "$SPD_HOSTNAME_BIN" ] && error_msg "SPD_HOSTNAME_BIN not executable, aborting"
+        [ ! -x "$_th_alternate_hostname_bin" ] && error_msg "$_th_alternate_hostname_bin not executable, aborting"
         echo  "$new_hostname" > /etc/hostname
-        msg_3 "hostname: $($SPD_HOSTNAME_BIN)"
+        msg_3 "hostname: $($_th_alternate_hostname_bin)"
     fi
     unset new_hostname
 }
