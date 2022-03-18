@@ -3,7 +3,7 @@
 # Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
 # License: MIT
 #
-# Version: 1.2.2 2022-01-16
+# Version: 1.2.3 2022-03-18
 #      Corrected information that AOK kernel was detected not filesystem
 #  1.2.1 2021-07-14
 #      Improved check for AOK kernel
@@ -119,6 +119,8 @@ _th_setup_env() {
         if [ ! -f "$SPD_HOSTNAME_BIN" ]; then
             echo "Copying custom hostname binary to $SPD_HOSTNAME_BIN"
             cp "$_th_alternate_hostname_bin_source"  "$SPD_HOSTNAME_BIN"
+        else
+            error_msg "Failed to find alternate hostname bin!" 1
         fi
         if [ ! -f /etc/hostname ] || [ "$(cat /etc/hostname)" = 'localhost' ]; then
             echo "Setting default content for /etc/hostname"
