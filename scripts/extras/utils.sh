@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com
 # License: MIT
 #
 # Part of https://github.com/jaclu/spd
@@ -181,7 +181,7 @@ expand_deploy_path() {
     elif [ -n "$this_path" ]; then
         expanded_path="$DEPLOY_PATH/$this_path"
         echo "$expanded_path"
-        >/dev/stderr verbose_msg "$this_path expanded into: $expanded_path"
+        verbose_msg "$this_path expanded into: $expanded_path"
     fi
 
     unset this_path
