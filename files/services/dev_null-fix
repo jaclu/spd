@@ -8,16 +8,16 @@
 # since it sometimes gets messed up, and recreating it should
 # be harmless in case it was still in a good state.
 # It should just be run as a one off rather than a service,
-# but I havent yet figured out how to do this in the iSH environ.
+# but I haven't yet figured out how to do this in the iSH environment.
 # Not even @reboot /usr/local/sbin/dev_null-fix
 # works as intended.
 #
-# So for the time being, running it as a boot time service 
+# So for the time being, running it as a boot time service
 # does the trick, even if not as elegant as it could be.
 #
 # In order for it to run on the next bootup, it reports
 # that the startup failed. This prints out an error,
-# however since it is not displayed during bootup, 
+# however since it is not displayed during bootup,
 # that error is not really a bother to the user.
 # If you run it manually, just know that the error is
 # expected and not signifying that this failed.
@@ -35,7 +35,7 @@ description="Recreates /dev/null, to ensure it is in expected state"
 start() {
     # /dev/null gets screwed up at times.  Recreate it just in case.
 
-    # use this file to hide output during operation, 
+    # use this file to hide output during operation,
     # since /dev/null cant be used for this purpose
     progress_file=/tmp/dev_null_restore
 

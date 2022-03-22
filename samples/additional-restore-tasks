@@ -1,16 +1,16 @@
 #!/bin/sh
-# ^^^ just a helper for editttors
+# ^^^ just a helper for editors
 #
 #   sourced, so variables / functions can be used.
 #
-#   This is just a sample, comment out or replacee to fit your needs.
+#   This is just a sample, comment out or replace to fit your needs.
 #
 
 
 #
 #   Verifies SPD_UNAME has been set, use if the username is needed in the tasks below
 #
-[ -z "$SPD_UNAME" ] && error_msg "This additonal-restore-tasks can not run without a SPD_UNAME set!" 1
+[ -z "$SPD_UNAME" ] && error_msg "This additional-restore-tasks can not run without a SPD_UNAME set!" 1
 
 
 #
@@ -35,5 +35,5 @@ elif test -x "$my_additional_stuff" ; then
     /bin/su -c "$my_additional_stuff" - "$SPD_UNAME"
     echo "Completed: $my_additional_stuff"
 else
-    error_msg "$my_additional_stuff is not a runable script!"
+    error_msg "$my_additional_stuff is not a run-able script!"
 fi

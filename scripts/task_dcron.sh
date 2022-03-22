@@ -10,12 +10,12 @@
 #
 #  All task scripts must define the following two variables:
 #  script_tasks:
-#    List tasks provided by this script. If multilple one per line single
+#    List tasks provided by this script. If multiple one per line single
 #    multi-line string first word is task name, rest is optional
 #    description of task
 #  script_description
 #    Short summary what this script does (for the help display)
-#    Single multiline string.
+#    Single multi line string.
 #
 #=====================================================================
 
@@ -27,12 +27,12 @@ script_description="Activates or Disables a cron service, defined by SPD_DCRON"
 
 #=====================================================================
 #
-#   Describe additional paramas, if none are used don't define
+#   Describe additional parameters, if none are used don't define
 #   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
-help_local_paramas() {
+help_local_parameters() {
     echo "SPD_DCRON$(
         test -z "$SPD_DCRON" \
         && echo '              -  cron status (-1/0/1)' \
@@ -49,17 +49,17 @@ help_local_paramas() {
 #
 #  Task (public) functions
 #
-#  Assumed to start with task_ and then describe the task in a suficiently
+#  Assumed to start with task_ and then describe the task in a sufficiently
 #  unique way to give an idea of what this task does,
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
 #
 #=====================================================================
 
-task_dcron() { 
+task_dcron() {
     verbose_msg "task_dcron($SPD_DCRON)"
     check_abort
-    
+
     #
     # source dependencies if not available
     #
@@ -113,7 +113,7 @@ task_dcron() {
                 msg_3 "Will be enabled"
             else
                 check_abort
-                msg_3 "Enabeling service"
+                msg_3 "Enabling service"
                 ensure_installed openrc
                 ensure_installed $service_name
                 ensure_runlevel_default
@@ -138,7 +138,7 @@ task_dcron() {
 
 #=====================================================================
 #
-#   Internal functions, start with _ and abrevation of script name to make it
+#   Internal functions, start with _ and abbreviation of script name to make it
 #   obvious they should not be called by other modules.
 #
 #=====================================================================

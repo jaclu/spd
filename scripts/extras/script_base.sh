@@ -5,8 +5,8 @@
 #
 # Part of https://github.com/jaclu/spd
 #
-# See explaination in the top of extras/utils.sh
-# for some recomendations on how to set up your modules!
+# See explanation in the top of extras/utils.sh
+# for some recommendations on how to set up your modules!
 #
 
 #
@@ -49,13 +49,13 @@ _display_help() {
     done
     set +f; unset IFS
     echo
-    
+
     if [ -n "$script_description" ]; then
         echo "$script_description"
         echo
     fi
 
-    echo "Env paramas"
+    echo "Env parameters"
     echo "-----------"
     #
     # This executes help_local_params if defined, otherwise makes a
@@ -63,9 +63,9 @@ _display_help() {
     #
     {
         # Only do extra LF if help_local_params existed...
-        2> /dev/null help_local_paramas && echo
+        2> /dev/null help_local_parameters && echo
     } || _=0 # generic dummy statement
-    
+
     echo "SPD_TASK_DISPLAY$(
         test -z "$SPD_TASK_DISPLAY" \
         && echo '      - if 1 will only display what will be done' \
@@ -94,7 +94,7 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
         #
         # First define it relative based on this scripts location
         DEPLOY_PATH="$(dirname "$0")/.."
-        # Make it absolutized and normalized
+        # Make it absolute and normalized
         DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
     fi
 

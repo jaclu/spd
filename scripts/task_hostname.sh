@@ -17,12 +17,12 @@
 #
 #  All task scripts must define the following two variables:
 #  script_tasks:
-#    List tasks provided by this script. If multilple one per line single
+#    List tasks provided by this script. If multiple one per line single
 #    multi-line string first word is task name, rest is optional
 #    description of task
 #  script_description
 #    Short summary what this script does (for the help display)
-#    Single multiline string.
+#    Single multi line string.
 #
 #=====================================================================
 
@@ -48,12 +48,12 @@ _th_alternate_hostname_bin=/usr/local/bin/hostname
 
 #=====================================================================
 #
-#   Describe additional paramas, if none are used don't define
+#   Describe additional parameters, if none are used don't define
 #   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
-help_local_paramas() {
+help_local_parameters() {
     echo "SPD_HOSTNAME_BIN$(
     test -z "$SPD_HOSTNAME_BIN" \
         && echo ' -' \
@@ -76,7 +76,7 @@ help_local_paramas() {
 #
 #  Task (public) functions
 #
-#  Assumed to start with task_ and then describe the task in a suficiently
+#  Assumed to start with task_ and then describe the task in a sufficiently
 #  unique way to give an idea of what this task does,
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
@@ -86,11 +86,11 @@ help_local_paramas() {
 task_hostname() {
     [ "$SPD_HOSTNAME_SET" != "1" ] && return # skip this task requested
 
-    msg_2 "Setting hostname if this is not AOK"    
+    msg_2 "Setting hostname if this is not AOK"
     check_abort
-    _th_expand_all_deploy_paths     
+    _th_expand_all_deploy_paths
 
-    if [ -n "$(uname -a | grep -i AOK)" ]; then 
+    if [ -n "$(uname -a | grep -i AOK)" ]; then
         msg_3 "AOK kernel"
         echo "hostname will not be altered."
         rm "$_th_alternate_hostname_bin" 2> /dev/null
@@ -105,7 +105,7 @@ task_hostname() {
 
 #=====================================================================
 #
-#   Internal functions, start with _ and abrevation of script name to make it
+#   Internal functions, start with _ and abbreviation of script name to make it
 #   obvious they should not be called by other modules.
 #
 #=====================================================================

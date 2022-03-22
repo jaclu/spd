@@ -1,19 +1,19 @@
 #!/bin/sh
 #
 #  This script is controlled from extras/script_base.sh this specific
-#  script only contains settings and overrrides.
+#  script only contains settings and overrides.
 #
 
 #=====================================================================
 #
 #  All task scripts must define the following two variables:
 #  script_tasks:
-#    List tasks provided by this script. If multilple one per line single
+#    List tasks provided by this script. If multiple one per line single
 #    multi-line string first word is task name, rest is optional
 #    description of task
 #  script_description
 #    Short summary what this script does (for the help display)
-#    Single multiline string.
+#    Single multi line string.
 #
 #=====================================================================
 
@@ -26,12 +26,12 @@ script_description="Will fix /etc/inittab, and if so requested replace some /etc
 
 #=====================================================================
 #
-#   Describe additional paramas, if none are used don't define
+#   Describe additional parameters, if none are used don't define
 #   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
-help_local_paramas() {
+help_local_parameters() {
     echo "SPD_FILE_HOSTS$(
         test -z "$SPD_FILE_HOSTS" \
         && echo '        - will replace /etc/hots' \
@@ -48,7 +48,7 @@ help_local_paramas() {
 #
 #  Task (public) functions
 #
-#  Assumed to start with task_ and then describe the task in a suficiently
+#  Assumed to start with task_ and then describe the task in a sufficiently
 #  unique way to give an idea of what this task does,
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
@@ -63,7 +63,7 @@ task_replace_some_etc_files() {
     msg_2 "Replacing some files in /etc"
     # If the config file is not found, no action will be taken
     check_abort
-    
+
     [ -n "$SPD_FILE_HOSTS" ] &&  _tef_copy_etc_file "$SPD_FILE_HOSTS" /etc/hosts
     [ -n "$SPD_FILE_REPOSITORIES" ] && _tef_copy_etc_file "$SPD_FILE_REPOSITORIES" /etc/apk/repositories
     echo
@@ -81,7 +81,7 @@ task_patch_etc_files() {
 
 #=====================================================================
 #
-#   Internal functions, start with _ and abrevation of script name to make it
+#   Internal functions, start with _ and abbreviation of script name to make it
 #   obvious they should not be called by other modules.
 #
 #=====================================================================

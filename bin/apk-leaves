@@ -41,7 +41,7 @@ display_help() {
     echo "Options:"
     echo "  -d, --debug     Display status during processing."
     echo "  -o, --out-file  If given, the list of apk leaves will be written to this file,"
-    echo "                  oterwise it is written to stdout"
+    echo "                  otherwise it is written to stdout"
     echo "  -h, --help      Display this."
     echo
     echo "Recomended usage is one of the following:"
@@ -100,7 +100,7 @@ apk_list=$(apk list -I | sort | awk '{print $1}')
 debug "Done!"
 
 #
-# Handling the items in the list not as a list, 
+# Handling the items in the list not as a list,
 # in order for ash to be able to do this.
 #
 IFS="

@@ -11,7 +11,7 @@
 #  come up during boot, this will restart it in such cases.
 #  If no prompt is seen, stops the service, kills the daemon process if it
 #  is still running, then starts the service again.
-#  Tweak polling intervall and logging in the sshd_monitor command.
+#  Tweak polling interval and logging in the sshd_monitor command.
 #
 
 name="sshd monitor"

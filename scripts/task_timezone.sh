@@ -10,33 +10,33 @@
 #
 #  All task scripts must define the following two variables:
 #  script_tasks:
-#    List tasks provided by this script. If multilple one per line single
+#    List tasks provided by this script. If multiple one per line single
 #    multi-line string first word is task name, rest is optional
 #    description of task
 #  script_description
 #    Short summary what this script does (for the help display)
-#    Single multiline string.
+#    Single multi line string.
 #
 #=====================================================================
 
 # shellcheck disable=SC2034
 script_tasks='task_timezone'
-script_description="Sets time-zone baesed on SPD_TIME_ZONE
+script_description="Sets time-zone based on SPD_TIME_ZONE
 Content should be in tz database format, so typically Continent/Major_City
-or a two/three letter acronymn like EST.
+or a two/three letter acronym like EST.
 If undefined/empty timezone will not be altered.
-If time_zone is not recgonized this will abort with an error."
+If time_zone is not recognized this will abort with an error."
 
 
 
 #=====================================================================
 #
-#   Describe additional paramas, if none are used don't define
+#   Describe additional parameters, if none are used don't define
 #   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
-help_local_paramas() {
+help_local_parameters() {
     echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo "=$SPD_TIME_ZONE" )"
 }
 
@@ -46,16 +46,16 @@ help_local_paramas() {
 #
 #  Task (public) functions
 #
-#  Assumed to start with task_ and then describe the task in a suficiently
+#  Assumed to start with task_ and then describe the task in a sufficiently
 #  unique way to give an idea of what this task does,
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
 #
 #==========================================================
 
-task_timezone() { 
+task_timezone() {
     tz_file=/usr/share/zoneinfo/$SPD_TIME_ZONE
-    
+
     msg_txt="Setting timezone"
     if [ "$SPD_TIME_ZONE" != "" ]; then
         msg_2 "$msg_txt"

@@ -10,12 +10,12 @@
 #
 #  All task scripts must define the following two variables:
 #  script_tasks:
-#    List tasks provided by this script. If multilple one per line single
+#    List tasks provided by this script. If multiple one per line single
 #    multi-line string first word is task name, rest is optional
 #    description of task
 #  script_description
 #    Short summary what this script does (for the help display)
-#    Single multiline string.
+#    Single multi line string.
 #
 #=====================================================================
 
@@ -30,12 +30,12 @@ first available ID at or above 1000 to ensure this user gets the desired IDS"
 
 #=====================================================================
 #
-#   Describe additional paramas, if none are used don't define
+#   Describe additional parameters, if none are used don't define
 #   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
-help_local_paramas() {
+help_local_parameters() {
     echo "SPD_UNAME$(
         test -z "$SPD_UNAME" && echo ' - username to ensure exists' \
         || echo "=$SPD_UNAME" )"
@@ -64,7 +64,7 @@ help_local_paramas() {
 #
 #  Task (public) functions
 #
-#  Assumed to start with task_ and then describe the task in a suficiently
+#  Assumed to start with task_ and then describe the task in a sufficiently
 #  unique way to give an idea of what this task does,
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
@@ -118,7 +118,7 @@ task_restore_user() {
                 msg_3 "shell: $SPD_SHELL"
             fi
         else
-            msg_3 "Already pressent"
+            msg_3 "Already present"
             #
             # If given, ensure user has right UID & GID
             #
@@ -197,7 +197,7 @@ task_user_pw_reminder() {
 
 #=====================================================================
 #
-#   Internal functions, start with _ and abrevation of script name to make it
+#   Internal functions, start with _ and abbreviation of script name to make it
 #   obvious they should not be called by other modules.
 #
 #=====================================================================
@@ -214,7 +214,7 @@ _mtu_expand_all_deploy_paths() {
 
 #
 #  Try to make the SPD_UID SPD_GID available
-#  by trying to move curren occupants to other ids
+#  by trying to move current occupants to other ids
 #  If not possible change SPD_UID / SPD_GID to
 #  an available pair and print out warning
 #
@@ -233,7 +233,7 @@ _mtu_make_available_uid_gid() {
         msg_3 "No colliding uid or gid"
         return
     fi
-    msg_3 "Intended uid/gid is beeing used"
+    msg_3 "Intended uid/gid is being used"
     echo "Will try to free up desired uid & gid"
 
     # check if user who will get an id change is logged int
@@ -282,7 +282,7 @@ _mtu_make_available_uid_gid() {
                 chown -R "$user_name":"$user_name" /var/mail/"$user_name"
     fi
     #
-    # Even if the GID of the offending user wasnt the offending GID
+    # Even if the GID of the offending user wasn't the offending GID
     # this is still a safe action
     #
 

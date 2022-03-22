@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com 
+# Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
 # License: MIT
 #
 # Part of https://github.com/jaclu/spd
@@ -10,12 +10,12 @@
 #
 #  All task scripts must define the following two variables:
 #  script_tasks:
-#    List tasks provided by this script. If multilple one per line single
+#    List tasks provided by this script. If multiple one per line single
 #    multi-line string first word is task name, rest is optional
 #    description of task
 #  script_description
 #    Short summary what this script does (for the help display)
-#    Single multiline string.
+#    Single multi line string.
 #
 #=====================================================================
 
@@ -27,12 +27,12 @@ script_description="Monitors and restarts sshd if no longer responsive"
 
 #=====================================================================
 #
-#   Describe additional paramas, if none are used don't define
+#   Describe additional parameters, if none are used don't define
 #   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
-help_local_paramas() {
+help_local_parameters() {
     echo "SPD_MON_SSHD$(
         test -z "$SPD_MON_SSHD" \
         && echo ' -  service enabled status (-1/0/1)' \
@@ -45,17 +45,17 @@ help_local_paramas() {
 #
 #  Task (public) functions
 #
-#  Assumed to start with task_ and then describe the task in a suficiently
+#  Assumed to start with task_ and then describe the task in a sufficiently
 #  unique way to give an idea of what this task does,
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
 #
 #=====================================================================
 
-task_mon_sshd() { 
+task_mon_sshd() {
     verbose_msg "task_mon_sshd($SPD_MON_SSHD)"
     check_abort
-    
+
     #
     # Name of service
     #
@@ -101,21 +101,21 @@ task_mon_sshd() {
             fi
             echo
             ;;
-    
+
         0 )  # unchanged
             if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
                 _mon_sshd_label
                 echo "Will NOT be changed"
             fi
             ;;
-    
-        1 )  # activate 
+
+        1 )  # activate
             _mon_sshd_label
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be enabled"
             else
                 check_abort
-                msg_3 "Enabeling service"
+                msg_3 "Enabling service"
                 ensure_installed openrc  # needed to handle services
                 ensure_runlevel_default
 
@@ -151,7 +151,7 @@ task_mon_sshd() {
 
 #=====================================================================
 #
-#   Internal functions, start with _ and abrevation of script name to make it
+#   Internal functions, start with _ and abbreviation of script name to make it
 #   obvious they should not be called by other modules.
 #
 #=====================================================================

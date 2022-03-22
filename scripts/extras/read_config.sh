@@ -30,32 +30,32 @@ CONFIG_PATH="$DEPLOY_PATH/custom/config"
 #==========================================================
 
 #
-# See samples/config/Config.md for explaination how config files are
+# See samples/config/Config.md for explanation how config files are
 # processed.
 #
 read_config() {
     #
     # the config files are located in $DEPLOY_PATH/custom/config/
-    # and have the extention .cfg
+    # and have the extension .cfg
     # In order to lowercase the cfg file names when they depend
-    # on env variables we only give the basename of the
+    # on env variables we only give the base name of the
     # config file below
     #
     _read_cfg_file defaults 1
 
     _read_cfg_file settings-pre-os
-    
+
     [ -n "$os_type" ] &&        _read_cfg_file "$os_type"
     [ -n "$distro_family" ] &&  _read_cfg_file "$distro_family"
     [ -n "$distro" ] &&         _read_cfg_file "$distro"
-    
+
     _read_cfg_file settings-post-os
 
     _read_cfg_file "$(hostname | sed 's/\./ /' | awk '{print $1}')"
 
     _read_cfg_file settings-last
-    
-    [ -n "$p_verbose" ] && echo  # Whitespace after listing config files parsed
+
+    [ -n "$p_verbose" ] && echo  # White space after listing config files parsed
 }
 
 

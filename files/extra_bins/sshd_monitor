@@ -16,7 +16,7 @@ _version="0.2.3 2022-01-02"
 #
 
 #
-#  Set to /dev/null if no logging is desired, or a file if logging is prefered.
+#  Set to /dev/null if no logging is desired, or a file if logging is preferred.
 #
 log_file="/var/log/sshd_monitor.log"
 
@@ -53,12 +53,12 @@ sleep 10
 
 while true; do
     prompt="$(printf '\n' | nc localhost $port)"
-    
-    if  ! get_prompt; then        
+
+    if  ! get_prompt; then
         #
         #  Attempt one, send a HUP
         #
-        get_pid        
+        get_pid
         if [ -n "$sshd_pid" ]; then
             kill -HUP "$sshd_pid"
             echo "[$(date +%H:%M:%S)] sent HUP to non-responsive sshd"  >> $log_file

@@ -55,7 +55,7 @@ distro_MacOS='MacOS'
 #
 
 #
-#  Detect environ
+#  Detect environment
 #
 case "$(uname)" in
 

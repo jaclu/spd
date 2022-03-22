@@ -1,6 +1,6 @@
-# Hierarchial config structure
+# Hierarchical config structure
 
-All config files are expected to be located in ***custom/config*** relative to the
+All config files are expected to be located in **_custom/config_** relative to the
 basedir of this repository.
 
 Config files are sourced after the spd code is loaded, so any internal variables
@@ -24,11 +24,10 @@ considered, and those found and read are listed.
 
 This one is parsed first, should set defaults for all config variables.
 Typically better to leave as is from the samples/defaults.cfg,
-since it ensures safe defaults, not triggering  any action.
-Also contains hopefully usefull explainations or any setting.
+since it ensures safe defaults, not triggering any action.
+Also contains hopefully useful explanations or any setting.
 This config file is the only one that _must_ be present, all others are
 simpy ignored if not found.
-
 
 #### [2] settings-pre-os.cfg
 
@@ -37,17 +36,18 @@ or hostname related configs.<br>
 You only need to specify changes from defaults.cfg here and in all additional
 config files
 
-
-
 #### [3] OS / Distro based config
 
 Read depending on the running machines OS / distro etc.
+
 ```
 3-1 os_type
 3-2 distro_family
 3-3 distro
 ```
-Sample config files 
+
+Sample config files
+
 ```
 [3-1] darwin.cfg
         [3-3] macos.cfg
@@ -58,29 +58,24 @@ Sample config files
     [3-2] debian.cfg
         [3-3] ubuntu.cfg
 ```
-I have included sample files in ***samples/config*** can be used as a starting point
 
-- ish-family.cfg
-- ish.cfg
-- ish-aok.cfg
+I have included sample files in **_samples/config_** can be used as a starting point
 
-Copy them to ***custom/config***. If they seem usefull.
+-   ish-family.cfg
+-   ish.cfg
+-   ish-aok.cfg
 
-
+Copy them to **_custom/config_**. If they seem useful.
 
 #### [4] settings-post-os.cfg
 
-Here you can override any OS/distro settings before hostnames are parsed.
-
-
+Here you can override any OS/distro settings before host names are parsed.
 
 #### [5] hostname based config
 
 Per hostname configs.
-Pattern is [hostname lowercased].cfg
+Pattern is [hostname lower-cased].cfg
 So a hostname MyiSHDevive would be read as myishdevice.cfg
-
-
 
 #### [6] settings-last.cfg
 

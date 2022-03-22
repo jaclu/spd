@@ -4,49 +4,6 @@
 # License: MIT
 #
 # Version: 0.4.1 2021-07-14
-#                Cleanup of this script, ensured more consistent cross references
-#                in documentation to other parts of codebase
-#          0.4.0 2021-04-30
-#                Reworked tasks into separate scripts, so that others can isolate
-#                parts of this more easily. Also added generic service handling.
-#                first call: ensure_runlevel_default
-#                This will install openrc if not present, and do some iSH related
-#                patches to remove distracting warnings that dont really matter.
-#                Finally it ensures that runlevel is default.
-#                After this you just need to install / config what is needed for
-#                the new service, if not included, copy a script into /etc/init.d
-#                to control the service, and finally call
-#                ensure_service_is_added [service-name] [restart]
-#                If the restart param is given, the service will be restarted,
-#                convenient if you have changed some config.
-#                see task_sshd and task_location_tracker to see usage.
-#          0.3.7 2021-04-13
-#                Second oops in the same day, unintentional removal of a space in
-#                 patch_rc_cgroup_sh() that caused the patch to fail
-#          0.3.6 2021-04-13
-#                  Ouch fixed embarrasing typo in task_sshd when sshd is disabled
-#          0.3.5 2021-04-13
-#                Refactored task_restore_root_home & task_restore_user
-#                to use a common function for restoring home_dir and
-#                extracting tarballs into a tmpdir, so that if extract fails
-#                it can be removed with no ill effect on the intended home_dir
-#          0.3.4 2021-04-09
-#                Refactored task_sshd with propper usage of openrc
-#                and possibility to select sshd port from config file.
-#                In addition patching /lib/rc/sh/rc-cgroup.sh
-#                to get rid of constant /proc/filesystems error messages
-#                any time a service is started or stopped
-#          0.3.3 2021-04-05
-#                Added error check for task_install_my_software
-#                if apk add fails
-#          0.3.2 2021-03-29
-#                Split update & upgrade and put remove in-between
-#          0.3.1 2021-03-26
-#                Creates user with uid/gid 501 in order to make
-#                iOS mounts writable
-#          0.3.0 2021-03-17
-#                Major cleanup, making everything modular
-#                expanding the README.md
 #
 # Dependency: This shell script expects a config file to be present at
 # ../custom/ishTols.cfg
@@ -57,17 +14,17 @@
 # be displayed, and then this app holds for 5 seconds. You can
 # press Ctrl-C if you want to examine what will be done in more detail.
 #
-# This is a turn-key setup of a fresh iSH into a useable state
+# This is a turn-key setup of a fresh iSH into a usable state
 # Even if you do not have any homedirs to restore, this can be used to
 # set the general environment up to your likings look at the settings bellow,
-# anything that you do now wan't to bother with, 
+# anything that you do now want to bother with,
 # just comment that  out.
 #
 # Works both on AppStore and TestFlight iSH
 # and both with default and AOK filesystems
 #
 # Most output lines are kept short, in order to as much as possible
-# display without linebreaks on the iPhone.
+# display without line breaks on the iPhone.
 #
 # Copy it outside the iSH filesystem in order for it to survive a
 # delete - install cycle. I use: mount -t ios . /mnt
@@ -154,7 +111,7 @@ run_tasks() {
     # It is probably not a good idea to reshuffle their order too much
     # some of them depend on previous tasks
     #
-    task_hostname    
+    task_hostname
     task_replace_some_etc_files
 
     # Do this early, so no risk of installation issues
@@ -167,9 +124,9 @@ run_tasks() {
 
     task_apk_upgrade
     task_apks_add
-    
+
     #task_patch_etc_files  # needs to happen after task_apk_upgrade
-    
+
     task_timezone
     task_dcron
     task_sshd
@@ -185,13 +142,13 @@ run_tasks() {
     task_restore_root
     task_nopasswd_sudo # must be before task_restore_user
     task_restore_user
-    task_do_extra_task # must be after task_restore_user if user dir is refered
+    task_do_extra_task # must be after task_restore_user if user dir is referred
     task_user_pw_reminder
 }
 
 
 #
-#  Debug tasks, set condition as 
+#  Debug tasks, set condition as
 #    true  for normal operation
 #    false to run the test case
 #
@@ -237,7 +194,7 @@ if [ "$p_help" = "1" ]; then
     echo "param -h indicates that you only want to see what will be done"
     echo
     exit 0
-fi    
+fi
 
 
 echo

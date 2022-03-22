@@ -17,7 +17,7 @@ fi
 unset _this_script
 
 
-# If you intend to work at a service in another runlevel change this variable
+# If you intend to work at a service in another run-level change this variable
 rc_runlevel=default
 
 
@@ -29,8 +29,8 @@ rc_runlevel=default
 #==========================================================
 
 #
-# Makes sure openrc is installed, and that default is the current runlevel.
-# ATM some fixes are done before checking current runlevel:
+# Makes sure openrc is installed, and that default is the current run-level.
+# ATM some fixes are done before checking current run-level:
 #  1 deploy a patch to workaround the lacking /proc implementation in iSH
 #  2 remove a service that complains about a broken dependency.
 #    Since it isn't meaningful to run on an iOS device anyhow,
@@ -38,9 +38,9 @@ rc_runlevel=default
 #
 ensure_runlevel_default() {
     verbose_msg "ensure_runlevel_default()"
-    
+
     ensure_installed openrc
-       
+
     if [ "$(rc-status -r)" != "default" ]; then
         rc_runlevel=default
         msg_2 "Setting runlevel $rc_runlevel"
@@ -50,16 +50,16 @@ ensure_runlevel_default() {
 
 
 #
-# Adds service mentioned in param1 to $rc_runlevel
+# Adds service mentioned in parameter 1 to $rc_runlevel
 # File is assumed to have already been copied into /etc/init.d
 #
-# if param2 is restart will restart the service once it it added
+# if parameter 2 is restart will restart the service once it it added
 #
 ensure_service_is_added() {
     srvc=$1
     runlevel=$2
     restart=$3
-    
+
     verbose_msg "ensure_service_is_added(srvc=$srvc, runlevel=$runlevel, restart=$restart)"
 
     [ "$srvc" = "" ] && error_msg "ensure_service_is_added() called with param srvc"
@@ -71,7 +71,7 @@ ensure_service_is_added() {
     fi
     if [ "$restart" = "restart" ]; then
         msg_3 "Restarting service"
-        echo "To ensure curent config will be used"
+        echo "To ensure current config will be used"
         rc-service "$srvc" restart
     fi
 
@@ -82,15 +82,15 @@ ensure_service_is_added() {
 
 
 #
-# Removes service mentioned in param1 from $rc_runlevel
+# Removes service mentioned in parameter 1 from $rc_runlevel
 #
 disable_service() {
     srvc=$1
     runlevel=$2
-    
+
     verbose_msg "disable_service(srvc=$srvc, runlevel=$runlevel)"
     [ "$srvc" = "" ] && error_msg "disable_service() called without param"
-    [ "$runlevel" = "" ] && error_msg "disable_service() called without param runlevel"
+    [ "$runlevel" = "" ] && error_msg "disable_service() called without param run-level"
     if [ "$(rc-service -l | grep "$srvc")" != "" ]; then
         rc-service "$srvc" stop
         rc-update del "$srvc" "$rc_runlevel"
@@ -125,7 +125,7 @@ _NOT_problematic_service_hwdrivers() {
     fi
 
     bad_srvc=/etc/init.d/hwdrivers
-    
+
     if test -f "$bad_srvc" ; then
         #
         # TODO: check if this is no longer needed in order to avoid getting
@@ -147,7 +147,7 @@ _NOT_problematic_service_hwdrivers() {
 
 #
 # This hack prevents all iSH service start and stops shoving an error
-# about not finding /proc/filesystems iSH does not currently suppport
+# about not finding /proc/filesystems iSH does not currently support
 # that part of /proc
 # This snippet does not require bash /bin/sh is enough.
 # Needs to be run as root, but since this script already has that
@@ -162,7 +162,7 @@ _NOT_patch_rc_cgroup_sh() {
     func_name_line_no=$(grep -n "cgroup2_find_path()" $fname | cut --delimiter=":" --fields=1)
     insert_on_line=$((func_name_line_no+2))
 
-    # In order to exand tab below, through trial and error, I discovered
+    # In order to expand tab below, through trial and error, I discovered
     # double expanding it turned out to work. Do not ask me why...
     patch_line="\\treturn 0  # ** Hack for iSH by jaclu ***"
 
@@ -172,7 +172,7 @@ _NOT_patch_rc_cgroup_sh() {
         echo "This patch is not needed on recent AOK systems"
         return
     fi
-    
+
     # check content of line
     early_return=$(sed "$insert_on_line !d" $fname)
 
@@ -182,13 +182,13 @@ _NOT_patch_rc_cgroup_sh() {
     #  using a case statement - argh...
     #
     case $early_return in
-    
+
         *"return 0"*)
             msg_3 "Patch already applied"
             ;;
-            
+
         *)
-            msg_3 "Patch beeing applied"
+            msg_3 "Patch being applied"
             if [ -f "$fn_backup" ]; then
                 echo "Found: $fn_backup"
                 echo "Seems like patch was already applied"
@@ -200,13 +200,13 @@ _NOT_patch_rc_cgroup_sh() {
             echo "Making cgroup2_find_path() always return 0"
             echo "Saving original file to $fn_backup"
             cp $fname $fn_backup
-    
+
             # kind of RPN, end result is an empty line after the patch line.
             # and the patch ends up on the expected line so will be detected
             # on later runs of this
             sed -i "$insert_on_line i \ " $fname
             sed -i "$insert_on_line i \ $patch_line" $fname
-            
+
             msg_3 "Patch completed!"
             ;;
 

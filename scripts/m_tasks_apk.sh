@@ -10,12 +10,12 @@
 #
 #  All task scripts must define the following two variables:
 #  script_tasks:
-#    List tasks provided by this script. If multilple one per line single
+#    List tasks provided by this script. If multiple one per line single
 #    multi-line string first word is task name, rest is optional
 #    description of task
 #  script_description
 #    Short summary what this script does (for the help display)
-#    Single multiline string.
+#    Single multi line string.
 #
 #=====================================================================
 
@@ -29,12 +29,12 @@ task_apks_add     - adds all apks listed in SPD_APKS_ADD"
 
 #=====================================================================
 #
-#   Describe additional paramas, if none are used don't define
+#   Describe additional parameters, if none are used don't define
 #   help_local_params() script_base.sh will handle that condition.
 #
 #=====================================================================
 
-help_local_paramas() {
+help_local_parameters() {
     echo "SPD_APKS_DEL$(
         test -z "$SPD_APKS_DEL" \
         && echo ' - packages to remove, comma separated' \
@@ -51,7 +51,7 @@ help_local_paramas() {
 #
 #  Task (public) functions
 #
-#  Assumed to start with task_ and then describe the task in a suficiently
+#  Assumed to start with task_ and then describe the task in a sufficiently
 #  unique way to give an idea of what this task does,
 #  and not collide with other modules.
 #  Use a short prefix unique for your module.
@@ -101,7 +101,7 @@ task_apks_delete() {
             # should instead be:
             #   apk del "$SPD_APKS_DEL"
             # and that leads to apk not recognizing it as multiple apks
-            # this seems to be a useable workarround
+            # this seems to be a usable workaround
             #
             cmd="apk del $SPD_APKS_DEL"
             verbose_msg "Will run: $cmd"
@@ -130,7 +130,7 @@ task_apks_add() {
             # about why this seems needed ATM
             check_abort
             echo "$items_add"
-	    
+
             cmd="apk add $items_add"
             verbose_msg "Will run: $cmd"
             $cmd || error_msg "Failed to install requested software - network issue?"
@@ -152,11 +152,11 @@ task_apks_add() {
 _filter_dels_from_add() {
     lst="$SPD_APKS_ADD"
     while true; do
-        item="${lst%% *}"  # upto first colon excluding it
+        item="${lst%% *}"  # up to first colon excluding it
         lst="${lst#* }"    # after fist colon
 
-	if [ "${SPD_APKS_DEL#*$item}" != "$SPD_APKS_DEL" ]; then
-	    echo "WARNING: $item in both SPD_APK_ADD and SPD_APK_DEL - will not be added!"
+    if [ "${SPD_APKS_DEL#*$item}" != "$SPD_APKS_DEL" ]; then
+        echo "WARNING: $item in both SPD_APK_ADD and SPD_APK_DEL - will not be added!"
         else
             if [ -n "$items_add" ]; then
                 export items_add="$items_add $item"

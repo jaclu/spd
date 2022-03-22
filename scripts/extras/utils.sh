@@ -14,7 +14,7 @@
 #
 # Global variables should also be given thought, since if multiple modules
 # are being loaded, then a task is called, a generically labeled global
-# migh have been changed by another module, so try to prefix globals with
+# might have been changed by another module, so try to prefix globals with
 # something unique for that module.
 #
 # Try to be a good citizen and unset "local" variables inside functions,
@@ -35,7 +35,7 @@ unset _this_script
 
 #==========================================================
 #
-#     Messagging and Error display
+#     Messaging and Error display
 #
 #==========================================================
 
@@ -160,17 +160,17 @@ check_abort() {
     # Check if actions can be done in this environment
     #
     [ "$SPD_ABORT" != "1" ] && return
-    
+
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
         msg_2 "SPD_ABORT=1"
         error_msg "This prevents any action from being taken"
     fi
-    return 0 # indicate the check indicated unsuitable envionment
+    return 0 # indicate the check indicated unsuitable environment
 }
 
 expand_deploy_path() {
     #
-    #  Path not starting with / are asumed to be relative to
+    #  Path not starting with / are assumed to be relative to
     #  $DEPLOY_PATH
     #
     this_path="$1"
@@ -230,13 +230,13 @@ ensure_installed() {
 
 #
 # If in display mode, mentions if shell is missing,
-# in work mode, this fails if SPD_SHELL is not pressent.
+# in work mode, this fails if SPD_SHELL is not present.
 # This does not install the shell, it just verifies if it is there or not.
 #
 ensure_shell_is_installed() {
     SHELL_NAME=$1
 
-    [ -z "$SHELL_NAME" ] && error_msg "ensure_shell_is_installed() - no shell paraam!"
+    [ -z "$SHELL_NAME" ] && error_msg "ensure_shell_is_installed() - no shell parameter!"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         test -x "$SHELL_NAME" || warning_msg "$SHELL_NAME not found\n>>>< Make sure it gets installed! ><<\n"
     else
@@ -285,7 +285,7 @@ clear_work_dir() {
 
 #
 #  Restore $home_dir unless $unpacked_ptr points to an existing file.
-#  If $save_current is 1, curent home dir is moved to $home_dir-OLD and
+#  If $save_current is 1, current home dir is moved to $home_dir-OLD and
 #  kept, otherwise current home-dir is emptied if extract succeeds.
 #
 unpack_home_dir() {
@@ -299,18 +299,18 @@ unpack_home_dir() {
 
     [ "$save_current" != "1" ] && save_current=0
 
-    # (mostly) unverified params
+    # (mostly) unverified parameters
     #verbose_msg "unpack_home_dir(username=$username, home=$home_dir, fhome_packed=$fhome_packed, unpacked_ptr=$unpacked_ptr, save_current=$save_current)"
-    # TODO: verify that this split param aproach displays as intended!
+    # TODO: verify that this split param approach displays as intended!
     verbose_msg "$(
         printf "unpack_home_dir(username=%s, home=" "$username"
         printf "%s, fhome_packed=%s, , unpacked_ptr=" "$home_dir" "$fhome_packed"
         echo "$unpacked_ptr, save_current=$save_current)")"
 
     #
-    #  Param checks
+    #  Parameter checks
     #
-    # Some of the checks below are ignored when $SPD_TASK_DISPLAY is 1 ie just inforoming what will happen
+    # Some of the checks below are ignored when $SPD_TASK_DISPLAY is 1 ie just informing what will happen
     [ -z "$username" ] && error_msg "unpack_home_dir() no username given"
     if [ ! "$SPD_TASK_DISPLAY" = "1" ] && [ "$(grep -c ^"$username" /etc/passwd)" != "1" ]; then
         error_msg "unpack_home_dir($username) - username not found in /etc/passwd"
@@ -463,7 +463,7 @@ parse_command_line() {
     # This is checked after all config files are processed, so if you really want to, you can
     # override this in a later config file....
     # If help is requested we will continue despite SPD_ABORT=1
-    # Since nothing will be changed, and it helps testting scipts on non supported platforms.
+    # Since nothing will be changed, and it helps testing scripts on non supported platforms.
     #
     if [ "$SPD_TASK_DISPLAY" = "0" ] && [ $p_help = 0 ]; then
         [ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system."
@@ -477,7 +477,7 @@ parse_command_line() {
 # are only run in standalone mode, so no risk for wrong same named function
 # being called...
 #
-# In standlone mode, this will be run from See "main" part at end of
+# In standalone mode, this will be run from See "main" part at end of
 # extras/utils.sh, it first expands parameters,
 # then either displays help or runs the task(-s)
 #
@@ -514,7 +514,7 @@ _run_this() {
 
 
 #
-#  Identify fiilesystem, some operations depend on it
+#  Identify filesystem, some operations depend on it
 # SPD_FILE_SYSTEM -> SPD_ISH_KERNEL
 if 2>/dev/null grep -q ish-AOK /proc/version; then
     SPD_ISH_KERNEL='AOK'
@@ -541,7 +541,7 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     else
         #
         # Limit in what conditions script can be executed
-        # Displaying what will happen is harmelss and can run at any
+        # Displaying what will happen is harmless and can run at any
         # time.
         #
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
