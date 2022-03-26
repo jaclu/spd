@@ -33,7 +33,7 @@ log_it() {
     if [ -z "$log_file" ]; then
         return
     fi
-    printf "[%s] %s\n" "$(date '+%H:%M:%S')" "$@" >> "$log_file"
+    printf "[%s] %s\n" "$(date +'%y-%m-%d %H:%M:%S')" "$@" >> "$log_file"
 }
 
 get_prompt() {
@@ -56,7 +56,7 @@ port="$(grep -w Port /etc/ssh/sshd_config | awk '{ print $2 }')"
 [ -z "$port" ] && port=22
 
 
-log_it "[$(date) Starting sshd monitor version: $_version on port: ($port)"
+log_it "Starting sshd monitor version: $_version on port: ($port)"
 
 # At startup wait a bit to give sshd time to actually start up
 sleep 10
