@@ -1,5 +1,5 @@
 #!/bin/sh
-_version="0.2.3 2022-01-02"
+_version="0.3.0 2022-03-26"
 #
 #  Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -26,6 +26,16 @@ log_file="/var/log/sshd_monitor.log"
 check_intervall=10
 
 
+#
+#  If $log_file is empty or undefined, no logging will occur.
+#
+log_it() {
+    if [ -z "$log_file" ]; then
+        return
+    fi
+    printf "[%s] %s\n" "$(date '+%H:%M:%S')" "$@" >> "$log_file"
+}
+
 get_prompt() {
     prompt="$(printf '\n' | nc localhost "$port")"
     [ -z "$prompt" ] && return 1  # Error, no response
@@ -46,7 +56,7 @@ port="$(grep -w Port /etc/ssh/sshd_config | awk '{ print $2 }')"
 [ -z "$port" ] && port=22
 
 
-echo "[$(date +%H:%M:%S)] Starting sshd monitor version: $_version on port: ($port)"  >> $log_file
+log_it "[$(date) Starting sshd monitor version: $_version on port: ($port)"
 
 # At startup wait a bit to give sshd time to actually start up
 sleep 10
@@ -61,7 +71,7 @@ while true; do
         get_pid
         if [ -n "$sshd_pid" ]; then
             kill -HUP "$sshd_pid"
-            echo "[$(date +%H:%M:%S)] sent HUP to non-responsive sshd"  >> $log_file
+            log_it "sent HUP to non-responsive sshd"
             sleep 1
             get_prompt && continue
         fi
@@ -74,12 +84,12 @@ while true; do
 
         get_pid
         if [ -n "$sshd_pid" ]; then
-            echo "[$(date +%H:%M:%S)] sshd still present after stop, doing kill -9"  >> $log_file
+            log_it "sshd still present after stop, doing kill -9"
             kill -9 "$sshd_pid"
         fi
 
         /etc/init.d/sshd start
-        echo "[$(date +%H:%M:%S)] restarted sshd"  >> $log_file
+        log_it "restarted sshd"
     fi
     sleep $check_intervall
 done
