@@ -1,9 +1,11 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
-# License: MIT
+#  Copyright (c) 2022: Jacob.Lundqvist@gmail.com
+#  License: MIT
 #
-# Version: 0.4.1 2021-07-14
+#  Part of https://github.com/jaclu/spd
+#
+#  Version: 0.4.2 2022-05-18
 #
 # Dependency: This shell script expects a config file to be present at
 # ../custom/ishTols.cfg
@@ -116,21 +118,18 @@ run_tasks() {
 
     # Do this early, so no risk of installation issues
     # with tasks needing to install dependencies
-    task_apk_update
+    #task_apk_update
 
     # do before upgrade to avoid time waste of upgrading
     # only to then remove it
     task_apks_delete
 
-    task_apk_upgrade
-    task_apks_add
+    #
+    #  Weird iSH often failes on upgade, so I have disabled it here in order
+    #  for deploys not to get stuck. I can always do it manually.
+    #
+    #task_apk_upgrade
 
-    #task_patch_etc_files  # needs to happen after task_apk_upgrade
-
-    task_timezone
-    task_dcron
-    task_sshd
-    task_mon_sshd
     # Run as early as possible, so that one can switch away from iSH window
     # during deploy.
     # It should be possible to run this directly after task_apk_update
@@ -138,6 +137,15 @@ run_tasks() {
     # could be some unintended dependency complicating things...
     # semi work after task_apks_add
     task_runbg
+
+    task_timezone
+    task_dcron
+    task_sshd
+    task_mon_sshd
+
+    task_apks_add
+
+    #task_patch_etc_files  # needs to happen after task_apk_upgrade
 
     task_restore_root
     task_nopasswd_sudo # must be before task_restore_user
