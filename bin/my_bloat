@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
+# License: MIT
+#
+# Version: 0.0.1 2022-05-18
+#
+
+bash="bash checkbashisms git-bash-completion util-linux-bash-completion openrc-bash-completion py3-pip-bash-completion"
+
+zsh="zsh fd-zsh-completion git-zsh-completion openrc-zsh-completion rsync-zsh-completion tmux-zsh-completion"
+
+shells="$zsh $bash"
+
+man="man-db man-pages"
+
+editors="emacs-nox neovim"
+
+python="py3-pip python3-doc"
+
+devel="build-base pkgconf ncurses-dev unzip"
+
+remote_access="mosh"
+
+
+
+do_bloat() {
+    if [ "$uninstall" -eq 0 ]; then
+    	echo "Will install: $@"
+	sudo apk add "$@"
+    else
+    	echo "Will remove: $@"
+        sudo apk del "$@"
+    fi
+}
+
+while [ -n "$1" ]; do
+    param="$1"
+    uninstall=0
+    if [ "$(echo "$param" | cut -b1)" = "-" ]; then
+        uninstall=1
+        param="${param#?}"
+    fi
+
+    case "$param" in
+
+        "bash")    do_bloat $bash ;;
+
+        "zsh")     do_bloat $zsh ;;
+
+        "shells")  do_bloat $shells ;;
+
+	"man")     do_bloat $man ;;
+	
+        "editors") do_bloat $editors ;;
+        
+        "python")  do_bloat $python ;;
+
+        "devel")   do_bloat $devel ;;
+
+	"remote_access")  do_bloat $remote_access ;;
+
+        *)
+            echo "Available bloats are: bash zsh shells editors python devel remote_access"
+            exit 1
+    esac
+    shift
+done
