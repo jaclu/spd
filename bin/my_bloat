@@ -1,11 +1,19 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-04-30
-# License: MIT
+#  Copyright (c) 2022: Jacob.Lundqvist@gmail.com
+#  License: MIT
 #
-# Version: 0.0.1 2022-05-18
+#  Part of https://github.com/jaclu/spd
+#
+#  Version: 0.1.1  2022-05-18
 #
 
+#
+# Warninng I wrote at some point in time, need to investigate..
+# Do not install bash-completion, will cause a start time of 70 seconds on my iPad 5th gen
+# are the app specific completiions meaningfull without the base completion
+# package?
+#
 bash="bash checkbashisms git-bash-completion util-linux-bash-completion openrc-bash-completion py3-pip-bash-completion"
 
 zsh="zsh fd-zsh-completion git-zsh-completion openrc-zsh-completion rsync-zsh-completion tmux-zsh-completion"
@@ -14,14 +22,13 @@ shells="$zsh $bash"
 
 man="man-db man-pages"
 
-editors="emacs-nox neovim"
+editors="emacs-nox vim neovim"
 
 python="py3-pip python3-doc"
 
 devel="build-base pkgconf ncurses-dev unzip"
 
 remote_access="mosh"
-
 
 
 do_bloat() {
