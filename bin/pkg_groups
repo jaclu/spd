@@ -7,7 +7,7 @@
 #
 #  Who said you couldn't do nested arrays in POSIX ??
 #
-version="0.2.0  2022-05-19"
+version="0.2.1  2022-05-19"
 
 
 #
@@ -36,7 +36,7 @@ package_groups="
   :man     |  man-db man-pages
   :python  |  py3-pip python3-doc
 
-  :remote_access | mosh telnet
+  :remote_access | mosh
 
 "
 
@@ -98,7 +98,7 @@ pkg_handling() {
     cmd="sudo apk $action $packages"
 
     if [ "$is_iSH" -eq 1 ]; then
-	"$cmd"
+	$cmd
     else
 	#
 	#  Allows me to edit this on my Workstation :)
