@@ -3,11 +3,9 @@
 #  Copyright (c) 2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
 #
-#  Part of https://github.com/jaclu/spd
-#
 #  Who said you couldn't do nested arrays in POSIX ??
 #
-version="0.2.4  2022-05-19"
+version="0.3.0a  2022-05-19"
 
 
 #
@@ -155,14 +153,37 @@ process_items() {
 
         [ -z "$name" ] && continue  # skip blank lines
 
-	# get rid of comment lines from the AOK file
+        # get rid of comment lines from the AOK file
         [ "$(echo "$name" | cut -b1)" = "#" ] && continue
 
         case "$task" in
 
             "groups") printf "%s" "$name " ;;
 
-            "list") echo "$name --  $packages" ;;
+            "list")
+                #
+                #  For pretty prining, first get all the group names
+                #  and figure out the longest. To keep code simple
+                #  this is done on the first run of list,
+                #
+                if [ -z "$max_len" ]; then         # first get a list of names, in order to find longest
+                    task="groups"
+                    group_lst="$(process_items)"
+                    task="list" # back to expected processing
+                    
+                    max_len=0
+                    while true; do
+                        g="${group_lst%% *}"
+                        group_lst="${group_lst#* }"
+
+                        g_len="${#g}"
+                        [ "$g_len" -gt $max_len ] && max_len="$g_len"
+
+                        [ "$group_lst" = "$g" ] && break  # list done
+                    done                    
+                fi
+                printf "%${max_len}s  %s\n" "$name" "$packages"
+                ;;
 
             "install")
                 if [ "$name" = "$item" ]; then
