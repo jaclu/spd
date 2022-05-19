@@ -7,7 +7,7 @@
 #
 #  Who said you couldn't do nested arrays in POSIX ??
 #
-version="0.2.3  2022-05-19"
+version="0.2.4  2022-05-19"
 
 
 #
@@ -61,17 +61,21 @@ fi
 check_for_option() {
     case "$1" in
         "" | "-h" | "--help" )
-            echo "usage: $prog_name [-h] [-g] [-l] group1 group2 -group3 ..."
+            echo "usage: $prog_name [-a] & [-h] | [-g] | [-l] | group1 group2 -group3 ..."
             echo
             echo "This is a tool to install/uninstall groups of packages"
             echo "prefixing a group name with - means uninstall that group"
+	    echo
+	    echo "If not run on iSH, this will only display what actions"
+	    echo "would be taken, so can be tested on other operating systems"
             echo
             echo "options:"
             echo "  -h, --help     show this help message and exit"
+            echo "  -a             Use the AOK BLOAT_APKS content, ignoring"
+            echo "                 what groups are defined in here"
+	    echo "                 can be combined with -g -l and groups"
             echo "  -g             list available groups and exit"
             echo "  -l             list groups and items and exit"
-            #echo "  -a             Use the AOK BLOAT_APKS content"
-            #echo "                 ignoring what is defined in here"
             exit 0
             ;;
 
@@ -87,7 +91,24 @@ check_for_option() {
             process_items
             exit 0
             ;;
+
+	"-a" ) use_aok_groups ;;
+
     esac
+}
+
+
+use_aok_groups() {
+    var_file="/usr/local/etc/AOK_VARS"
+    if [ ! -f "$var_file" ]; then
+	echo "ERROR: $var_file not found!"
+	exit 1
+    fi
+    #
+    #  Convert $var_file to my notation, so that it can be used without
+    #  changing the rest of the code.
+    #
+    package_groups="$(grep _APKS "$var_file" | sed s/\'//g | sed 's/=/|/' | awk '{ print ":" $0 }')"
 }
 
 
@@ -110,7 +131,7 @@ pkg_handling() {
         #
         #  Allows me to edit this on my Workstation :)
         #
-        echo "$cmd"
+        echo "** Would run **  $cmd"
     fi
     task_done=1
 }
@@ -133,6 +154,9 @@ process_items() {
         packages="$(echo "$section" | cut -d'|' -f 2| awk '{$1=$1};1')"
 
         [ -z "$name" ] && continue  # skip blank lines
+
+	# get rid of comment lines from the AOK file
+        [ "$(echo "$name" | cut -b1)" = "#" ] && continue
 
         case "$task" in
 
@@ -161,16 +185,28 @@ process_items() {
 
 
 main() {
+    echo "$prog_name  $version"
+
+    check_for_option "$1"
+
+    if [ "$1" = "-a"  ]; then
+	#  If no other params, show help and exit
+	[ -z "$2" ] && check_for_option -h
+
+	shift  # get rid of -a
+	check_for_option "$1"
+    fi
+
     while [ -n "$1" ]; do
         item="$1"
         if [ "$(echo "$item" | cut -b1)" = "-" ]; then
             item="${item#?}"
             task="uninstall"
-            echo "=====   Uninstalling:  $item"
+            echo "-----   Uninstalling:  $item"
             process_items
         else
             task="install"
-            echo "=====   Installing:  $item"
+            echo "-----   Installing:  $item"
             process_items
         fi
         if [ "$task_done" -eq 0 ]; then
@@ -182,6 +218,4 @@ main() {
 }
 
 
-echo "$prog_name  $version"
-check_for_option "$1"
 main "$@"
