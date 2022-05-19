@@ -5,7 +5,7 @@
 #
 #  Who said you couldn't do nested arrays in POSIX ??
 #
-version="0.3.0a  2022-05-19"
+version="0.3.0  2022-05-19"
 
 
 #
@@ -106,7 +106,7 @@ use_aok_groups() {
     #  Convert $var_file to my notation, so that it can be used without
     #  changing the rest of the code.
     #
-    package_groups="$(grep _APKS "$var_file" | sed s/\'//g | sed 's/=/|/' | awk '{ print ":" $0 }')"
+    package_groups="$(grep _APKS "$var_file" | sed s/_APKS// | sed s/BLOAT// | sed s/\'//g | sed 's/=/|/' | awk '{ print ":" $0 }')"
 }
 
 
@@ -148,7 +148,7 @@ process_items() {
         section="${lst%%:*}"  # up to first colon excluding it
         lst="${lst#*:}"       # after fist colon
 
-        name="$(echo     "$section" | cut -d'|' -f 1| awk '{$1=$1};1')"
+        name="$(echo     "$section" | cut -d'|' -f 1| awk '{$1=$1};1' | tr '[:upper:]' '[:lower:]')"
         packages="$(echo "$section" | cut -d'|' -f 2| awk '{$1=$1};1')"
 
         [ -z "$name" ] && continue  # skip blank lines
@@ -182,7 +182,7 @@ process_items() {
                         [ "$group_lst" = "$g" ] && break  # list done
                     done                    
                 fi
-                printf "%${max_len}s  %s\n" "$name" "$packages"
+                printf "[%${max_len}s]  %s\n" "$name" "$packages"
                 ;;
 
             "install")
