@@ -7,7 +7,7 @@
 #
 #  Who said you couldn't do nested arrays in POSIX ??
 #
-version="0.2.1  2022-05-19"
+version="0.2.2  2022-05-19"
 
 
 #
@@ -44,8 +44,12 @@ package_groups="
 
 
 
-prog_name=$(basename $0)
+prog_name=$(basename "$0")
 
+#
+#  By only displaying actions on other OS
+#  I can edit this on my workstation
+#
 if [ -d "/proc/ish" ]; then
     is_iSH=1
 else
@@ -129,7 +133,7 @@ process_items() {
 
 	case "$task" in
 
-	    "groups") printf "$name " ;;
+	    "groups") printf "%s" "$name " ;;
 
 	    "list") echo "$name --  $packages" ;;
 
@@ -176,5 +180,5 @@ main() {
 
 
 echo "$prog_name  $version"
-check_for_option $1
-main $@
+check_for_option "$1"
+main "$@"
