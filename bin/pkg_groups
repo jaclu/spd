@@ -19,7 +19,7 @@
 #  In the end its MIT so feel free to change it anyway you want,
 #  this is only to ease maintenance.
 #
-version="0.4.1  2022-05-25"
+version="0.4.2  2022-05-28"
 
 
 #
@@ -39,8 +39,9 @@ package_groups="
               util-linux-bash-completion  openrc-bash-completion \
               py3-pip-bash-completion
 
-  :zsh     |  zsh fd-zsh-completion git-zsh-completion openrc-zsh-completion \
-              rsync-zsh-completion tmux-zsh-completion
+  :zsh     |  zsh cvs-zsh-completion fd-zsh-completion git-zsh-completion \
+              openrc-zsh-completion rsync-zsh-completion \
+              tmux-zsh-completion zsh-syntax-highlighting zsh-vcs
 
   :editors |  emacs-nox \
               vim \
