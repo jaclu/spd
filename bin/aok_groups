@@ -3,49 +3,9 @@
 #  Copyright (c) 2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
 #
-#  Part of https://github.com/jaclu/spd
-#
 #  Who said you couldn't do nested arrays in POSIX ??
 #
 version="0.5.0  2022-05-31"
-
-
-
-#
-#  When defining built in package groups, each group should be in
-#  the following overall notation, but indentation is off no significance,
-#  I just want it orderly to my taste here :)
-#
-#    :label   | pkg1 pkg2 \
-#               pkg3
-#
-#  Additional white space and empty lines are disregarded,
-#  so you can align it as you please.
-#  For the package lists, use \ for continuation on next line
-#
-package_groups="
-
-  :bash    |  checkbashisms git-bash-completion \
-              util-linux-bash-completion  openrc-bash-completion \
-              py3-pip-bash-completion
-
-  :zsh     |  zsh cvs-zsh-completion fd-zsh-completion git-zsh-completion \
-              openrc-zsh-completion rsync-zsh-completion \
-              tmux-zsh-completion zsh-syntax-highlighting zsh-vcs
-
-  :editors |  emacs-nox \
-              vim \
-              neovim
-
-  :man     |  man-db man-pages bash-doc zsh-doc
-  :python  |  py3-pip python3-doc
-
-  :remote_access | mosh
-
-"
-
-
-
 
 
 prog_name=$(basename "$0")
@@ -70,9 +30,6 @@ check_for_option() {
             echo "This is a tool to install/uninstall groups of packages"
             echo "prefixing a group name with - means uninstall that group"
             echo
-            echo "If not run on iSH, this will only display what actions"
-            echo "would be taken, so can be tested on other operating systems"
-            echo
             echo "options:"
             echo "  -h, --help     show this help message and exit"
             echo "  -g             list available groups and exit"
@@ -94,6 +51,20 @@ check_for_option() {
             ;;
 
     esac
+}
+
+
+use_aok_groups() {
+    var_file="/usr/local/etc/AOK_VARS"
+    if [ ! -f "$var_file" ]; then
+        echo "ERROR: $var_file not found!"
+        exit 1
+    fi
+    #
+    #  Convert $var_file to my notation, so that it can be used without
+    #  changing the rest of the code.
+    #
+    package_groups="$(grep _APKS "$var_file"  | grep -v '#' | sed -e s/_APKS// -e s/BLOAT// -e s/\'//g -e s/=/\|/ | awk '{ print ":" $0 }')"
 }
 
 
@@ -129,7 +100,7 @@ pkg_handling() {
 #
 process_items() {
     task_done=0
-    lst=$package_groups  # since we might come back, dont change the original :)
+    lst=$package_groups  # since we might come back, don't change the original :)
     while true; do
         # POSIX way to handle array types of data
         section="${lst%%:*}"  # up to first colon excluding it
@@ -146,8 +117,8 @@ process_items() {
 
             "list")
                 #
-                #  For pretty prining, first get all the group names
-                #  and figure out the longest. To keep code simple
+                #  For pretty printing, first get all the group names
+                #  and figure out the longest. To keep the code simple
                 #  this is done on the first run of list,
                 #
                 if [ -z "$max_len" ]; then
@@ -215,5 +186,7 @@ main() {
     done
 }
 
+
+use_aok_groups
 
 main "$@"
