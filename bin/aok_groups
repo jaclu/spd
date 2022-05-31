@@ -5,7 +5,7 @@
 #
 #  Who said you couldn't do nested arrays in POSIX ??
 #
-version="0.5.0  2022-05-31"
+version="0.5.1  2022-05-31"
 
 
 prog_name=$(basename "$0")
@@ -149,6 +149,10 @@ process_items() {
                 ;;
 
             "uninstall")
+                if [ "$item" = "core" ]; then
+                    echo "ERROR: group core can not be deleted!"
+                    exit 1
+                fi
                 if [ "$name" = "$item" ]; then
                     pkg_handling del
                     return
