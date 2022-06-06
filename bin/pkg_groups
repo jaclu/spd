@@ -37,7 +37,7 @@ package_groups="
               vim \
               neovim
 
-  :man     |  man-db man-pages bash-doc zsh-doc
+  :man     |  man-db man-pages bash-doc zsh-doc tmux-doc
   :python  |  py3-pip python3-doc
 
   :remote_access | mosh
