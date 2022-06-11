@@ -40,10 +40,10 @@ unset _this_script
 #==========================================================
 
 error_msg() {
-    msg=$1
+    e_msg=$1
     err_code=${2:-1}
 
-    [ -z "$msg" ] && error_msg "error_msg() with no param"
+    [ -z "$e_msg" ] && error_msg "error_msg() with no param"
 
     case $err_code in
 
@@ -55,22 +55,23 @@ error_msg() {
 
     esac
 
-    printf '\nERROR: %b\n\n' "$msg"
+    printf '\nERROR: %b\n\n' "$e_msg"
 
     clear_work_dir # clear tmp extract dir
 
+    unset e_msg
     # since we are exiting, no point in unseting local variables.
     exit $err_code
 }
 
 
 warning_msg() {
-    msg=$1
+    wm_msg=$1
 
-    [ -z "$msg" ] && error_msg "warning_msg() with no param"
-    printf '\nWARNING: %b\n\n' "$msg"
+    [ -z "$wm_msg" ] && error_msg "warning_msg() with no param"
+    printf '\nWARNING: %b\n\n' "$wm_msg"
 
-    unset msg
+    unset wm_msg
 }
 
 
@@ -78,12 +79,12 @@ warning_msg() {
 # Only displayed if run with param -v
 #
 verbose_msg() {
-    msg=$1
+    vm_msg=$1
 
-    [ -z "$msg" ] && error_msg "verbose_msg() with no param"
-    [ "$p_verbose" = "1" ] && printf 'VERBOSE: %b\n' "$msg"
+    [ -z "$vm_msg" ] && error_msg "verbose_msg() with no param"
+    [ "$p_verbose" = "1" ] && printf 'VERBOSE: %b\n' "$vm_msg"
 
-    unset msg
+    unset vm_msg
 }
 
 
@@ -94,46 +95,46 @@ msg_1() {
     #
     #   Display message centered inside a box
     #
-    msg=$1
-    max_length=42
+    m1_msg=$1
+    m1_max_length=42
 
     #
-    # if msg was odd chars long, add a space to ensure it can be correctly
+    # if m1_msg was odd chars long, add a space to ensure it can be correctly
     # be split in half. Since this only handles ints, the /2*2 will result
     # in an even number rounded down.
     #
-    [ "${#msg}" -ne "$(( ${#msg}/2*2 ))" ] && msg=" $msg"
+    [ "${#m1_msg}" -ne "$(( ${#m1_msg}/2*2 ))" ] && m1_msg=" $m1_msg"
 
-    if [ "${#msg}" -ge "$max_length" ]; then
+    if [ "${#m1_msg}" -ge "$m1_max_length" ]; then
         # if string is to long, dont use padding
-        pad_str=""
+        m1_pad_str=""
     else
-        pad_length=$(( (max_length - ${#msg})/2  ))
+        m1_pad_length=$(( (m1_max_length - ${#m1_msg})/2  ))
         # posix friendly way of generating x instances of a char
-        pad_str=$( head -c $pad_length  < /dev/zero | tr '\0' ' ' )
+        m1_pad_str=$( head -c $m1_pad_length  < /dev/zero | tr '\0' ' ' )
     fi
 
-    border_line="+$( head -c $max_length  < /dev/zero | tr '\0' '=' )+"
+    m1_border_line="+$( head -c $m1_max_length  < /dev/zero | tr '\0' '=' )+"
 
     #
     # TODO:  When generating the spacer padding as a variable,
     # it only translates to one space, but if used as an expression,
     # all spaces are generated
     #
-    #spacer_line="|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
+    #spacer_line="|$( head -c $m1_max_length  < /dev/zero | tr '\0' ' ' )|"
 
-    echo "$border_line"
-    echo "|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
-    echo "|$pad_str$msg$pad_str|"
-    echo "|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
-    echo "$border_line"
+    echo "$m1_border_line"
+    echo "|$( head -c $m1_max_length  < /dev/zero | tr '\0' ' ' )|"
+    echo "|$m1_pad_str$m1_msg$m1_pad_str|"
+    echo "|$( head -c $m1_max_length  < /dev/zero | tr '\0' ' ' )|"
+    echo "$m1_border_line"
     echo
 
-    unset msg
-    unset max_length
-    unset pad_str
-    unset pad_length
-    unset border_line
+    unset m1_msg
+    unset m1_max_length
+    unset m1_pad_str
+    unset m1_pad_length
+    unset m1_border_line
 }
 
 
