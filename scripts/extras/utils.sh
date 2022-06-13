@@ -371,7 +371,11 @@ unpack_home_dir() {
                 [ "$err_code" -ne 0 ] && error_msg "Failed to unzip ($err_code)"
             else
                 # Seems to be a tar ball
-                ! tar xfz "$fhome_packed" 2> /dev/null && error_msg "Failed to unpack tarball"
+                tar xfz "$fhome_packed" 2> /dev/null
+                if [ "$?" -ne 0 ]; then
+                   # for chrooted envs the first unpack fails...
+                   ! tar xfz "$fhome_packed" 2> /dev/null && error_msg "Failed to unpack tarball"
+                fi
             fi
             if [ ! -d "$extract_location/$username" ]; then
                 error_msg "No $username top dir found in the tarfile!"

@@ -45,6 +45,9 @@ read_config() {
 
     _read_cfg_file settings-pre-os
 
+    echo "os_type:       [$os_type]"
+    echo "distro_family: [$distro_family]"
+    echo "distro:        [$distro]"
     [ -n "$os_type" ] &&        _read_cfg_file "$os_type"
     [ -n "$distro_family" ] &&  _read_cfg_file "$distro_family"
     [ -n "$distro" ] &&         _read_cfg_file "$distro"

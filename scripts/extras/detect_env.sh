@@ -81,6 +81,11 @@ case "$(uname)" in
 
 esac
 
+# Override distro for chrooted linux build
+
+distro_family='ish-family'
+distro='ish-AOK'
+
 #
 # show what was detected if verbose mode
 #
