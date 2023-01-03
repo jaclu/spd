@@ -28,7 +28,7 @@
 
 # shellcheck disable=SC2034
 script_tasks="task_hostname"
-script_description="Give non AOK filesystem hostname suffix -i to make it more obvious
+script_description="Give AOK filesystem hostname suffix -aok to make it more obvious
 to indicate a default iSH filesystem.
 Since hostname can't be changed inside iSH, we set /etc/hostname to the
 desired name and use a custom hostname binary to display this instead."
@@ -92,11 +92,12 @@ task_hostname() {
 
     if [ -n "$(uname -a | grep -i AOK)" ]; then
         msg_3 "AOK kernel"
-        echo "hostname will not be altered."
-        rm "$_th_alternate_hostname_bin" 2> /dev/null
-    else
+        echo "hostname will be altered."
         _th_setup_env
         _th_alternate_host_name
+    else
+        msg_3 "Not AOK"
+        rm "$_th_alternate_hostname_bin" 2> /dev/null
     fi
     echo
 }
@@ -112,7 +113,6 @@ task_hostname() {
 
 _th_expand_all_deploy_paths() {
     _th_alternate_hostname_bin_source=$(expand_deploy_path "$_th_relative_hostname_bin_source")
-    #echo ">> _th_alternate_hostname_bin_source [$_th_alternate_hostname_bin_source]"
 }
 
 _th_setup_env() {
@@ -132,11 +132,10 @@ _th_setup_env() {
 
 #
 #
-#  Add -i if the kernel is not AOK, to indicate regular iSH
+#  Add -aok if the kernel is not AOK, to indicate regular iSH
 #
 _th_alternate_host_name() {
-    #echo ">> _th_alternate_host_name()"
-    new_hostname="$(/bin/hostname)-i"
+    new_hostname="$(/bin/hostname)-aok"
     verbose_msg "New hostname: $new_hostname"
     if [ "$SPD_TASK_DISPLAY" = 1 ]; then
         echo "hostname will be changed into $new_hostname"
@@ -159,6 +158,6 @@ _th_alternate_host_name() {
 script_dir="$(dirname "$0")"
 
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
 
 unset script_dir

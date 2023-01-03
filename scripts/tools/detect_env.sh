@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
+# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2022-07-11
 # License: MIT
 #
 # Part of https://github.com/jaclu/spd
@@ -13,13 +13,10 @@
 
 
 
-#
-# This should only be sourced...
-#
 _this_script="detect_env.sh"
 if [ "$(basename "$0")" = ${_this_script} ]; then
-    echo "ERROR: ${_this_script} is not meant to be run stand-alone!"
-    exit 1
+    # If run standalone, display what env was detected
+    p_verbose=1
 fi
 unset _this_script
 
@@ -45,6 +42,13 @@ os_type_Darwin='Darwin'
 distro_MacOS='MacOS'
 
 
+SPD_ISH_KERNEL=""
+kernel_ish="iSH"
+kernel_ish_aok="iSH-AOK"
+
+# Sample check of what iSH this is
+#[ "$SPD_ISH_KERNEL" = "$kernel_ish_aok" ] && echo "This is iSH-AOK"
+
 
 #
 #  Will set the following variables
@@ -53,6 +57,28 @@ distro_MacOS='MacOS'
 # distro_family - General distro type, debian/ish etc
 # distro        - Specific distro Ubuntu/ish-AOK etc
 #
+
+if [ -n "$(command -v apt | grep -v local)" ]; then
+    # Uses Debian apt as package manager, filtering out hint that apt
+    # is unavailable sometimes pressent in iSH FS
+    pkg_add="apt install -f"
+    pkg_remove="apt remove"
+    pkg_installed="dpkg -i"
+    pkgs_update="apt update"
+    pkgs_upgrade="apt upgrade"
+elif [ -n "$(command -v apk)" ]; then
+    # Uses Alpine apk package manager
+    pkg_add="apk add"
+    pkg_remove="apk del"
+    pkg_installed="apk info -e"
+    pkgs_update="apk update && apk fix"
+    pkgs_upgrade="apk upgrade"
+else
+    echo
+    echo "ERROR Failed to identify package manager!"
+    exit 1
+fi
+
 
 #
 #  Detect environment
@@ -64,12 +90,16 @@ case "$(uname)" in
         if [ "$(uname -r | grep ish)" != "" ]; then
             distro_family=$distro_family_ish
             #if [ "$(uname -r | grep $distro_ish_AOK)" != "" ]; then
-            if [ -f "/usr/local/bin/aok" ]; then
+            if grep -q AOK /proc/ish/version ; then
                 distro=$distro_ish_AOK
+                SPD_ISH_KERNEL="$kernel_ish_aok"
             else
                 distro=$distro_ish
+                SPD_ISH_KERNEL="$kernel_ish"
             fi
             #elif [ "$(uname -r) | grep ish" != "" ]; then
+	elif uname -v | grep -q Alpine ; then
+	    distro="Alpine"
         fi
         ;;
 
@@ -77,6 +107,12 @@ case "$(uname)" in
         os_type=$os_type_Darwin
         distro_family=""
         distro=$distro_MacOS
+        ;;
+
+    *)
+        echo
+        echo "ERROR: Failed to detect environment"
+        exit 1
         ;;
 
 esac

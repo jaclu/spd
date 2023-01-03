@@ -36,6 +36,13 @@
 # Any feedback / bug reports welcome!
 #
 
+echo
+echo "Ensuring /iCloud/spd is cached"
+find /iCloud/spd > /dev/null
+
+echo
+echo "/iCloud/spd is verified to be available"
+echo
 
 #
 # Find where this package is deployed, then use this for relative locations
@@ -56,15 +63,17 @@ SPD_INITIAL_SCRIPT=1
 
 
 
+
 #
 #  Include all dependencies
 #
 
 # shellcheck disable=SC1091
-. "$DEPLOY_PATH/scripts/extras/utils.sh"
+. "$DEPLOY_PATH/scripts/tools/utils.sh"
 # shellcheck disable=SC1091
-. "$DEPLOY_PATH/scripts/extras/read_config.sh"
-
+. "$DEPLOY_PATH/scripts/tools/read_config.sh"
+# shellcheck disable=SC1091
+. "$DEPLOY_PATH/scripts/task_hostname.sh"
 # shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
 # shellcheck disable=SC1091
@@ -76,8 +85,6 @@ SPD_INITIAL_SCRIPT=1
 # shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_do_extra.sh"
 # shellcheck disable=SC1091
-. "$DEPLOY_PATH/scripts/task_hostname.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
 # shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_timezone.sh"
@@ -87,6 +94,8 @@ SPD_INITIAL_SCRIPT=1
 . "$DEPLOY_PATH/scripts/task_runbg.sh"
 # shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
+# shellcheck disable=SC1091
+. "$DEPLOY_PATH/scripts/task_autossh.sh"
 # shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_mon_sshd.sh"
 
@@ -103,6 +112,9 @@ read_config
 #
 #==========================================================
 
+# Pre-task
+task_hostname
+
 #
 # If SPD_TASK_DISPLAY=1 then what will be done is displayed and no actions
 # are taken,  otherwise the tasks are performed
@@ -113,12 +125,11 @@ run_tasks() {
     # It is probably not a good idea to reshuffle their order too much
     # some of them depend on previous tasks
     #
-    task_hostname
-    task_replace_some_etc_files
+     task_replace_some_etc_files
 
     # Do this early, so no risk of installation issues
     # with tasks needing to install dependencies
-    #task_apk_update
+    task_apk_update
 
     # do before upgrade to avoid time waste of upgrading
     # only to then remove it
@@ -138,18 +149,19 @@ run_tasks() {
     # semi work after task_apks_add
     task_runbg
 
+    task_apks_add
     task_timezone
     task_dcron
     task_sshd
     task_mon_sshd
-
-    task_apks_add
-
-    #task_patch_etc_files  # needs to happen after task_apk_upgrade
+    task_patch_etc_files  # needs to happen after task_apk_upgrade
 
     task_restore_root
     task_nopasswd_sudo # must be before task_restore_user
     task_restore_user
+
+    task_autossh # if depending on user pubkey, must come after task_restore_user
+
     task_do_extra_task # must be after task_restore_user if user dir is referred
     task_user_pw_reminder
 }

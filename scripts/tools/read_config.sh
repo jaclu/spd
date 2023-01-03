@@ -1,9 +1,11 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
-# License: MIT
+#  Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
+#  License: MIT
 #
-# Part of https://github.com/jaclu/spd
+#  Part of https://github.com/jaclu/spd
+#
+#  Reads config files overriding settings when applicable
 
 
 #
@@ -17,7 +19,7 @@ fi
 unset _this_script
 
 # shellcheck disable=SC1091
-. "$DEPLOY_PATH/scripts/extras/detect_env.sh"
+. "$DEPLOY_PATH/scripts/tools/detect_env.sh"
 
 CONFIG_PATH="$DEPLOY_PATH/custom/config"
 

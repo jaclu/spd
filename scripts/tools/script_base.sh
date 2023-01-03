@@ -99,7 +99,7 @@ if [ -z "$SPD_INITIAL_SCRIPT" ]; then
     fi
 
     # shellcheck disable=SC1091
-    . "$DEPLOY_PATH/scripts/extras/utils.sh"
+    . "$DEPLOY_PATH/scripts/tools/utils.sh"
 
     #
     # Since sourced mode cant be detected in a practical way under a

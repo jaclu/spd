@@ -65,15 +65,13 @@ task_replace_some_etc_files() {
     check_abort
 
     [ -n "$SPD_FILE_HOSTS" ] &&  _tef_copy_etc_file "$SPD_FILE_HOSTS" /etc/hosts
-    [ -n "$SPD_FILE_REPOSITORIES" ] && _tef_copy_etc_file "$SPD_FILE_REPOSITORIES" /etc/apk/repositories
     echo
 }
 
 task_patch_etc_files() {
     msg_2 "Patching some /etc files"
     check_abort
-    _tef_fix_inittab
-    _tef_fix_profile  # Need to run after apt update!!
+    # _tef_fix_inittab
     echo
 }
 
@@ -98,39 +96,46 @@ _tef_expand_all_deploy_paths() {
 
 _tef_copy_etc_file() {
 
-    src_file="$1"
-    dst_file="$2"
-    surplus_param="$3"
+    tcef_src="$1"
+    tcef_dst="$2"
+    tcef_extra="$3"
 
-    [ -n "$surplus_param" ] && error_msg "_copy_etc_file($src_file, $dst_file) [$surplus_param] more than 2 params given!"
-    verbose_msg "_tef_copy_etc_file($src_file, $dst_file)"
-    if [ -n "$src_file" ]; then
-        msg_3 "$dst_file"
-        [ ! -f "$src_file" ] && error_msg "_tef_copy_etc_file() src_file[$src_file] NOT FOUND!\n$src_file"
+    if [ -n "$tcef_extra" ]; then
+        error_msg "_tef_copy_etc_file($tcef_src, $tcef_dst) [$tcef_extra]" \
+                  "more than 2 params given!"
+    fi
+    verbose_msg "_tef_copy_etc_file($tcef_src, $tcef_dst)"
+    if [ -n "$tcef_src" ]; then
+        msg_3 "$tcef_dst"
+        if [ ! -f "$tcef_src" ]; then
+            error_msg "_tef_copy_etc_file() src_file[$tcef_src] " \
+                      "NOT FOUND!\n$tcef_src"
+        fi
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            cp "$src_file" "$dst_file"
-            echo "$src_file"
+            rm "$tcef_dst" # to avoid incomplete removal of prev vers of file
+            cp "$tcef_src" "$tcef_dst"
+            echo "$tcef_src"
         elif [ "$SPD_TASK_DISPLAY" = "1" ] \
                 && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
             echo "Will NOT be modified"
         fi
     fi
-    unset dst_file
-    unset src_file
-    unset surplus_param
+    unset tcef_dst
+    unset tcef_src
+    unset tcef_extra
 }
 
 
-_tef_fix_inittab() {
-    inittab_file="/etc/inittab"
+_tef_not_fix_inittab() {
+    tfi_inittab_file="/etc/inittab"
     verbose_msg "_tef_cleanup_inittab()"
-     msg_3 "Inspecting $inittab_file"
+     msg_3 "Inspecting $tfi_inittab_file"
 
     # Since iSH has no concept of consoles getty lines are pointless
-    if grep -q 'getty' "$inittab_file"; then
+    if grep -q 'getty' "$tfi_inittab_file"; then
         msg_3 "Removing gettys"
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-           sed -i '/getty/d' "$inittab_file"
+           sed -i '/getty/d' "$tfi_inittab_file"
             echo "done!"
         else
             echo "will happen"
@@ -138,50 +143,26 @@ _tef_fix_inittab() {
     fi
 
     # Get rid of mostly non functional openrc config lines
-    ok_line="::sysinit:/sbin/openrc default"
-    if grep openrc "$inittab_file" | grep -q -v "$ok_line"; then
+    tfi_ok_line="::sysinit:/sbin/openrc default"
+    if grep openrc "$tfi_inittab_file" | grep -q -v "$tfi_ok_line"; then
         msg_3 "Fixing openrc related content"
-        if ! grep -q "$ok_line" /etc/inittab ; then
+        if ! grep -q "$tfi_ok_line" /etc/inittab ; then
             if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-                sed -i '/::sysinit/d' "$inittab_file"
-                sed -i '/::wait:/d' "$inittab_file"
-                echo "$ok_line"  >> "$inittab_file"
+                sed -i '/::sysinit/d' "$tfi_inittab_file"
+                sed -i '/::wait:/d' "$tfi_inittab_file"
+                echo "$tfi_ok_line"  >> "$tfi_inittab_file"
                 echo "done!"
             else
                 echo "will happen"
             fi
         else
-        echo "Patch already applied!"
+            echo "Patch already applied!"
         fi
     fi
 
-    unset inittab_file
-    unset ok_line
+    unset tfi_inittab_file
+    unset tfi_ok_line
 }
-
-
-_tef_fix_profile() {
-    #
-    # As of 2021-07-16 profile is updated into a state where path is reversed,
-    # by apt update. To minimize the changes, this just throws in
-    # a corrected path after this segment
-    #
-    #
-    if grep -q append_path /etc/profile ; then
-    msg_3 "Fixing /etc/profile PATH"
-    if ! grep -q "export PATH=" /etc/profile ; then
-        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-        echo "broken /etc/profile detected, will be fixed"
-        else
-        sed -i '/^export PATH/a \\n# Fix for broken reversed append_path\nexport PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n' /etc/profile
-                echo "done!"
-        fi
-    else
-        echo "Patch already applied!"
-    fi
-    fi
-}
-
 
 
 #=====================================================================
@@ -193,6 +174,6 @@ _tef_fix_profile() {
 script_dir="$(dirname "$0")"
 
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
 
 unset script_dir

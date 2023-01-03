@@ -69,7 +69,7 @@ task_mon_sshd() {
     if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
         verbose_msg "task_mon_sshd() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091
-        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
+        . "$DEPLOY_PATH/scripts/tools/openrc.sh"
     fi
 
     #
@@ -172,6 +172,6 @@ _mon_sshd_label() {
 script_dir="$(dirname "$0")"
 
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
 
 unset script_dir

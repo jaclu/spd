@@ -1,10 +1,11 @@
 #!/bin/sh
 #
-# Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
-# License: MIT
+#  Copyright (c) 2021, 2022: Jacob.Lundqvist@gmail.com
+#  License: MIT
 #
-# Part of https://github.com/jaclu/spd
+#  Part of https://github.com/jaclu/spd
 #
+#  Handles openrc
 
 #
 # This should only be sourced...
@@ -28,6 +29,7 @@ rc_runlevel=default
 #
 #==========================================================
 
+
 #
 # Makes sure openrc is installed, and that default is the current run-level.
 # ATM some fixes are done before checking current run-level:
@@ -39,7 +41,7 @@ rc_runlevel=default
 ensure_runlevel_default() {
     verbose_msg "ensure_runlevel_default()"
 
-    ensure_installed openrc
+    _orc_openrc_is_patched
 
     if [ "$(rc-status -r)" != "default" ]; then
         rc_runlevel=default
@@ -111,12 +113,101 @@ disable_service() {
 #
 #==========================================================
 
+_orc_openrc_is_patched() {
+
+    oip_indicator="/etc/opt/spd-openrc-fixes"
+
+    [ -e "$oip_indicator" ] && return
+
+    ensure_installed openrc
+
+    msg_2 "Patching openrc"
+    #
+    #  Replace kind of broken inittab with something that works
+    #
+    oip_backup_file="/etc/inittab-orig"
+    if [ ! -f "$oip_backup_file" ]; then
+        msg_3 "Replacing /etc/inittab"
+        mv /etc/inittab /etc/inittab-orig
+        cp -av "$DEPLOY_PATH/custom/etc_files/inittab" /etc
+    fi
+
+    # # iSH-AOK does not need to be patched
+    # if [ ! "$SPD_ISH_KERNEL" = "$kernel_ish_aok" ]; then
+
+    #     #  Not needed if the above inittab replacement is active
+    #     # ensure_installed gawk
+    #     # gawk -i inplace '!/getty/' /etc/inittab
+
+    #     #
+    #     #  Replace some /etc/init.d files with fixes from
+    #     #   https://github.com/emkey1/AOK-Filesystem-Tools
+    #     #
+    #     msg_3 "Replacing some /etc/init.d files"
+
+    #     #
+    #     #  This does not make sense,
+    #     #  cp "$DEPLOY_PATH"/files/init.d/* /etc/init.d
+    #     #  just refuses to work, forcing ridiculous workarround,
+    #     #  I must be missing obvious
+    #     #
+    #     _orc_patch_one devfs
+    #     _orc_patch_one hostname
+    #     _orc_patch_one hwdrivers
+    #     _orc_patch_one networking
+    #     _orc_patch_one runbg
+
+    #     ln /etc/init.d/devfs /etc/init.d/dev
+    # fi
+
+
+    touch "$oip_indicator"
+
+    unset oip_indicator
+    unset oip_backup_file
+}
+
+
 _orc_disable_unset() {
     # This is called from multiple point, make all the unsets in one place
     unset srvc
     unset runlevel
 }
 
+
+_orc_patch_one() {
+    opo_fname="$1"
+    opo_src="$DEPLOY_PATH/files/init.d/$opo_fname"
+    if [ ! -e "$opo_src" ]; then
+        echo
+        echo "ERROR:openrc.sh:_orc_patch_one($opo_src) - no such file!"
+        exit 1
+    fi
+
+    #
+    #  This does not make sense, if I don't delete the file before networking
+    #  ends up not being a copy, only work-arround I have found is to first
+    #  delete the dest file.
+    #
+    rm "/etc/init.d/$opo_fname"
+
+    cp "$opo_src" /etc/init.d
+
+    md1="$(md5sum $opo_src | cut -d' ' -f 1)"
+    md2="$(md5sum /etc/init.d/$opo_fname | cut -d' ' -f 1)"
+
+    if [ ! "$md1" = "$md2" ]; then
+        echo
+        echo "ERROR:openrc.sh:_orc_patch_one($opo_src) - md5sum do not match!"
+        echo "orig: [$md1]" # - $(ls -l $opo_src)"
+        echo "copy: [$md2]" # - $(ls -l /etc/init.d/$opo_fname)"
+
+        exit 1
+    fi
+
+    unset opo_fname
+    unset opo_src
+}
 
 _NOT_problematic_service_hwdrivers() {
     if [ "$SPD_ISH_KERNEL" = "AOK" ]; then

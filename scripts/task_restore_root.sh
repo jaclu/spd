@@ -97,7 +97,7 @@ _trr_expand_all_deploy_paths() {
 
 
 _trr_update_root_shell() {
-    SPD_ROOT_SHELL="${SPD_ROOT_SHELL:-"/bin/ash"}"
+    SPD_ROOT_SHELL="${SPD_ROOT_SHELL:-"/bin/bash"}"
 
     [ "$SPD_ROOT_SHELL" = "" ] && return # no change requested
 
@@ -135,6 +135,6 @@ _trr_update_root_shell() {
 script_dir="$(dirname "$0")"
 
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
 
 unset script_dir

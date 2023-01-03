@@ -140,7 +140,7 @@ Ignored by the repository, suggested location for your own local files
 
 This is a hard-coded path. All other files used by the tasks are defined in your configs, so you can decide a good location for them if **custom** does not fit your needs. Remember to store anything outside the local filesystem, in order for it to be available for other devices or after a reinstall.
 
-If you really want to change it, it is defined in **scripts/extras/read_config.sh**
+If you really want to change it, it is defined in **scripts/tools/read_config.sh**
 
 ### files
 
@@ -148,9 +148,7 @@ This is where I store some sample files that might be convenient to deploy, if s
 config.
 
 -   repositories-Alpine-v3.12 -> /etc/apk/repositories
--   services/runbg -- See task_runbg.sh for details
 -   extra_bins/hostname -- See task_hostname.sh for details
--   extra_bins/dev_null-fix -- Recreates /dev/null if it is broken, no longer used by any task, but I left it here since it might be useful.
 
 ### initial-apks
 

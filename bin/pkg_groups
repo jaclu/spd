@@ -25,25 +25,32 @@ version="0.5.0  2022-05-31"
 #
 package_groups="
 
-  :bash    |  checkbashisms git-bash-completion \
-              util-linux-bash-completion  openrc-bash-completion \
-              py3-pip-bash-completion
+  :bash           |  bash bash-doc checkbashisms git-bash-completion \
+                     util-linux-bash-completion openrc-bash-completion \
+                     py3-pip-bash-completion
 
-  :zsh     |  zsh cvs-zsh-completion fd-zsh-completion git-zsh-completion \
-              openrc-zsh-completion rsync-zsh-completion \
-              tmux-zsh-completion zsh-syntax-highlighting zsh-vcs
+  :zsh            |  zsh zsh-doc cvs-zsh-completion fd-zsh-completion \
+                     git-zsh-completion openrc-zsh-completion \
+                     rsync-zsh-completion tmux-zsh-completion \
+                     zsh-syntax-highlighting zsh-vcs
 
-  :editors |  emacs-nox \
-              vim \
-              neovim
+  :editors        |  emacs-nox vim neovim
 
-  :man     |  man-db man-pages bash-doc zsh-doc tmux-doc
-  :python  |  py3-pip python3-doc
+  :man            |  man-db man-pages coreutils-doc tmux-doc
 
-  :remote_access | mosh
+  :python         |  py3-pip python3-doc py3-flake8  py3-pyflakes py3-pylint py3-pytest py3-wheel
+
+  :go             |  go go-doc
+
+  :devel          |  build-base ncurses-dev
+
+  :sessions       |  dvtm dvtm-doc abduco
+
+  :remote_access  |  mosh
 
 "
 
+# check if devel auto installs the following: ncurses-libs ncurses-terminfo ncurses-terminfo-base pkgconf
 
 
 

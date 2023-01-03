@@ -31,8 +31,6 @@ if [ "$(basename "$0")" = ${_this_script} ]; then
 fi
 unset _this_script
 
-
-
 #==========================================================
 #
 #     Messaging and Error display
@@ -47,11 +45,13 @@ error_msg() {
 
     case $err_code in
 
-        ''|*[!0-9]*)
-            printf "PARAM ERROR: error_msg() Non numeric err_code given "
-            echo "[$err_code] changed into 1"
-            err_code=1
-            ;;
+    '' | *[!0-9]*)
+        printf "PARAM ERROR: error_msg() Non numeric err_code given "
+        echo "[$err_code] changed into 1"
+        err_code=1
+        ;;
+
+    *) ;;
 
     esac
 
@@ -63,7 +63,6 @@ error_msg() {
     exit $err_code
 }
 
-
 warning_msg() {
     msg=$1
 
@@ -72,7 +71,6 @@ warning_msg() {
 
     unset msg
 }
-
 
 #
 # Only displayed if run with param -v
@@ -85,7 +83,6 @@ verbose_msg() {
 
     unset msg
 }
-
 
 #
 #  Progress messages
@@ -102,18 +99,18 @@ msg_1() {
     # be split in half. Since this only handles ints, the /2*2 will result
     # in an even number rounded down.
     #
-    [ "${#msg}" -ne "$(( ${#msg}/2*2 ))" ] && msg=" $msg"
+    [ "${#msg}" -ne "$((${#msg} / 2 * 2))" ] && msg=" $msg"
 
     if [ "${#msg}" -ge "$max_length" ]; then
         # if string is to long, dont use padding
         pad_str=""
     else
-        pad_length=$(( (max_length - ${#msg})/2  ))
+        pad_length=$(((max_length - ${#msg}) / 2))
         # posix friendly way of generating x instances of a char
-        pad_str=$( head -c $pad_length  < /dev/zero | tr '\0' ' ' )
+        pad_str=$(head -c $pad_length </dev/zero | tr '\0' ' ')
     fi
 
-    border_line="+$( head -c $max_length  < /dev/zero | tr '\0' '=' )+"
+    border_line="+$(head -c $max_length </dev/zero | tr '\0' '=')+"
 
     #
     # TODO:  When generating the spacer padding as a variable,
@@ -123,9 +120,9 @@ msg_1() {
     #spacer_line="|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
 
     echo "$border_line"
-    echo "|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
+    echo "|$(head -c $max_length </dev/zero | tr '\0' ' ')|"
     echo "|$pad_str$msg$pad_str|"
-    echo "|$( head -c $max_length  < /dev/zero | tr '\0' ' ' )|"
+    echo "|$(head -c $max_length </dev/zero | tr '\0' ' ')|"
     echo "$border_line"
     echo
 
@@ -136,17 +133,13 @@ msg_1() {
     unset border_line
 }
 
-
 msg_2() {
     echo "=== $1 ==="
 }
 
-
 msg_3() {
     echo "--- $1 ---"
 }
-
-
 
 #==========================================================
 #
@@ -154,6 +147,41 @@ msg_3() {
 #
 #==========================================================
 
+repo_update() {
+    [ -z "$pkgs_update" ] && error_msg "No pkgs_update defined" 1
+
+    $pkgs_update
+}
+
+repo_upgrade() {
+    [ -z "$pkgs_upgrade" ] && error_msg "No pkgs_upgrade defined" 1
+
+    $pkgs_upgrade
+}
+
+pkg_present() {
+    [ -z "$pkg_installed" ] && error_msg "No pkg_add defined" 1
+
+    if [ -n "$($pkg_installed $1 2>/dev/null)" ]; then
+        return 0 # was found
+    else
+        return 1 #  NOT found
+    fi
+}
+
+pkg_install() {
+    packages="$1"
+    [ -z "$pkg_add" ] && error_msg "No pkg_add defined" 1
+
+    $pkg_add $pkg
+}
+
+pkg_remove() {
+    packages="$1"
+    [ -z "$pkg_remove" ] && error_msg "No pkg_add defined" 1
+
+    $pkg_remove $pkg
+}
 
 check_abort() {
     #
@@ -189,9 +217,8 @@ expand_deploy_path() {
     unset expanded_path
 }
 
-
 #
-# Installs listed apk if not already installed, 2nd optional param is
+# Installs listed package if not already installed, 2nd optional param is
 # a message that is displayed if this is installed, default is to use
 # "Installing dependency xxx"
 # So only one dependency per line!
@@ -207,10 +234,12 @@ ensure_installed() {
 
     test -z "$pkg" && error_msg "ensure_installed() called with no param!"
     test -z "$msg" && msg="Installing dependency $pkg"
-    [ -z "$(apk info -e "$pkg")" ] && msg_3 "$msg"
+
+    pkg_present "$pkg" || msg_3 "$msg"
     [ "$SPD_TASK_DISPLAY" = "1" ] && return
-    if [ -z "$(apk info -e "$pkg")" ]; then
-        apk add "$pkg"
+
+    if ! pkg_present "$pkg"; then
+        pkg_install "$pkg"
         ret_val=1
     fi
 
@@ -225,8 +254,6 @@ ensure_installed() {
     unset ret_val
     return 0
 }
-
-
 
 #
 # If in display mode, mentions if shell is missing,
@@ -247,8 +274,6 @@ ensure_shell_is_installed() {
     unset SHELL_NAME
 }
 
-
-
 #
 #  Handles a temp dir, for untaring stuff etc
 #  calling it without param, just removes tmp dir
@@ -259,29 +284,28 @@ clear_work_dir() {
     new_space=$1
 
     extract_location="/tmp/deploy-ish-$$" # based on pid
-    rm $extract_location -rf 2> /dev/null
+    rm $extract_location -rf 2>/dev/null
 
     case "$new_space" in
 
-        "1")
-            mkdir -p $extract_location
-            cd $extract_location || error_msg "clear_work_dir() could not cd !"
-            ;;
+    "1")
+        mkdir -p $extract_location
+        cd $extract_location || error_msg "clear_work_dir() could not cd !"
+        ;;
 
-        "")
-            ;;
+    "") ;;
 
+    \
         *)
-            echo
-            echo "ERROR: clear_work_dir() accepted params: nothing|1"
-            exit 1
+        echo
+        echo "ERROR: clear_work_dir() accepted params: nothing|1"
+        exit 1
+        ;;
 
     esac
 
     unset new_space
 }
-
-
 
 #
 #  Restore $home_dir unless $unpacked_ptr points to an existing file.
@@ -305,7 +329,8 @@ unpack_home_dir() {
     verbose_msg "$(
         printf "unpack_home_dir(username=%s, home=" "$username"
         printf "%s, fhome_packed=%s, , unpacked_ptr=" "$home_dir" "$fhome_packed"
-        echo "$unpacked_ptr, save_current=$save_current)")"
+        echo "$unpacked_ptr, save_current=$save_current)"
+    )"
 
     #
     #  Parameter checks
@@ -329,22 +354,22 @@ unpack_home_dir() {
 
     case "$unpacked_ptr" in
 
-        "0"|"1" )
-            # Not actual error, no unpacked_ptr given so save_current got shifted here"
-            unpacked_ptr=""
-            ;;
+    "0" | "1")
+        # Not actual error, no unpacked_ptr given so save_current got shifted here"
+        unpacked_ptr=""
+        ;;
 
-        *)
+    *) ;;
 
     esac
     #
     #  Actual work starts
     #
-    msg_2 "$msg_txt"  # TODO: make $msg_txt a param!
+    msg_2 "$msg_txt" # TODO: make $msg_txt a param!
     if [ "$save_current" = "1" ]; then
         do_unpack=1 # always restore
     else
-        if test -f "$unpacked_ptr" ; then
+        if test -f "$unpacked_ptr"; then
             msg_3 "Already restored"
             echo "Found: $unpacked_ptr"
             do_unpack=0
@@ -371,7 +396,7 @@ unpack_home_dir() {
                 [ "$err_code" -ne 0 ] && error_msg "Failed to unzip ($err_code)"
             else
                 # Seems to be a tar ball
-                ! tar xfz "$fhome_packed" 2> /dev/null && error_msg "Failed to unpack tarball"
+                ! tar xfz "$fhome_packed" 2>/dev/null && error_msg "Failed to unpack tarball"
             fi
             if [ ! -d "$extract_location/$username" ]; then
                 error_msg "No $username top dir found in the tarfile!"
@@ -394,7 +419,7 @@ unpack_home_dir() {
                 mv "$extract_location/$username" .
             fi
             msg_3 "$home_dir restored"
-            clear_work_dir  # Remove tmp directory
+            clear_work_dir # Remove tmp directory
         fi
     fi
 
@@ -406,7 +431,6 @@ unpack_home_dir() {
     unset save_current
     unset old_home_dir
 }
-
 
 parse_command_line() {
     #
@@ -420,27 +444,28 @@ parse_command_line() {
 
         case "$1" in
 
-            "-?" | "-h" | "--help")
-                p_help=1
-                unset SPD_TASK_DISPLAY
-                ;;
+        "-?" | "-h" | "--help")
+            p_help=1
+            unset SPD_TASK_DISPLAY
+            ;;
 
-
+        \
             "-v" | "--verbose")
-                p_verbose=1
-                ;;
+            p_verbose=1
+            ;;
 
-
+        \
             "-c")
-                p_cfg=1
-                ;;
+            p_cfg=1
+            ;;
 
-            "-x")
-                SPD_TASK_DISPLAY=0
-                ;;
+        "-x")
+            SPD_TASK_DISPLAY=0
+            ;;
 
-            *)
-                echo "WARNING: Unsupported param!: [$1]"
+        *)
+            echo "WARNING: Unsupported param!: [$1]"
+            ;;
 
         esac
         shift
@@ -455,7 +480,7 @@ parse_command_line() {
 
     if [ $p_cfg -eq 1 ]; then
         # shellcheck disable=SC1091
-        . "$DEPLOY_PATH/scripts/extras/read_config.sh"
+        . "$DEPLOY_PATH/scripts/tools/read_config.sh"
         read_config
     fi
 
@@ -469,7 +494,6 @@ parse_command_line() {
         [ "$SPD_ABORT" = "1" ] && error_msg "SPD_ABORT=1 detected. Will not run on this system."
     fi
 }
-
 
 #=====================================================================
 #
@@ -488,7 +512,8 @@ _run_this() {
     #
     # loop over lines in $script_tasks
     #
-    set -f; IFS='
+    set -f
+    IFS='
 '
     # next line can not use quotes
     # shellcheck disable=SC2086,SC2154
@@ -502,9 +527,9 @@ _run_this() {
 '
         shift
     done
-    set +f; unset IFS
+    set +f
+    unset IFS
 }
-
 
 #==========================================================
 #
@@ -512,18 +537,15 @@ _run_this() {
 #
 #==========================================================
 
-
 #
 #  Identify filesystem, some operations depend on it
 # SPD_FILE_SYSTEM -> SPD_ISH_KERNEL
-if 2>/dev/null grep -q ish-AOK /proc/version; then
+if grep 2>/dev/null -q ish-AOK /proc/version; then
     SPD_ISH_KERNEL='AOK'
 else
     # shellcheck disable=SC2034
     SPD_ISH_KERNEL='iSH'
 fi
-
-
 
 #
 # Since sourced mode can't be detected in a practical way using a posix shell,

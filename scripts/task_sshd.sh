@@ -23,8 +23,6 @@
 script_tasks='task_sshd'
 script_description="Activates or Disables sshd."
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -34,20 +32,21 @@ script_description="Activates or Disables sshd."
 
 help_local_parameters() {
     echo "SPD_SSHD_SERVICE$(
-        test -z "$SPD_SSHD_SERVICE" \
-        && echo '  - sshd status (-1/0/1)' \
-        || echo "=$SPD_SSHD_SERVICE")"
+        test -z "$SPD_SSHD_SERVICE" &&
+            echo '  - sshd status (-1/0/1)' ||
+            echo "=$SPD_SSHD_SERVICE"
+    )"
     echo "SPD_SSHD_PORT$(
-        test -z "$SPD_SSHD_PORT" \
-        && echo '     - what port sshd should use' \
-        || echo "=$SPD_SSHD_PORT")"
+        test -z "$SPD_SSHD_PORT" &&
+            echo '     - what port sshd should use' ||
+            echo "=$SPD_SSHD_PORT"
+    )"
     echo "SPD_SSH_HOST_KEYS$(
-        test -z "$SPD_SSH_HOST_KEYS" \
-        && echo ' - tgz file with host_keys' \
-        || echo "=$SPD_SSH_HOST_KEYS")"
+        test -z "$SPD_SSH_HOST_KEYS" &&
+            echo ' - tgz file with host_keys' ||
+            echo "=$SPD_SSH_HOST_KEYS"
+    )"
 }
-
-
 
 #=====================================================================
 #
@@ -66,19 +65,22 @@ task_sshd() {
     verbose_msg "task_sshd($SPD_SSHD_SERVICE)"
 
     #
-    # source dependencies if not available
-    #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
-        verbose_msg "task_sshd() needs to source openrc to satisfy dependencies"
-        # shellcheck disable=SC1091
-        . "$DEPLOY_PATH/scripts/extras/openrc.sh"
-    fi
-
-    #
     # Name of service
     #
     service_name=sshd
 
+    #
+    # source dependencies if not available
+    #
+    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
+        verbose_msg "task_sshd() needs to source openrc to satisfy dependencies"
+        # shellcheck disable=SC1091
+        . "$DEPLOY_PATH/scripts/tools/openrc.sh"
+    fi
+
+    #
+    #  If param not set, ensure nothing will be changed
+    #
     if [ -z "$SPD_SSHD_SERVICE" ]; then
         SPD_SSHD_SERVICE="0"
         warning_msg "SPD_SSHD_SERVICE not defined, service sshd will not be modified"
@@ -86,80 +88,74 @@ task_sshd() {
 
     case "$SPD_SSHD_SERVICE" in
 
-        "-1" ) # disable
-            _ts_task_label
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-               msg_3 "Will be disabled"
+    "-1") # disable
+        _ts_task_label
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_3 "Will be disabled"
+        else
+            check_abort
+            msg_3 "Disabling service"
+            ensure_installed openrc
+            service_installed="$(rc-service -l | grep $service_name)"
+            if [ "$service_installed" != "" ]; then
+                disable_service $service_name default
+                msg_3 "was disabled"
             else
-                check_abort
-                msg_3 "Disabling service"
-                ensure_installed openrc
-                service_installed="$(rc-service -l |grep $service_name )"
-                if [ "$service_installed"  != "" ]; then
-                    disable_service $service_name default
-                    msg_3 "was disabled"
-                else
-                    echo "Service $service_name was not active, no action needed"
-                fi
+                echo "Service $service_name was not active, no action needed"
             fi
+        fi
+        echo
+        ;;
+
+    "0") # unchanged
+        if [ "$SPD_TASK_DISPLAY" = "1" ] &&
+            [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+            _ts_task_label
+            echo "Will NOT be changed"
             echo
-            ;;
+        fi
+        ;;
 
+    "1") # activate
+        _ts_task_label
+        [ "$SPD_SSHD_PORT" = "" ] && error_msg "Invalid setting: SPD_SSHD_PORT must be specified"
 
-        "0" )  # unchanged
-            if [ "$SPD_TASK_DISPLAY" = "1" ] && \
-               [ "$SPD_DISPLAY_NON_TASKS" = "1" ]
-            then
-                _ts_task_label
-                echo "Will NOT be changed"
-                echo
-            fi
-            ;;
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_3 "will be enabled"
+            echo "port: $SPD_SSHD_PORT"
+            echo
+        else
+            check_abort
+            msg_3 "Enabling service"
+            _ts_unpack_ssh_host_keys
+            ensure_installed openrc
+            ensure_installed openssh-server
+            ensure_runlevel_default
 
-        "1" )  # activate
-            _ts_task_label
-            [ "$SPD_SSHD_PORT" = "" ] && error_msg "Invalid setting: SPD_SSHD_PORT must be specified"
+            msg_3 "Ensuring hostkeys exist"
+            ssh-keygen -A
+            echo "hostkeys ready"
+            echo
 
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                msg_3 "Will be enabled"
-                echo "port: $SPD_SSHD_PORT"
-                echo
-            else
-                check_abort
-                msg_3 "Enabling service"
-                ensure_installed openrc
-                ensure_installed openssh
-                ensure_runlevel_default
-                #
-                #  Prepositional steps
-                #
-                _ts_unpack_ssh_host_keys
+            #
+            # use requested port
+            #
+            sed -i "s/.*Port .*/Port $SPD_SSHD_PORT/" /etc/ssh/sshd_config
 
-                msg_3 "Ensuring hostkeys exist"
-                ssh-keygen -A
-                echo "hostkeys ready"
-                echo
+            ensure_service_is_added $service_name default restart
+            msg_1 "sshd listening on port: $SPD_SSHD_PORT"
+        fi
+        ;;
 
-                #
-                # use requested port
-                #
-                sed -i "s/.*Port .*/Port $SPD_SSHD_PORT/" /etc/ssh/sshd_config
-
-                ensure_service_is_added sshd default restart
-                msg_1 "sshd listening on port: $SPD_SSHD_PORT"
-            fi
-            ;;
-
-        *)
-            error_msg "Invalid setting: SPD_SSHD_SERVICE=$SPD_SSHD_SERVICE\nValid options: -1 0 1"
+    *)
+        error_msg "Invalid setting: SPD_SSHD_SERVICE=$SPD_SSHD_SERVICE\nValid options: -1 0 1"
+        ;;
 
     esac
 
     unset service_name
     unset service_installed
 }
-
-
 
 #=====================================================================
 #
@@ -177,35 +173,32 @@ _ts_expand_all_deploy_paths() {
     SPD_SSH_HOST_KEYS=$(expand_deploy_path "$SPD_SSH_HOST_KEYS")
 }
 
-
 _ts_task_label() {
     msg_2 "sshd service"
 }
-
 
 _ts_unpack_ssh_host_keys() {
     msg_3 "Device specific ssh host keys"
 
     if [ "$SPD_SSH_HOST_KEYS" != "" ]; then
         echo "$SPD_SSH_HOST_KEYS"
-        if test -f "$SPD_SSH_HOST_KEYS" ; then
+        if test -f "$SPD_SSH_HOST_KEYS"; then
             msg_3 "Will be untared into /etc/ssh"
             if [ "$SPD_TASK_DISPLAY" != "1" ]; then
                 cd /etc/ssh || error_msg "Failed to cd into /etc/ssh"
                 # remove any previous host keys
-                2> /dev/null rm /etc/ssh/ssh_host_*
-                2> /dev/null tar xfz "$SPD_SSH_HOST_KEYS" || error_msg "Untar failed!"
+                rm 2>/dev/null /etc/ssh/ssh_host_*
+                tar 2>/dev/null xfz "$SPD_SSH_HOST_KEYS" || error_msg "Untar failed!"
             fi
         else
             msg_3 "Not found"
         fi
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         echo "Will NOT be used"
     fi
     echo
+    # error_msg "Aborting after hostkey check" 1
 }
-
-
 
 #=====================================================================
 #
@@ -216,6 +209,6 @@ _ts_unpack_ssh_host_keys() {
 script_dir="$(dirname "$0")"
 
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
 
 unset script_dir

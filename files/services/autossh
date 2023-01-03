@@ -1,0 +1,43 @@
+#!/sbin/openrc-run
+
+#  Last changed 22-09-08
+
+#
+#  If you keep getting errors like:
+#      Error: remote port forwarding failed for listen port 1234
+#  probably a process is left hanging on the server, binding to the
+#  loop-back port, to find it run this on the remote end:
+#     sudo netstat -lp | grep 1234
+#
+
+#
+#  To get more autossh logging, add this to start_stop_daemon_args
+#    -e AUTOSSH_DEBUG=1
+#
+
+#
+#  Only needed when something is acting up with the ssh connections
+#  add the following to command_args
+#    -v -E /var/log/autossh-ssh.log
+#
+
+name=$RC_SVCNAME
+command="/usr/bin/autossh"
+pidfile="/run/${RC_SVCNAME}.pid"
+start_stop_daemon_args="-e AUTOSSH_PIDFILE=\"${pidfile}\" -e AUTOSSH_LOGFILE=/var/log/autossh.log"
+command_args="-M 0 -f -N -o 'ServerAliveCountMax=3' -o 'ServerAliveInterval=5' \
+    -o 'ExitOnForwardFailure=yes' \
+    -o 'PubkeyAuthentication=yes' \
+    -o 'PasswordAuthentication=no' \
+    -v -E /var/log/autossh-ssh.log \
+    -R 'REVERSE_PORT_FORWARD' \
+    REMOTE_CONNECTION "
+
+depend() {
+    need sshd
+}
+
+
+
+
+

@@ -42,12 +42,16 @@ task_nopasswd_sudo() {
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
         check_abort
         ensure_installed sudo
-        grep deploy-ish /etc/sudoers > /dev/null
-        if [ $? -eq 1 ]; then
-            msg_3 "adding %wheel NOPASSWD to /etc/sudoers"
-            echo "%wheel ALL=(ALL) NOPASSWD: ALL # added by deploy-ish" >> /etc/sudoers
+        if [ -f /etc/sudoers.d/wheel ]; then
+            msg_3 "group wheel already setup by AOK-iSH"
         else
-            msg_3 "present"
+            grep deploy-ish /etc/sudoers > /dev/null
+            if [ $? -eq 1 ]; then
+                msg_3 "adding %wheel NOPASSWD to /etc/sudoers"
+                echo "%wheel ALL=(ALL) NOPASSWD: ALL # added by deploy-ish" >> /etc/sudoers
+            else
+                msg_3 "present"
+            fi
         fi
     elif [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         echo "Will NOT be set"
@@ -68,6 +72,6 @@ task_nopasswd_sudo() {
 script_dir="$(dirname "$0")"
 
 # shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/extras/script_base.sh"
+[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
 
 unset script_dir

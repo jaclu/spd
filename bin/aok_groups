@@ -79,7 +79,7 @@ pkg_handling() {
             exit 1
     esac
 
-    cmd="sudo apk $action $packages"
+    cmd="sudo $pkg_add $action $packages"
 
     if [ "$is_iSH" -eq 1 ]; then
         $cmd
