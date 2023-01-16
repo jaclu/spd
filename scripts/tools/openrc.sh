@@ -39,6 +39,8 @@ rc_runlevel=default
 #    the simple solution is to just remove the file for now.
 #
 ensure_runlevel_default() {
+    is_debian && return
+    
     verbose_msg "ensure_runlevel_default()"
 
     _orc_openrc_is_patched
@@ -115,6 +117,8 @@ disable_service() {
 
 _orc_openrc_is_patched() {
 
+    is_debian && return
+
     oip_indicator="/etc/opt/spd-openrc-fixes"
 
     [ -e "$oip_indicator" ] && return
@@ -122,6 +126,7 @@ _orc_openrc_is_patched() {
     ensure_installed openrc
 
     msg_2 "Patching openrc"
+    
     #
     #  Replace kind of broken inittab with something that works
     #
@@ -131,7 +136,7 @@ _orc_openrc_is_patched() {
         mv /etc/inittab /etc/inittab-orig
         cp -av "$DEPLOY_PATH/custom/etc_files/inittab" /etc
     fi
-
+    
     # # iSH-AOK does not need to be patched
     # if [ ! "$SPD_ISH_KERNEL" = "$kernel_ish_aok" ]; then
 
@@ -176,6 +181,8 @@ _orc_disable_unset() {
 
 
 _orc_patch_one() {
+    is_debian && return
+
     opo_fname="$1"
     opo_src="$DEPLOY_PATH/files/init.d/$opo_fname"
     if [ ! -e "$opo_src" ]; then
