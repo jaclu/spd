@@ -147,6 +147,14 @@ msg_3() {
 #
 #==========================================================
 
+is_debian() {
+    test -f /etc/debian_version
+}
+
+is_alpine() {
+    test -f /etc/alpine-release
+}
+
 repo_update() {
     [ -z "$pkgs_update" ] && error_msg "No pkgs_update defined" 1
 
@@ -228,6 +236,8 @@ expand_deploy_path() {
 #     1 if package was installed now
 #
 ensure_installed() {
+    is_debian && return
+    
     pkg=$1
     msg=$2
     ret_val=0
