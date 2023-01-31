@@ -36,7 +36,7 @@ package_groups="
 
   :editors        |  emacs-nox vim neovim
 
-  :man            |  man-db man-pages coreutils-doc tmux-doc
+  :man            |  man-db man-pages coreutils-doc tmux-doc mdcat-doc
 
   :python         |  py3-pip python3-doc py3-flake8  py3-pyflakes py3-pylint py3-pytest py3-wheel
 
