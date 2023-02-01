@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 #  Copyright (c) 2021, 2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -27,8 +28,6 @@ task_apks_delete  - deletes all apks listed in SPD_APKS_DEL
 task_apk_upgrade  - upgrades all installed apks
 task_apks_add     - adds all apks listed in SPD_APKS_ADD"
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -38,16 +37,16 @@ task_apks_add     - adds all apks listed in SPD_APKS_ADD"
 
 help_local_parameters() {
     echo "SPD_APKS_DEL$(
-        test -z "$SPD_APKS_DEL" \
-        && echo ' - packages to remove, comma separated' \
-        || echo "='$SPD_APKS_DEL'")"
+        test -z "$SPD_APKS_DEL" &&
+            echo ' - packages to remove, comma separated' ||
+            echo "='$SPD_APKS_DEL'"
+    )"
     echo "SPD_APKS_ADD$(
-        test -z "$SPD_APKS_ADD" \
-        && echo ' - packages to add, comma separated' \
-        || echo "='$SPD_APKS_ADD'")"
+        test -z "$SPD_APKS_ADD" &&
+            echo ' - packages to add, comma separated' ||
+            echo "='$SPD_APKS_ADD'"
+    )"
 }
-
-
 
 #=====================================================================
 #
@@ -68,13 +67,12 @@ task_pkgs_update() {
     else
         check_abort
 
-        if ! repo_update ; then
+        if ! repo_update; then
             error_msg "Failed to update repos - network issue?"
         fi
     fi
     echo
 }
-
 
 task_pkgs_upgrade() {
     msg_2 "upgrade installed apks"
@@ -82,11 +80,10 @@ task_pkgs_upgrade() {
         msg_3 "Will happen"
     else
         check_abort
-        repo_upgrade ||  error_msg "Failed to upgrade apks - network issue?"
+        repo_upgrade || error_msg "Failed to upgrade apks - network issue?"
     fi
     echo
 }
-
 
 task_pkgs_delete() {
     msg_txt="Removing unwanted software"
@@ -110,8 +107,8 @@ task_pkgs_delete() {
             verbose_msg "Will run: $cmd"
             $cmd
         fi
-    elif      [ "$SPD_TASK_DISPLAY" = "1" ] \
-          &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&
+        [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
         echo "nothing listed, no action to take"
     fi
@@ -119,7 +116,6 @@ task_pkgs_delete() {
 
     unset msg_txt
 }
-
 
 task_pkgs_add() {
     msg_txt="Installing my selection of software"
@@ -140,14 +136,12 @@ task_pkgs_add() {
 
         fi
         echo
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
         echo "nothing listed, no action to take"
         echo
     fi
 }
-
-
 
 #
 #  Remove anything that should not be here from adds, to avoid repeated deletes and adds
@@ -155,11 +149,11 @@ task_pkgs_add() {
 _filter_dels_from_add() {
     lst="$SPD_APKS_ADD"
     while true; do
-        item="${lst%% *}"  # up to first colon excluding it
-        lst="${lst#* }"    # after fist colon
+        item="${lst%% *}" # up to first colon excluding it
+        lst="${lst#* }"   # after fist colon
 
-    if [ "${SPD_APKS_DEL#*$item}" != "$SPD_APKS_DEL" ]; then
-        echo "WARNING: $item in both SPD_APK_ADD and SPD_APK_DEL - will not be added!"
+        if [ "${SPD_APKS_DEL#*"$item"}" != "$SPD_APKS_DEL" ]; then
+            echo "WARNING: $item in both SPD_APK_ADD and SPD_APK_DEL - will not be added!"
         else
             if [ -n "$items_add" ]; then
                 export items_add="$items_add $item"
@@ -167,11 +161,9 @@ _filter_dels_from_add() {
                 export items_add="$item"
             fi
         fi
-        [ "$lst" = "$item" ] && break  # we have processed last item
+        [ "$lst" = "$item" ] && break # we have processed last item
     done
 }
-
-
 
 #=====================================================================
 #

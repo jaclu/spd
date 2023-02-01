@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 #  Copyright (c) 2021, 2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -17,18 +18,14 @@ if [ "$(basename "$0")" = ${_this_script} ]; then
 fi
 unset _this_script
 
-
 # If you intend to work at a service in another run-level change this variable
 rc_runlevel=default
-
-
 
 #==========================================================
 #
 #   Public functions
 #
 #==========================================================
-
 
 #
 # Makes sure openrc is installed, and that default is the current run-level.
@@ -40,10 +37,8 @@ rc_runlevel=default
 #
 ensure_runlevel_default() {
     is_debian && return
-    
-    verbose_msg "ensure_runlevel_default()"
 
-    _orc_openrc_is_patched
+    verbose_msg "ensure_runlevel_default()"
 
     if [ "$(rc-status -r)" != "default" ]; then
         rc_runlevel=default
@@ -51,7 +46,6 @@ ensure_runlevel_default() {
         openrc $rc_runlevel
     fi
 }
-
 
 #
 # Adds service mentioned in parameter 1 to $rc_runlevel
@@ -84,7 +78,6 @@ ensure_service_is_added() {
     unset restart
 }
 
-
 #
 # Removes service mentioned in parameter 1 from $rc_runlevel
 #
@@ -107,78 +100,17 @@ disable_service() {
     fi
 }
 
-
-
 #==========================================================
 #
 #   Internals
 #
 #==========================================================
 
-_orc_openrc_is_patched() {
-
-    is_debian && return
-
-    oip_indicator="/etc/opt/spd-openrc-fixes"
-
-    [ -e "$oip_indicator" ] && return
-
-    ensure_installed openrc
-
-    msg_2 "Patching openrc"
-    
-    #
-    #  Replace kind of broken inittab with something that works
-    #
-    oip_backup_file="/etc/inittab-orig"
-    if [ ! -f "$oip_backup_file" ]; then
-        msg_3 "Replacing /etc/inittab"
-        mv /etc/inittab /etc/inittab-orig
-        cp -av "$DEPLOY_PATH/custom/etc_files/inittab" /etc
-    fi
-    
-    # # iSH-AOK does not need to be patched
-    # if [ ! "$SPD_ISH_KERNEL" = "$kernel_ish_aok" ]; then
-
-    #     #  Not needed if the above inittab replacement is active
-    #     # ensure_installed gawk
-    #     # gawk -i inplace '!/getty/' /etc/inittab
-
-    #     #
-    #     #  Replace some /etc/init.d files with fixes from
-    #     #   https://github.com/emkey1/AOK-Filesystem-Tools
-    #     #
-    #     msg_3 "Replacing some /etc/init.d files"
-
-    #     #
-    #     #  This does not make sense,
-    #     #  cp "$DEPLOY_PATH"/files/init.d/* /etc/init.d
-    #     #  just refuses to work, forcing ridiculous workarround,
-    #     #  I must be missing obvious
-    #     #
-    #     _orc_patch_one devfs
-    #     _orc_patch_one hostname
-    #     _orc_patch_one hwdrivers
-    #     _orc_patch_one networking
-    #     _orc_patch_one runbg
-
-    #     ln /etc/init.d/devfs /etc/init.d/dev
-    # fi
-
-
-    touch "$oip_indicator"
-
-    unset oip_indicator
-    unset oip_backup_file
-}
-
-
 _orc_disable_unset() {
     # This is called from multiple point, make all the unsets in one place
     unset srvc
     unset runlevel
 }
-
 
 _orc_patch_one() {
     is_debian && return
@@ -200,8 +132,8 @@ _orc_patch_one() {
 
     cp "$opo_src" /etc/init.d
 
-    md1="$(md5sum $opo_src | cut -d' ' -f 1)"
-    md2="$(md5sum /etc/init.d/$opo_fname | cut -d' ' -f 1)"
+    md1="$(md5sum "$opo_src" | cut -d' ' -f 1)"
+    md2="$(md5sum /etc/init.d/"$opo_fname" | cut -d' ' -f 1)"
 
     if [ ! "$md1" = "$md2" ]; then
         echo
@@ -224,7 +156,7 @@ _NOT_problematic_service_hwdrivers() {
 
     bad_srvc=/etc/init.d/hwdrivers
 
-    if test -f "$bad_srvc" ; then
+    if test -f "$bad_srvc"; then
         #
         # TODO: check if this is no longer needed in order to avoid getting
         # warnings about hwdrivers not finding dependency 'dev'
@@ -241,8 +173,6 @@ _NOT_problematic_service_hwdrivers() {
     fi
 }
 
-
-
 #
 # This hack prevents all iSH service start and stops shoving an error
 # about not finding /proc/filesystems iSH does not currently support
@@ -258,7 +188,7 @@ _NOT_patch_rc_cgroup_sh() {
     ensure_installed coreutils
 
     func_name_line_no=$(grep -n "cgroup2_find_path()" $fname | cut --delimiter=":" --fields=1)
-    insert_on_line=$((func_name_line_no+2))
+    insert_on_line=$((func_name_line_no + 2))
 
     # In order to expand tab below, through trial and error, I discovered
     # double expanding it turned out to work. Do not ask me why...
@@ -281,32 +211,32 @@ _NOT_patch_rc_cgroup_sh() {
     #
     case $early_return in
 
-        *"return 0"*)
-            msg_3 "Patch already applied"
-            ;;
+    *"return 0"*)
+        msg_3 "Patch already applied"
+        ;;
 
-        *)
-            msg_3 "Patch being applied"
-            if [ -f "$fn_backup" ]; then
-                echo "Found: $fn_backup"
-                echo "Seems like patch was already applied"
-                echo "First try:  mv $fn_backup $fname"
-                echo "And then run this again, after that double check $fname"
-                echo "To make sure cgroup2_find_path() returns 0"
-                error_msg "Found $fn_backup read the above for further suggestions"
-            fi
-            echo "Making cgroup2_find_path() always return 0"
-            echo "Saving original file to $fn_backup"
-            cp $fname $fn_backup
+    *)
+        msg_3 "Patch being applied"
+        if [ -f "$fn_backup" ]; then
+            echo "Found: $fn_backup"
+            echo "Seems like patch was already applied"
+            echo "First try:  mv $fn_backup $fname"
+            echo "And then run this again, after that double check $fname"
+            echo "To make sure cgroup2_find_path() returns 0"
+            error_msg "Found $fn_backup read the above for further suggestions"
+        fi
+        echo "Making cgroup2_find_path() always return 0"
+        echo "Saving original file to $fn_backup"
+        cp $fname $fn_backup
 
-            # kind of RPN, end result is an empty line after the patch line.
-            # and the patch ends up on the expected line so will be detected
-            # on later runs of this
-            sed -i "$insert_on_line i \ " $fname
-            sed -i "$insert_on_line i \ $patch_line" $fname
+        # kind of RPN, end result is an empty line after the patch line.
+        # and the patch ends up on the expected line so will be detected
+        # on later runs of this
+        sed -i "$insert_on_line i \ " $fname
+        sed -i "$insert_on_line i \ $patch_line" $fname
 
-            msg_3 "Patch completed!"
-            ;;
+        msg_3 "Patch completed!"
+        ;;
 
     esac
 }

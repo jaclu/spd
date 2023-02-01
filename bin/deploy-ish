@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC1091
 #
 #  Copyright (c) 2022: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -38,7 +39,7 @@
 
 echo
 echo "Ensuring /iCloud/spd is cached"
-find /iCloud/spd > /dev/null
+find /iCloud/spd >/dev/null
 
 echo
 echo "/iCloud/spd is verified to be available"
@@ -47,10 +48,9 @@ echo
 #
 # Find where this package is deployed, then use this for relative locations
 #
-DEPLOY_PATH="$(dirname "$0")/.."             # relative
-DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"  # absolutized and normalized
+DEPLOY_PATH="$(dirname "$0")/.."          # relative
+DEPLOY_PATH="$(cd "$DEPLOY_PATH" && pwd)" # absolutized and normalized
 test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PATH] !!" 1
-
 
 #
 # Since sourced mode can't be detected in a practical way using a posix shell,
@@ -60,51 +60,29 @@ test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PAT
 [ -n "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: deploy-ish can NOT be sourced!" 1
 SPD_INITIAL_SCRIPT=1
 
-
-
-
-
 #
 #  Include all dependencies
 #
 
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/tools/utils.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/tools/read_config.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_hostname.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_dcron.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_do_extra.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_timezone.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_restore_root.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_runbg.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_autossh.sh"
-# shellcheck disable=SC1091
 . "$DEPLOY_PATH/scripts/task_mon_sshd.sh"
-
 
 parse_command_line "$@"
 # Since in most cases this wasn't run with -c, ensure configs are parsed
 read_config
-
-
 
 #==========================================================
 #
@@ -125,7 +103,7 @@ run_tasks() {
     # It is probably not a good idea to reshuffle their order too much
     # some of them depend on previous tasks
     #
-     task_replace_some_etc_files
+    task_replace_some_etc_files
 
     # Do this early, so no risk of installation issues
     # with tasks needing to install dependencies
@@ -154,7 +132,7 @@ run_tasks() {
     task_dcron
     task_sshd
     task_mon_sshd
-    task_patch_etc_files  # needs to happen after task_apk_upgrade
+    task_patch_etc_files # needs to happen after task_apk_upgrade
 
     task_restore_root
     task_nopasswd_sudo # must be before task_restore_user
@@ -165,7 +143,6 @@ run_tasks() {
     task_do_extra_task # must be after task_restore_user if user dir is referred
     task_user_pw_reminder
 }
-
 
 #
 #  Debug tasks, set condition as
@@ -181,18 +158,16 @@ else
     msg_1 "custom restore"
     run_tasks() {
         #task_apk_update
-	# do before upgrade to avoid time waste of upgrading
-    	# only to then remove it
-    	task_apks_delete
+        # do before upgrade to avoid time waste of upgrading
+        # only to then remove it
+        task_apks_delete
 
-    	#task_apk_upgrade
-    	task_apks_add
+        #task_apk_upgrade
+        task_apks_add
     }
     # no need to wait if you are testing tasks...
     wait_after_summary=5
 fi
-
-
 
 #==========================================================
 #
@@ -216,7 +191,6 @@ if [ "$p_help" = "1" ]; then
     exit 0
 fi
 
-
 echo
 echo "Waiting $wait_after_summary secs, in case you want to abort..."
 echo
@@ -224,7 +198,6 @@ echo "Press Ctrl-C if you want to have more time"
 echo "to observe the changes that will be done."
 echo
 sleep $wait_after_summary
-
 
 #
 # Do all tasks
@@ -234,7 +207,6 @@ sleep $wait_after_summary
 SPD_TASK_DISPLAY=0
 msg_1 "Restore begins"
 run_tasks
-
 
 # Ensure tmp directory is gone
 clear_work_dir

@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
@@ -26,8 +27,6 @@ script_description="Creates a new user.
 If SPD_UID and/or SPD_GID are given, previous occupants are migrated to the
 first available ID at or above 1000 to ensure this user gets the desired IDS"
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -37,28 +36,32 @@ first available ID at or above 1000 to ensure this user gets the desired IDS"
 
 help_local_parameters() {
     echo "SPD_UNAME$(
-        test -z "$SPD_UNAME" && echo ' - username to ensure exists' \
-        || echo "=$SPD_UNAME" )"
+        test -z "$SPD_UNAME" && echo ' - username to ensure exists' ||
+            echo "=$SPD_UNAME"
+    )"
     echo "SPD_UID$(
-        test -z "$SPD_UID" && echo '   - userid to be used' \
-        || echo "=$SPD_UID" )"
+        test -z "$SPD_UID" && echo '   - userid to be used' ||
+            echo "=$SPD_UID"
+    )"
     echo "SPD_GID$(
-        test -z "$SPD_GID" && echo '   - groupid to be used' \
-        || echo "=$SPD_GID" )"
+        test -z "$SPD_GID" && echo '   - groupid to be used' ||
+            echo "=$SPD_GID"
+    )"
     echo "SPD_SHELL$(
-        test -z "$SPD_SHELL" && echo ' - shell for username' \
-        || echo "=$SPD_SHELL" )"
+        test -z "$SPD_SHELL" && echo ' - shell for username' ||
+            echo "=$SPD_SHELL"
+    )"
     echo "SPD_HOME_DIR_CONTENT$(
-        test -z "$SPD_HOME_DIR_CONTENT" \
-        && echo '          - unpack this file if found' \
-        || echo "=$SPD_HOME_DIR_CONTENT" )"
+        test -z "$SPD_HOME_DIR_CONTENT" &&
+            echo '          - unpack this file if found' ||
+            echo "=$SPD_HOME_DIR_CONTENT"
+    )"
     echo "SPD_HOME_DIR_UNPACKED_PTR$(
-        test -z "$SPD_HOME_DIR_UNPACKED_PTR" \
-        && echo ' -  Indicates home content is unpacked' \
-        || echo "=$SPD_HOME_DIR_UNPACKED_PTR" )"
+        test -z "$SPD_HOME_DIR_UNPACKED_PTR" &&
+            echo ' -  Indicates home content is unpacked' ||
+            echo "=$SPD_HOME_DIR_UNPACKED_PTR"
+    )"
 }
-
-
 
 #=====================================================================
 #
@@ -85,7 +88,7 @@ task_restore_user() {
         check_abort
         ensure_installed shadow "Adding shadow (provides useradd & usermod)"
 
-        if ! grep -q ^"$SPD_UNAME" /etc/passwd  ; then
+        if ! grep -q ^"$SPD_UNAME" /etc/passwd; then
             # ensure shadow and hence adduser is installed
             if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                 msg_3 "Will be created"
@@ -96,7 +99,7 @@ task_restore_user() {
                 params="-m -G sudo -s $SPD_SHELL $SPD_UNAME"
                 [ -n "$SPD_UID" ] && params="-u $SPD_UID $params"
                 if [ -n "$SPD_GID" ]; then
-                    if ! (2> /dev/null groupadd -g "$SPD_GID" "$SPD_UNAME") ; then
+                    if ! (groupadd 2>/dev/null -g "$SPD_GID" "$SPD_UNAME"); then
                         #if [ "$(groupadd -g "$SPD_GID" "$SPD_UNAME")" != "" ]; then
                         error_msg "group id already in use: $SPD_GID"
                     fi
@@ -124,26 +127,29 @@ task_restore_user() {
             #
             if [ "$SPD_UID" != "" ]; then
                 msg_3 "Verifying UID"
-                if [ "$(id -u "$SPD_UNAME")" != "$SPD_UID" ] ; then
+                if [ "$(id -u "$SPD_UNAME")" != "$SPD_UID" ]; then
                     error_msg "$(
                         printf "Wrong UID - expected: %s found: " "$SPD_UID"
-                        id -u "$SPD_UNAME")"
+                        id -u "$SPD_UNAME"
+                    )"
                 fi
             fi
             if [ "$SPD_GID" != "" ]; then
                 msg_3 "Verifying GID"
-                if [ "$(id -g "$SPD_UNAME")" != "$SPD_GID" ] ; then
+                if [ "$(id -g "$SPD_UNAME")" != "$SPD_GID" ]; then
                     error_msg "$(
                         printf "Wrong GID - expected: %s found: " "$SPD_GID"
-                        (id -g "$SPD_UNAME"))"
+                        (id -g "$SPD_UNAME")
+                    )"
                 fi
             fi
 
             msg_3 "Checking shell"
             # extracting part after last :
             current_shell="$(
-                grep "^$SPD_UNAME:" /etc/passwd | sed 's/:/ /g' |  \
-                awk '{ print $NF }')"
+                grep "^$SPD_UNAME:" /etc/passwd | sed 's/:/ /g' |
+                    awk '{ print $NF }'
+            )"
             if [ "$current_shell" != "$SPD_SHELL" ]; then
                 if [ "$SPD_TASK_DISPLAY" = "1" ]; then
                     echo "Will change shell $current_shell -> $SPD_SHELL"
@@ -153,7 +159,7 @@ task_restore_user() {
                     echo "new shell: $SPD_SHELL"
                 fi
             else
-               echo "$current_shell"
+                echo "$current_shell"
             fi
         fi
         echo
@@ -179,7 +185,6 @@ task_restore_user() {
     unset current_shell
 }
 
-
 task_user_pw_reminder() {
     if [ -n "$SPD_UNAME" ] && grep -q "$SPD_UNAME":\!: /etc/shadow; then
         echo "+------------------------------+"
@@ -192,8 +197,6 @@ task_user_pw_reminder() {
         echo
     fi
 }
-
-
 
 #=====================================================================
 #
@@ -210,8 +213,6 @@ _mtu_expand_all_deploy_paths() {
     SPD_HOME_DIR_CONTENT=$(expand_deploy_path "$SPD_HOME_DIR_CONTENT")
 }
 
-
-
 #
 #  Try to make the SPD_UID SPD_GID available
 #  by trying to move current occupants to other ids
@@ -221,12 +222,12 @@ _mtu_expand_all_deploy_paths() {
 _mtu_make_available_uid_gid() {
     [ -z "$SPD_UID" ] && [ -z "$SPD_GID" ] && return
     if [ -n "$SPD_UID" ]; then
-        user_name=$(sed 's/:/ /g' /etc/passwd | awk '{print $1 " " $3}' | \
-                    grep "$SPD_UID" | awk '{print $1}')
+        user_name=$(sed 's/:/ /g' /etc/passwd | awk '{print $1 " " $3}' |
+            grep "$SPD_UID" | awk '{print $1}')
     fi
     if [ -n "$SPD_GID" ]; then
-        group_name=$(grep "$SPD_GID" /etc/group | sed 's/:/ /' | \
-                     awk '{print $1}')
+        group_name=$(grep "$SPD_GID" /etc/group | sed 's/:/ /' |
+            awk '{print $1}')
     fi
     if [ -z "$user_name" ] && [ -z "$group_name" ]; then
         # no change needed so we can leave
@@ -237,14 +238,14 @@ _mtu_make_available_uid_gid() {
     echo "Will try to free up desired uid & gid"
 
     # check if user who will get an id change is logged int
-    is_logged_in="$(ps axu | cut -d " " -f 1 | grep "$user_name" |grep -v grep)"
+    is_logged_in="$(ps axu | cut -d " " -f 1 | grep "$user_name" | grep -v grep)"
 
     #
     # getting the first id free in both users and groups
     #
     over1k="^1...$" # need to be a variable to pass checkbashisms test
-    id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 | \
-        grep "$over1k" | sort -n | tail -n 1 | \
+    id_available="$(cat /etc/group /etc/passwd | cut -d ":" -f 3 |
+        grep "$over1k" | sort -n | tail -n 1 |
         awk '{ print $1+1 }')"
     unset over1k
 
@@ -252,19 +253,19 @@ _mtu_make_available_uid_gid() {
     test -z "$id_available" && id_available=1000
 
     chown_home=0
-    if test -n "$user_name" ; then
+    if test -n "$user_name"; then
         echo "Changing uid for $user_name into $id_available"
         usermod -u "$id_available" "$user_name"
         chown_home=1
     fi
-    if test -n "$group_name" ; then
+    if test -n "$group_name"; then
         echo "Changing gid for $user_name into $id_available"
         groupmod -g "$id_available" "$group_name"
         chown_home=1
     fi
     if [ "$chown_home" = 1 ]; then
         other_u_home="$(eval echo "~${user_name}")"
-        if [ -d "$other_u_home"  ]; then
+        if [ -d "$other_u_home" ]; then
             msg_3 "changing home ownership recursively"
             echo "~$other_u_home -> $id_available:$id_available"
             chown -R "$id_available":"$id_available" "$other_u_home"
@@ -272,14 +273,14 @@ _mtu_make_available_uid_gid() {
             # If user who got id change is logged in, display warning that
             # file privs might need to be fixed after logout
             #
-            if [ -n "$is_logged_in"  ]; then
+            if [ -n "$is_logged_in" ]; then
                 echo
                 echo "WARNING: $user_name seems to be logged in, you might need to correct file privs in: $other_u_home once user has logged out!"
                 echo
             fi
         fi
-        test -f /var/mail/"$user_name" && \
-                chown -R "$user_name":"$user_name" /var/mail/"$user_name"
+        test -f /var/mail/"$user_name" &&
+            chown -R "$user_name":"$user_name" /var/mail/"$user_name"
     fi
     #
     # Even if the GID of the offending user wasn't the offending GID
@@ -290,9 +291,7 @@ _mtu_make_available_uid_gid() {
     unset group_name
     unset id_available
     unset chown_home
- }
-
-
+}
 
 #=====================================================================
 #

@@ -99,6 +99,7 @@ _tef_copy_etc_file() {
             error_msg "_tef_copy_etc_file() src_file[$tcef_src] " \
                 "NOT FOUND!\n$tcef_src"
         fi
+        # shellcheck disable=SC2154
         if [ "$SPD_TASK_DISPLAY" != "1" ]; then
             rm "$tcef_dst" # to avoid incomplete removal of prev vers of file
             cp "$tcef_src" "$tcef_dst"

@@ -24,8 +24,6 @@ script_tasks='task_autossh'
 script_description="Sets up a reverse port forward so that a common host can
 make a dial-back ssh connection."
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -34,10 +32,8 @@ make a dial-back ssh connection."
 #=====================================================================
 
 help_local_parameters() {
-    echo "SPD_AUTOSSH_REVERSE_PORT$(test -z "$SPD_AUTOSSH_REVERSE_PORT" && echo ' - set to reverse port if wanted' || echo "=$SPD_AUTOSSH_REVERSE_PORT" )"
+    echo "SPD_AUTOSSH_REVERSE_PORT$(test -z "$SPD_AUTOSSH_REVERSE_PORT" && echo ' - set to reverse port if wanted' || echo "=$SPD_AUTOSSH_REVERSE_PORT")"
 }
-
-
 
 #==========================================================
 #
@@ -55,72 +51,71 @@ task_autossh() {
     #
     # source dependencies if not available
     #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
         verbose_msg "task_sshd() needs to source openrc to satisfy dependencies"
-        # shellcheck disable=SC1091
+        # shellcheck disable=SC1091,SC2154
         . "$DEPLOY_PATH/scripts/tools/openrc.sh"
     fi
 
     service_fname="/etc/init.d/autossh"
 
-
     # unset SPD_AUTOSSH_REVERSE_PORT
     case "$SPD_AUTOSSH_REVERSE_PORT" in
 
-        "" | "0" )
-            # Disable
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-               msg_2 "autossh will be disabled"
+    "" | "0")
+        # Disable
+        # shellcheck disable=SC2154
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_2 "autossh will be disabled"
+        else
+            check_abort
+            msg_2 "Disabling autossh service"
+            ensure_installed openrc
+            service_installed="$(rc-service -l | grep autossh)"
+            if [ "$service_installed" != "" ]; then
+                disable_service autossh default
+                rm "$service_fname"
+                echo "now disabled"
             else
-                check_abort
-                msg_2 "Disabling autossh service"
-                ensure_installed openrc
-                service_installed="$(rc-service -l |grep autossh )"
-                if [ "$service_installed"  != "" ]; then
-                    disable_service autossh default
-                    rm "$service_fname"
-                    echo "now disabled"
-                else
-                    echo "Service autossh was not active, no action needed"
-                fi
+                echo "Service autossh was not active, no action needed"
             fi
-            ;;
+        fi
+        ;;
 
-        *)
-            # Enable
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                msg_2 "autossh will be enabled"
-                echo "reverse forward on $SPD_AUTOSSH_CONNECT ${SPD_AUTOSSH_REVERSE_PORT}:localhost:${SPD_SSHD_PORT}"
-                echo
-            else
-                check_abort
-                if [ -z "$SPD_AUTOSSH_CONNECT" ] || [ -z "$SPD_AUTOSSH_REVERSE_PORT" ] || [ -z "$SPD_SSHD_PORT" ]; then
-                    error_msg "SPD_AUTOSSH_CONNECT, SPD_AUTOSSH_REVERSE_PORT and SPD_SSHD_PORT must be defined!"
-                fi
-                msg_2 "Setting up autossh"
-                ensure_installed openrc
-		ensure_installed autossh
-                ensure_runlevel_default
-                msg_3 "Setting reverse port to $SPD_AUTOSSH_CONNECT $SPD_AUTOSSH_REVERSE_PORT:localhost:$SPD_SSHD_PORT"
-
-		#
-		#  Add host to /root/.ssh/known_hosts
-		#
-		mkdir -p /root/.ssh
-		ssh -o StrictHostKeyChecking=no $SPD_AUTOSSH_CONNECT   date
-
-                cat "$DEPLOY_PATH"/files/services/autossh | \
-		    sed "s/REVERSE_PORT_FORWARD/$SPD_AUTOSSH_REVERSE_PORT\:localhost\:$SPD_SSHD_PORT/" | \
-		    sed "s#REMOTE_CONNECTION#$SPD_AUTOSSH_CONNECT#"  > "$service_fname"
-                chmod 755 "$service_fname"
-                ensure_service_is_added autossh default restart
+    *)
+        # Enable
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_2 "autossh will be enabled"
+            echo "reverse forward on $SPD_AUTOSSH_CONNECT ${SPD_AUTOSSH_REVERSE_PORT}:localhost:${SPD_SSHD_PORT}"
+            echo
+        else
+            check_abort
+            if [ -z "$SPD_AUTOSSH_CONNECT" ] || [ -z "$SPD_AUTOSSH_REVERSE_PORT" ] || [ -z "$SPD_SSHD_PORT" ]; then
+                error_msg "SPD_AUTOSSH_CONNECT, SPD_AUTOSSH_REVERSE_PORT and SPD_SSHD_PORT must be defined!"
             fi
-            ;;
+            msg_2 "Setting up autossh"
+            ensure_installed openrc
+            ensure_installed autossh
+            ensure_runlevel_default
+            msg_3 "Setting reverse port to $SPD_AUTOSSH_CONNECT $SPD_AUTOSSH_REVERSE_PORT:localhost:$SPD_SSHD_PORT"
+
+            #
+            #  Add host to /root/.ssh/known_hosts
+            #
+            mkdir -p /root/.ssh
+            # shellcheck disable=SC2086
+            ssh -o StrictHostKeyChecking=no $SPD_AUTOSSH_CONNECT date
+
+            cat "$DEPLOY_PATH"/files/services/autossh |
+                sed "s/REVERSE_PORT_FORWARD/$SPD_AUTOSSH_REVERSE_PORT\:localhost\:$SPD_SSHD_PORT/" |
+                sed "s#REMOTE_CONNECTION#$SPD_AUTOSSH_CONNECT#" >"$service_fname"
+            chmod 755 "$service_fname"
+            ensure_service_is_added autossh default restart
+        fi
+        ;;
 
     esac
 }
-
-
 
 #=====================================================================
 #
