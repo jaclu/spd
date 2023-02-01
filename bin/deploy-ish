@@ -75,7 +75,6 @@ SPD_INITIAL_SCRIPT=1
 . "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
 . "$DEPLOY_PATH/scripts/task_timezone.sh"
 . "$DEPLOY_PATH/scripts/task_restore_root.sh"
-. "$DEPLOY_PATH/scripts/task_runbg.sh"
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
 . "$DEPLOY_PATH/scripts/task_autossh.sh"
 . "$DEPLOY_PATH/scripts/task_mon_sshd.sh"
@@ -118,14 +117,6 @@ run_tasks() {
     #  for deploys not to get stuck. I can always do it manually.
     #
     #task_apk_upgrade
-
-    # Run as early as possible, so that one can switch away from iSH window
-    # during deploy.
-    # It should be possible to run this directly after task_apk_update
-    # but currently it has to be run after task_apks_add, need to investigate
-    # could be some unintended dependency complicating things...
-    # semi work after task_apks_add
-    task_runbg
 
     task_apks_add
     task_timezone

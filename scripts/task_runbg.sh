@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
@@ -24,8 +25,6 @@ script_tasks="task_runbg"
 script_description="Installs and Activates or Disables a service that monitors the iOS
 location this ensures that iSH will continue to run in the background."
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -35,12 +34,11 @@ location this ensures that iSH will continue to run in the background."
 
 help_local_parameters() {
     echo "SPD_RUN_BG$(
-        test -z "$SPD_RUN_BG" \
-        && echo ' -  location_tacker status (-1/0/1)' \
-        || echo "=$SPD_RUN_BG")"
+        test -z "$SPD_RUN_BG" &&
+            echo ' -  location_tacker status (-1/0/1)' ||
+            echo "=$SPD_RUN_BG"
+    )"
 }
-
-
 
 #=====================================================================
 #
@@ -67,7 +65,7 @@ task_runbg() {
     #
     # source dependencies if not available
     #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
         verbose_msg "task_runbg() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/tools/openrc.sh"
@@ -83,60 +81,61 @@ task_runbg() {
 
     case "$SPD_RUN_BG" in
 
-        -1 ) # disable
-            _runbg_label
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-               msg_3 "Will be disabled"
+    -1) # disable
+        _runbg_label
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_3 "Will be disabled"
+        else
+            check_abort
+            msg_3 "Disabling service"
+            ensure_installed openrc
+            service_installed="$(rc-service -l | grep $service_name)"
+            if [ "$service_installed" != "" ]; then
+                disable_service $service_name default
+                echo "now disabled"
             else
-                check_abort
-                msg_3 "Disabling service"
-                ensure_installed openrc
-                service_installed="$(rc-service -l |grep $service_name )"
-                if [ "$service_installed"  != "" ]; then
-                    disable_service $service_name default
-                    echo "now disabled"
-                else
-                    echo "Service $service_name was not active, no action needed"
-                fi
-                rm $service_fname -f
+                echo "Service $service_name was not active, no action needed"
             fi
-            echo
-            ;;
+            rm $service_fname -f
+        fi
+        echo
+        ;;
 
-        0 )  # unchanged
-            if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-                _runbg_label
-                echo "Will NOT be changed"
-            fi
-            ;;
-
-        1 )  # activate
+    0) # unchanged
+        if [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
             _runbg_label
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                msg_3 "Will be enabled"
-            else
-                check_abort
-                msg_3 "Enabling service"
-                ensure_installed openrc
-                ensure_runlevel_default
+            echo "Will NOT be changed"
+        fi
+        ;;
 
-                #diff "$source_fname" "$service_fname" > /dev/null 2>&1
-                #if [ $? -ne 0 ]; then
+    1) # activate
+        _runbg_label
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_3 "Will be enabled"
+        else
+            check_abort
+            msg_3 "Enabling service"
+            ensure_installed openrc
+            ensure_runlevel_default
 
-                #
-                #  Ensure that the latest service is deployed
-                #
-                msg_3 "Deploying service file"
-                cp "$source_fname" "$service_fname"
-                chmod 755 "$service_fname"
+            #diff "$source_fname" "$service_fname" > /dev/null 2>&1
+            #if [ $? -ne 0 ]; then
 
-                msg_3 "Activating service"
-                ensure_service_is_added $service_name default restart
-            fi
-            ;;
+            #
+            #  Ensure that the latest service is deployed
+            #
+            msg_3 "Deploying service file"
+            cp "$source_fname" "$service_fname"
+            chmod 755 "$service_fname"
 
-        *)
-            error_msg "task_runbg($SPD_RUN_BG) invalid option, must be one of -1, 0, 1"
+            msg_3 "Activating service"
+            ensure_service_is_added $service_name default restart
+        fi
+        ;;
+
+    *)
+        error_msg "task_runbg($SPD_RUN_BG) invalid option, must be one of -1, 0, 1"
+        ;;
     esac
     echo
 
@@ -145,8 +144,6 @@ task_runbg() {
     unset source_fname
     unset service_installed
 }
-
-
 
 #=====================================================================
 #
@@ -159,8 +156,6 @@ _runbg_label() {
     msg_2 "runbg service"
     echo "  Ensuring iSH continues to run in the background."
 }
-
-
 
 #=====================================================================
 #
