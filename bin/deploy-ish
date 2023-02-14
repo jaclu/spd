@@ -70,10 +70,8 @@ SPD_INITIAL_SCRIPT=1
 . "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
-. "$DEPLOY_PATH/scripts/task_dcron.sh"
 . "$DEPLOY_PATH/scripts/task_do_extra.sh"
 . "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
-. "$DEPLOY_PATH/scripts/task_timezone.sh"
 . "$DEPLOY_PATH/scripts/task_restore_root.sh"
 . "$DEPLOY_PATH/scripts/task_sshd.sh"
 . "$DEPLOY_PATH/scripts/task_autossh.sh"
@@ -119,8 +117,6 @@ run_tasks() {
     #task_apk_upgrade
 
     task_apks_add
-    task_timezone
-    task_dcron
     task_sshd
     task_mon_sshd
     task_patch_etc_files # needs to happen after task_apk_upgrade
