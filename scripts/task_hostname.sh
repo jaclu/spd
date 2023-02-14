@@ -43,7 +43,7 @@ desired name and use a custom hostname binary to display this instead."
 
 _th_relative_hostname_bin_source=files/extra_bins/hostname
 _th_alternate_hostname_bin=/usr/local/bin/hostname
-
+_th_relative_initd_hostname=custom/etc_files/initd_hostname-aok
 
 
 #=====================================================================
@@ -86,13 +86,24 @@ help_local_parameters() {
 task_hostname() {
     [ "$SPD_HOSTNAME_SET" != "1" ] && return # skip this task requested
 
-    msg_2 "Setting hostname if this is not AOK"
     check_abort
     _th_expand_all_deploy_paths
 
+    #
+    # source dependencies if not available
+    #
+    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
+        verbose_msg "task_sshd() needs to source openrc to satisfy dependencies"
+        # shellcheck disable=SC1091
+        . "$DEPLOY_PATH/scripts/tools/openrc.sh"
+    fi
+
+
+    msg_2 "Setting hostname if this is not AOK"
+
     if [ -n "$(uname -a | grep -i AOK)" ]; then
         msg_3 "AOK kernel"
-        echo "hostname will be altered."
+        msg_3 "hostname will be altered."
         _th_setup_env
         _th_alternate_host_name
     else
@@ -116,15 +127,21 @@ _th_expand_all_deploy_paths() {
 }
 
 _th_setup_env() {
+    th_initd_hostname=$(expand_deploy_path "$_th_relative_initd_hostname")
     if [ "$SPD_TASK_DISPLAY" != 1 ]; then
         if [ -f "$_th_alternate_hostname_bin_source" ]; then
-            echo "Copying custom hostname binary to $_th_alternate_hostname_bin"
+            msg_3 "Copying custom hostname binary to $_th_alternate_hostname_bin"
             cp "$_th_alternate_hostname_bin_source" "$_th_alternate_hostname_bin"
+	    msg_3 "Copying custom init.d/hostname"
+	    cp "$th_initd_hostname" /etc/init.d/hostname
+            ensure_installed openrc
+	    msg_3 "Ensure it starts in runlevel boot"
+            ensure_service_is_added hostname boot restart
         else
             error_msg "Failed to find alternate hostname bin [$_th_alternate_hostname_bin_source]!" 1
         fi
         if [ ! -f /etc/hostname ] || [ "$(cat /etc/hostname)" = 'localhost' ]; then
-            echo "Setting default content for /etc/hostname"
+            msg_3 "Setting default content for /etc/hostname"
             /bin/hostname >  /etc/hostname
         fi
     fi
