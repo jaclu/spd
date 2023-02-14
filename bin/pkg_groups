@@ -38,7 +38,7 @@ package_groups="
 
   :man            |  man-db man-pages coreutils-doc tmux-doc mdcat-doc
 
-  :python         |  py3-pip python3-doc py3-flake8  py3-pyflakes py3-pylint py3-pytest py3-wheel
+  :python         |  py3-pip python3-doc py3-flake8  py3-pyflakes py3-pylint py3-pytest py3-wheel py3-build
 
   :go             |  go go-doc
 
