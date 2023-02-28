@@ -63,7 +63,7 @@ task_replace_some_etc_files() {
 
     [ -n "$SPD_FILE_HOSTS" ] && _tef_copy_etc_file "$SPD_FILE_HOSTS" /etc/hosts
     if [ -n "$SPD_FILE_REPOSITORIES" ]; then
-        _tef_copy_etc_file "$SPD_FILE_HOSTS" /etc/apt/repositories
+        _tef_copy_etc_file "$SPD_FILE_REPOSITORIES" /etc/apt/repositories
         /usr/local/sbin/ensure_hostname_in_host_file.sh
     fi
     echo
