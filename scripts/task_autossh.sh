@@ -59,6 +59,8 @@ task_autossh() {
 
     service_fname="/etc/init.d/autossh"
 
+    echo ">> SPD_AUTOSSH_REVERSE_PORT: $SPD_AUTOSSH_REVERSE_PORT"
+    
     # unset SPD_AUTOSSH_REVERSE_PORT
     case "$SPD_AUTOSSH_REVERSE_PORT" in
 
@@ -109,6 +111,10 @@ task_autossh() {
             cat "$DEPLOY_PATH"/files/services/autossh |
                 sed "s/REVERSE_PORT_FORWARD/$SPD_AUTOSSH_REVERSE_PORT\:localhost\:$SPD_SSHD_PORT/" |
                 sed "s#REMOTE_CONNECTION#$SPD_AUTOSSH_CONNECT#" >"$service_fname"
+            if is_debian; then
+                # Debian 10 autossh doesn't have the -e flag, so skip that line
+                sed -e '/-e/ s/^#*/#/' -i "$service_fname"
+            fi
             chmod 755 "$service_fname"
             ensure_service_is_added autossh default restart
         fi
