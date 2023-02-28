@@ -1,0 +1,183 @@
+#!/bin/sh
+# shellcheck disable=SC1091
+#
+#  Copyright (c) 2022: Jacob.Lundqvist@gmail.com
+#  License: MIT
+#
+#  Part of https://github.com/jaclu/spd
+#
+#  Version: 0.4.2 2022-05-18
+#
+# Dependency: This shell script expects a config file to be present at
+# ../custom/ishTols.cfg
+# There is a sample config file in ../samples/ishTols.cfg copy it into the
+# above location and modify it to match your preferences before running.
+#
+# When you run this all actions that will be done based on your config will
+# be displayed, and then this app holds for 5 seconds. You can
+# press Ctrl-C if you want to examine what will be done in more detail.
+#
+# This is a turn-key setup of a fresh iSH into a usable state
+# Even if you do not have any homedirs to restore, this can be used to
+# set the general environment up to your likings look at the settings bellow,
+# anything that you do now want to bother with,
+# just comment that  out.
+#
+# Works both on AppStore and TestFlight iSH
+# and both with default and AOK filesystems
+#
+# Most output lines are kept short, in order to as much as possible
+# display without line breaks on the iPhone.
+#
+# Copy it outside the iSH filesystem in order for it to survive a
+# delete - install cycle. I use: mount -t ios . /mnt
+# and then select a dir on iCloud, so I can get all my various devices
+# restored from the same source. But im sure there are other ways to do it.
+#
+# Any feedback / bug reports welcome!
+#
+
+echo
+echo "Ensuring /iCloud/spd is cached"
+find /iCloud/spd >/dev/null
+
+echo
+echo "/iCloud/spd is verified to be available"
+echo
+
+#
+# Find where this package is deployed, then use this for relative locations
+#
+DEPLOY_PATH="$(dirname "$0")/.."          # relative
+DEPLOY_PATH="$(cd "$DEPLOY_PATH" && pwd)" # absolutized and normalized
+test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PATH] !!" 1
+
+#
+# Since sourced mode can't be detected in a practical way using a posix shell,
+# I use this workaround. First script run is expected to set it,
+# if set all other modules can assume to be sourced.
+#
+[ -n "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: deploy-ish can NOT be sourced!" 1
+SPD_INITIAL_SCRIPT=1
+
+#
+#  Include all dependencies
+#
+
+. "$DEPLOY_PATH/scripts/tools/utils.sh"
+. "$DEPLOY_PATH/scripts/tools/read_config.sh"
+. "$DEPLOY_PATH/scripts/task_hostname.sh"
+. "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
+. "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
+. "$DEPLOY_PATH/scripts/m_tasks_user.sh"
+. "$DEPLOY_PATH/scripts/task_do_extra.sh"
+. "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
+. "$DEPLOY_PATH/scripts/task_restore_root.sh"
+. "$DEPLOY_PATH/scripts/task_sshd.sh"
+. "$DEPLOY_PATH/scripts/task_autossh.sh"
+. "$DEPLOY_PATH/scripts/task_mon_sshd.sh"
+
+parse_command_line "$@"
+# Since in most cases this wasn't run with -c, ensure configs are parsed
+read_config
+
+#==========================================================
+#
+#     Task selection
+#
+#==========================================================
+
+# Pre-task
+task_hostname
+
+#
+# If SPD_TASK_DISPLAY=1 then what will be done is displayed and no actions
+# are taken,  otherwise the tasks are performed
+#
+run_tasks() {
+    #
+    # For testing/debugging any of the tasks can be commented out
+    # It is probably not a good idea to reshuffle their order too much
+    # some of them depend on previous tasks
+    #
+    task_replace_some_etc_files
+
+    task_sshd
+
+    task_restore_root
+    task_restore_user
+
+    task_autossh # if depending on user pubkey, must come after task_restore_user
+
+    task_do_extra_task # must be after task_restore_user if user dir is referred
+    task_user_pw_reminder
+}
+
+#
+#  Debug tasks, set condition as
+#    true  for normal operation
+#    false to run the test case
+#
+if true; then
+    # Normal operation
+    wait_after_summary=5
+else
+    # Testing specific task(-s)
+    # only those listed below will be run
+    msg_1 "custom restore"
+    run_tasks() {
+        #task_apk_update
+        # do before upgrade to avoid time waste of upgrading
+        # only to then remove it
+        task_apks_delete
+
+        #task_apk_upgrade
+        task_apks_add
+    }
+    # no need to wait if you are testing tasks...
+    wait_after_summary=5
+fi
+
+#==========================================================
+#
+#     Main
+#
+#==========================================================
+
+#
+# Display all tasks
+#
+SPD_TASK_DISPLAY=1
+echo
+msg_1 "Displaying what tasks will be performed"
+run_tasks
+
+# shellcheck disable=SC2154
+if [ "$p_help" = "1" ]; then
+    echo
+    echo "param -h indicates that you only want to see what will be done"
+    echo
+    exit 0
+fi
+
+echo
+echo "Waiting $wait_after_summary secs, in case you want to abort..."
+echo
+echo "Press Ctrl-C if you want to have more time"
+echo "to observe the changes that will be done."
+echo
+sleep $wait_after_summary
+
+#
+# Do all tasks
+#
+
+# shellcheck disable=SC2034
+SPD_TASK_DISPLAY=0
+msg_1 "Restore begins"
+run_tasks
+
+# Ensure tmp directory is gone
+clear_work_dir
+
+msg_2 "All tasks done, system restored!"
