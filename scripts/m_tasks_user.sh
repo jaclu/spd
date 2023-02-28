@@ -96,6 +96,10 @@ task_restore_user() {
                 ensure_shell_is_installed "$SPD_SHELL"
             else
                 _mtu_make_available_uid_gid
+                if [ "$SPD_SHELL" = "/bin/ash" ] && is_debian; then
+                    msg_3 "/bin/ash not supported on Debian, replaced with /bin/bash"
+                    SPD_SHELL="/bin/bash"
+                fi
                 params="-m -G sudo -s $SPD_SHELL $SPD_UNAME"
                 [ -n "$SPD_UID" ] && params="-u $SPD_UID $params"
                 if [ -n "$SPD_GID" ]; then
