@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
@@ -23,8 +24,6 @@
 script_tasks="task_do_extra_task        - Runs user supplied script"
 script_description="Runs additional script defined by SPD_EXTRA_TASK
 Script will be sourced so exiting functions and variables can be used"
-
-
 
 #==========================================================
 #
@@ -56,15 +55,13 @@ task_do_extra_task() {
             . "$SPD_EXTRA_TASK"
             echo "Completed: $SPD_EXTRA_TASK"
         fi
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "NO custom task will be run"
     fi
     echo
 
     unset msg_txt
 }
-
-
 
 #=====================================================================
 #
@@ -81,17 +78,18 @@ _tde_expand_deploy_paths() {
     SPD_EXTRA_TASK=$(expand_deploy_path "$SPD_EXTRA_TASK")
 }
 
-
-
 #=====================================================================
 #
 #   Run this script via extras/script_base.sh
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

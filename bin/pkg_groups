@@ -9,8 +9,6 @@
 #
 version="0.5.0  2022-05-31"
 
-
-
 #
 #  When defining built in package groups, each group should be in
 #  the following overall notation, but indentation is off no significance,
@@ -52,9 +50,6 @@ package_groups="
 
 # check if devel auto installs the following: ncurses-libs ncurses-terminfo ncurses-terminfo-base pkgconf
 
-
-
-
 prog_name=$(basename "$0")
 
 #
@@ -67,52 +62,55 @@ else
     is_iSH=0
 fi
 
-
 check_for_option() {
     case "$1" in
 
-        "" | "-h" | "--help" )
-            echo "usage: $prog_name [-h] | [-g] | [-l] | group1 group2 -group3 ..."
-            echo
-            echo "This is a tool to install/uninstall groups of packages"
-            echo "prefixing a group name with - means uninstall that group"
-            echo
-            echo "If not run on iSH, this will only display what actions"
-            echo "would be taken, so can be tested on other operating systems"
-            echo
-            echo "options:"
-            echo "  -h, --help     show this help message and exit"
-            echo "  -g             list available groups and exit"
-            echo "  -l             list groups and items and exit"
-            exit 0
-            ;;
+    "" | "-h" | "--help")
+        echo "usage: $prog_name [-h] | [-g] | [-l] | group1 group2 -group3 ..."
+        echo
+        echo "This is a tool to install/uninstall groups of packages"
+        echo "prefixing a group name with - means uninstall that group"
+        echo
+        echo "If not run on iSH, this will only display what actions"
+        echo "would be taken, so can be tested on other operating systems"
+        echo
+        echo "options:"
+        echo "  -h, --help     show this help message and exit"
+        echo "  -g             list available groups and exit"
+        echo "  -l             list groups and items and exit"
+        exit 0
+        ;;
 
-        "-g" )
-            task="groups"
-            process_items
-            echo
-            exit 0
-            ;;
+    "-g")
+        task="groups"
+        process_items
+        echo
+        exit 0
+        ;;
 
-        "-l" )
-            task="list"
-            process_items
-            exit 0
-            ;;
+    "-l")
+        task="list"
+        process_items
+        exit 0
+        ;;
+
+    *)
+        # Not an option
+        ;;
 
     esac
 }
-
 
 pkg_handling() {
     action="$1"
     case "$action" in
 
-        "add" | "del" ) ;;
+    "add" | "del") ;;
 
-        *)
-            echo "ERROR: pkg_handling() - incorrect param: $action"
-            exit 1
+    *)
+        echo "ERROR: pkg_handling() - incorrect param: $action"
+        exit 1
+        ;;
     esac
 
     cmd="sudo apk $action $packages"
@@ -128,7 +126,6 @@ pkg_handling() {
     task_done=1
 }
 
-
 #
 #  Loops through all groups, and takes action according to $task
 #  for install / uninstall $item is assumed to be the group to be
@@ -136,66 +133,70 @@ pkg_handling() {
 #
 process_items() {
     task_done=0
-    lst=$package_groups  # since we might come back, dont change the original :)
+    lst=$package_groups # since we might come back, dont change the original :)
     while true; do
         # POSIX way to handle array types of data
-        section="${lst%%:*}"  # up to first colon excluding it
-        lst="${lst#*:}"       # after fist colon
+        section="${lst%%:*}" # up to first colon excluding it
+        lst="${lst#*:}"      # after fist colon
 
-        name="$(echo     "$section" | cut -d'|' -f 1| awk '{$1=$1};1' | tr '[:upper:]' '[:lower:]')"
-        packages="$(echo "$section" | cut -d'|' -f 2| awk '{$1=$1};1')"
+        name="$(echo "$section" | cut -d'|' -f 1 | awk '{$1=$1};1' | tr '[:upper:]' '[:lower:]')"
+        packages="$(echo "$section" | cut -d'|' -f 2 | awk '{$1=$1};1')"
 
-        [ -z "$name" ] && continue  # skip blank lines
+        [ -z "$name" ] && continue # skip blank lines
 
         case "$task" in
 
-            "groups") printf "%s" "$name " ;;
+        "groups") printf "%s" "$name " ;;
 
-            "list")
-                #
-                #  For pretty prining, first get all the group names
-                #  and figure out the longest. To keep code simple
-                #  this is done on the first run of list,
-                #
-                if [ -z "$max_len" ]; then
-                    # first get a list of names, in order to find longest
-                    task="groups"
-                    group_lst="$(process_items)"
-                    task="list" # back to expected processing
+        "list")
+            #
+            #  For pretty prining, first get all the group names
+            #  and figure out the longest. To keep code simple
+            #  this is done on the first run of list,
+            #
+            if [ -z "$max_len" ]; then
+                # first get a list of names, in order to find longest
+                task="groups"
+                group_lst="$(process_items)"
+                task="list" # back to expected processing
 
-                    max_len=0
-                    while true; do
-                        g="${group_lst%% *}"
-                        group_lst="${group_lst#* }"
+                max_len=0
+                while true; do
+                    g="${group_lst%% *}"
+                    group_lst="${group_lst#* }"
 
-                        g_len="${#g}"
-                        [ "$g_len" -gt $max_len ] && max_len="$g_len"
+                    g_len="${#g}"
+                    [ "$g_len" -gt "$max_len" ] && max_len="$g_len"
 
-                        [ "$group_lst" = "$g" ] && break  # list done
-                    done
-                fi
-                printf "[%${max_len}s]  %s\n" "$name" "$packages"
-                ;;
+                    [ "$group_lst" = "$g" ] && break # list done
+                done
+            fi
+            printf "[%${max_len}s]  %s\n" "$name" "$packages"
+            ;;
 
-            "install")
-                if [ "$name" = "$item" ]; then
-                    pkg_handling add
-                    return
-                fi
-                ;;
+        "install")
+            if [ "$name" = "$item" ]; then
+                pkg_handling add
+                return
+            fi
+            ;;
 
-            "uninstall")
-                if [ "$name" = "$item" ]; then
-                    pkg_handling del
-                    return
-                fi
-                ;;
+        "uninstall")
+            if [ "$name" = "$item" ]; then
+                pkg_handling del
+                return
+            fi
+            ;;
+
+        *)
+            echo "Invalid task: $task"
+            exit 1
+            ;;
 
         esac
-        [ "$lst" = "$section" ] && break  # we have processed last group
+        [ "$lst" = "$section" ] && break # we have processed last group
     done
 }
-
 
 main() {
     echo "$prog_name  $version"
@@ -221,6 +222,5 @@ main() {
         shift
     done
 }
-
 
 main "$@"

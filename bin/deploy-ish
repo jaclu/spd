@@ -37,6 +37,62 @@
 # Any feedback / bug reports welcome!
 #
 
+#
+# If SPD_TASK_DISPLAY=1 then what will be done is displayed and no actions
+# are taken,  otherwise the tasks are performed
+#
+run_tasks() {
+    #
+    # Must come first, this might change hostname, thus forcing a re-read
+    # of config files
+    #
+    task_hostname
+
+    #
+    # For testing/debugging any of the tasks can be commented out
+    # It is probably not a good idea to reshuffle their order too much
+    # some of them depend on previous tasks
+    #
+    task_replace_some_etc_files
+
+    # Do this early, so no risk of installation issues
+    # with tasks needing to install dependencies
+    task_pkgs_update
+
+    # do before upgrade to avoid time waste of upgrading
+    # only to then remove it
+    task_pkgs_delete
+
+    #
+    #  Weird iSH often failes on upgade, so I have disabled it here in order
+    #  for deploys not to get stuck. I can always do it manually.
+    #
+    task_pkgs_upgrade
+
+    task_pkgs_add
+    task_runbg
+    task_timezone
+    task_dcron
+    task_sshd
+    task_mon_sshd
+    # task_patch_etc_files # needs to happen after task_pkgs_upgrade
+
+    task_restore_root
+    # task_nopasswd_sudo # must be before task_restore_user
+    task_restore_user
+
+    task_autossh # if depending on user pubkey, must come after task_restore_user
+
+    task_do_extra_task # must be after task_restore_user if user dir is referred
+    task_user_pw_reminder
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
 echo
 echo "Ensuring /iCloud/spd is cached"
 find /iCloud/spd >/dev/null
@@ -48,34 +104,38 @@ echo
 #
 # Find where this package is deployed, then use this for relative locations
 #
-DEPLOY_PATH="$(dirname "$0")/.."          # relative
-DEPLOY_PATH="$(cd "$DEPLOY_PATH" && pwd)" # absolutized and normalized
-test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PATH] !!" 1
-
-#
-# Since sourced mode can't be detected in a practical way using a posix shell,
-# I use this workaround. First script run is expected to set it,
-# if set all other modules can assume to be sourced.
-#
-[ -n "$SPD_INITIAL_SCRIPT" ] && error_msg "EROR: deploy-ish can NOT be sourced!" 1
-SPD_INITIAL_SCRIPT=1
+if test -n "$DEPLOY_PATH"; then
+    error_msg "EROR: deploy-ish can NOT be sourced!"
+else
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  deploy-ish"
+    # test -d "$DEPLOY_PATH" || error_msg "could not identify DEPLOY_PATH [$DEPLOY_PATH] !!" 1
+fi
 
 #
 #  Include all dependencies
 #
-
 . "$DEPLOY_PATH/scripts/tools/utils.sh"
-. "$DEPLOY_PATH/scripts/tools/read_config.sh"
-. "$DEPLOY_PATH/scripts/task_hostname.sh"
-. "$DEPLOY_PATH/scripts/m_tasks_apk.sh"
-. "$DEPLOY_PATH/scripts/m_tasks_etc_files.sh"
+#
+#  Multiple tasks
+#
+. "$DEPLOY_PATH/scripts/m_tasks_packages.sh"
 . "$DEPLOY_PATH/scripts/m_tasks_user.sh"
-. "$DEPLOY_PATH/scripts/task_do_extra.sh"
-. "$DEPLOY_PATH/scripts/task_nopasswd_sudo.sh"
-. "$DEPLOY_PATH/scripts/task_restore_root.sh"
-. "$DEPLOY_PATH/scripts/task_sshd.sh"
+#
+#  Single tasks
+#
 . "$DEPLOY_PATH/scripts/task_autossh.sh"
+. "$DEPLOY_PATH/scripts/task_dcron.sh"
+. "$DEPLOY_PATH/scripts/task_do_extra.sh"
+. "$DEPLOY_PATH/scripts/task_etc_files.sh"
+. "$DEPLOY_PATH/scripts/task_hostname.sh"
 . "$DEPLOY_PATH/scripts/task_mon_sshd.sh"
+. "$DEPLOY_PATH/scripts/task_restore_root.sh"
+. "$DEPLOY_PATH/scripts/task_runbg.sh"
+. "$DEPLOY_PATH/scripts/task_sshd.sh"
+. "$DEPLOY_PATH/scripts/task_timezone.sh"
+
+run_as_root "$@"
 
 parse_command_line "$@"
 # Since in most cases this wasn't run with -c, ensure configs are parsed
@@ -86,50 +146,6 @@ read_config
 #     Task selection
 #
 #==========================================================
-
-# Pre-task
-task_hostname
-
-#
-# If SPD_TASK_DISPLAY=1 then what will be done is displayed and no actions
-# are taken,  otherwise the tasks are performed
-#
-run_tasks() {
-    #
-    # For testing/debugging any of the tasks can be commented out
-    # It is probably not a good idea to reshuffle their order too much
-    # some of them depend on previous tasks
-    #
-    task_replace_some_etc_files
-
-    # Do this early, so no risk of installation issues
-    # with tasks needing to install dependencies
-    task_apk_update
-
-    # do before upgrade to avoid time waste of upgrading
-    # only to then remove it
-    task_apks_delete
-
-    #
-    #  Weird iSH often failes on upgade, so I have disabled it here in order
-    #  for deploys not to get stuck. I can always do it manually.
-    #
-    #task_apk_upgrade
-
-    task_apks_add
-    task_sshd
-    task_mon_sshd
-    task_patch_etc_files # needs to happen after task_apk_upgrade
-
-    task_restore_root
-    task_nopasswd_sudo # must be before task_restore_user
-    task_restore_user
-
-    task_autossh # if depending on user pubkey, must come after task_restore_user
-
-    task_do_extra_task # must be after task_restore_user if user dir is referred
-    task_user_pw_reminder
-}
 
 #
 #  Debug tasks, set condition as
@@ -144,23 +160,17 @@ else
     # only those listed below will be run
     msg_1 "custom restore"
     run_tasks() {
-        #task_apk_update
+        #task_pkgs_update
         # do before upgrade to avoid time waste of upgrading
         # only to then remove it
-        task_apks_delete
+        task_pkgs_delete
 
-        #task_apk_upgrade
-        task_apks_add
+        #task_pkgs_upgrade
+        task_pkgs_add
     }
     # no need to wait if you are testing tasks...
     wait_after_summary=5
 fi
-
-#==========================================================
-#
-#     Main
-#
-#==========================================================
 
 #
 # Display all tasks

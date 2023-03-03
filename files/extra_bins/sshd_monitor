@@ -25,7 +25,6 @@ log_file="/var/log/sshd_monitor.log"
 #
 check_intervall=10
 
-
 #
 #  If $log_file is empty or undefined, no logging will occur.
 #
@@ -33,13 +32,13 @@ log_it() {
     if [ -z "$log_file" ]; then
         return
     fi
-    printf "[%s] %s\n" "$(date +'%y-%m-%d %H:%M:%S')" "$@" >> "$log_file"
+    printf "[%s] %s\n" "$(date +'%y-%m-%d %H:%M:%S')" "$@" >>"$log_file"
 }
 
 get_prompt() {
     prompt="$(printf '\n' | nc localhost "$port")"
-    [ -z "$prompt" ] && return 1  # Error, no response
-    return 0  # OK, got a prompt
+    [ -z "$prompt" ] && return 1 # Error, no response
+    return 0                     # OK, got a prompt
 }
 
 get_pid() {
@@ -47,14 +46,11 @@ get_pid() {
     sshd_pid="$(pgrep -f 'sshd: /usr')"
 }
 
-
-
 #
 #  Grab port number from /etc/ssh/sshd_config, if not found, default to 22
 #
 port="$(grep -w Port /etc/ssh/sshd_config | awk '{ print $2 }')"
 [ -z "$port" ] && port=22
-
 
 log_it "Starting sshd monitor version: $_version on port: ($port)"
 
@@ -62,9 +58,9 @@ log_it "Starting sshd monitor version: $_version on port: ($port)"
 sleep 10
 
 while true; do
-    prompt="$(printf '\n' | nc localhost $port)"
+    prompt="$(printf '\n' | nc localhost "$port")"
 
-    if  ! get_prompt; then
+    if ! get_prompt; then
         #
         #  Attempt one, send a HUP
         #

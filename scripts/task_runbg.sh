@@ -55,6 +55,9 @@ task_runbg() {
     verbose_msg "task_runbg($SPD_RUN_BG)"
     check_abort
 
+    #  Defaults to no action
+    [ -z "$SPD_RUN_BG" ] && SPD_RUN_BG=0
+
     #
     # Name of service
     #
@@ -88,7 +91,7 @@ task_runbg() {
         else
             check_abort
             msg_3 "Disabling service"
-            ensure_installed openrc
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc
             service_installed="$(rc-service -l | grep $service_name)"
             if [ "$service_installed" != "" ]; then
                 disable_service $service_name default
@@ -115,7 +118,7 @@ task_runbg() {
         else
             check_abort
             msg_3 "Enabling service"
-            ensure_installed openrc
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc
             ensure_runlevel_default
 
             #diff "$source_fname" "$service_fname" > /dev/null 2>&1
@@ -163,9 +166,12 @@ _runbg_label() {
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-09-02
 # License: MIT
@@ -8,24 +9,6 @@
 # See explanation in the top of extras/utils.sh
 # for some recommendations on how to set up your modules!
 #
-
-#
-# This should only be sourced...
-#
-_this_script="script_base.sh"
-if [ "$(basename "$0")" = ${_this_script} ]; then
-    echo "ERROR: ${_this_script} is not meant to be run stand-alone!"
-    exit 1
-fi
-unset _this_script
-
-
-# Param/env check
-: "${script_tasks:?Variable script_tasks not set}"
-
-
-
-
 
 _display_help() {
     echo "$(basename "$0") [-h] [-c] [-x] [-v]"
@@ -37,7 +20,8 @@ _display_help() {
     echo "Tasks included:"
 
     # loop over lines in $script_tasks
-    set -f; IFS='
+    set -f
+    IFS='
 '
     # shellcheck disable=SC2086
     # next line can not use quotes
@@ -47,7 +31,8 @@ _display_help() {
         echo "  $1"
         shift
     done
-    set +f; unset IFS
+    set +f
+    unset IFS
     echo
 
     if [ -n "$script_description" ]; then
@@ -63,21 +48,21 @@ _display_help() {
     #
     {
         # Only do extra LF if help_local_params existed...
-        2> /dev/null help_local_parameters && echo
+        help_local_parameters 2>/dev/null && echo
     } || _=0 # generic dummy statement
 
     echo "SPD_TASK_DISPLAY$(
-        test -z "$SPD_TASK_DISPLAY" \
-        && echo '      - if 1 will only display what will be done' \
-        || echo "=$SPD_TASK_DISPLAY")"
+        test -z "$SPD_TASK_DISPLAY" &&
+            echo '      - if 1 will only display what will be done' ||
+            echo "=$SPD_TASK_DISPLAY"
+    )"
     echo "SPD_DISPLAY_NON_TASKS$(
-        test -z "$SPD_DISPLAY_NON_TASKS" \
-        && echo ' - if 1 will show what will NOT happen' \
-        || echo "=$SPD_DISPLAY_NON_TASKS")"
+        test -z "$SPD_DISPLAY_NON_TASKS" &&
+            echo ' - if 1 will show what will NOT happen' ||
+            echo "=$SPD_DISPLAY_NON_TASKS"
+    )"
     echo
 }
-
-
 
 #=====================================================================
 #
@@ -85,27 +70,51 @@ _display_help() {
 #
 #=====================================================================
 
-if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-    if test -z "$DEPLOY_PATH" ; then
-        #
-        # This was most likely not sourced, define DEPLOY_PATH based
-        # on location of this script. This variable is used to find config
-        # files etc, so should always be set!
-        #
-        # First define it relative based on this scripts location
-        DEPLOY_PATH="$(dirname "$0")/.."
-        # Make it absolute and normalized
-        DEPLOY_PATH="$( cd "$DEPLOY_PATH" && pwd )"
+if test -z "$DEPLOY_PATH"; then
+    error_msg "ERROR: script_base.sh MUST be sourced!"
+fi
+
+# shellcheck disable=SC1091
+. "${DEPLOY_PATH}/scripts/tools/utils.sh"
+
+run_as_root "$@"
+
+# Param/env check
+: "${script_tasks:?Variable script_tasks not set}"
+
+#
+#  Identify filesystem, some operations depend on it
+# SPD_FILE_SYSTEM -> SPD_ISH_KERNEL
+# if grep 2>/dev/null -q ish-AOK /proc/version; then
+#     SPD_ISH_KERNEL='AOK'
+# else
+#     # shellcheck disable=SC2034
+#     SPD_ISH_KERNEL='iSH'
+# fi
+
+parse_command_line "$@"
+
+if [ "$p_help" = 1 ]; then
+    _display_help
+else
+    #
+    # Limit in what conditions script can be executed
+    # Displaying what will happen is harmless and can run at any
+    # time.
+    #
+    if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+        if [ "$SPD_ABORT" = "1" ]; then
+            error_msg "Detected SPD_ABORT=1  Your settings prevent this device to be modified"
+        fi
+        [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
+        [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
     fi
-
-    # shellcheck disable=SC1091
-    . "$DEPLOY_PATH/scripts/tools/utils.sh"
-
+    _run_this
     #
-    # Since sourced mode cant be detected in a practical way under a
-    # posix shell, I use this workaround.
-    # First script is expected to set it, if set all other modules
-    # can assume to be sourced.
+    # Always display this final message  in standalone,
+    # to indicate process terminated successfully.
+    # And did not die in the middle of things...
     #
-    SPD_INITIAL_SCRIPT=1
+    echo "Task Completed."
+    echo
 fi

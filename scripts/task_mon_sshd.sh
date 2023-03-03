@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021,2022: Jacob.Lundqvist@gmail.com
 # License: MIT
@@ -23,8 +24,6 @@
 script_tasks="task_mon_sshd"
 script_description="Monitors and restarts sshd if no longer responsive"
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -34,12 +33,11 @@ script_description="Monitors and restarts sshd if no longer responsive"
 
 help_local_parameters() {
     echo "SPD_MON_SSHD$(
-        test -z "$SPD_MON_SSHD" \
-        && echo ' -  service enabled status (-1/0/1)' \
-        || echo "=$SPD_MON_SSHD")"
+        test -z "$SPD_MON_SSHD" &&
+            echo ' -  service enabled status (-1/0/1)' ||
+            echo "=$SPD_MON_SSHD"
+    )"
 }
-
-
 
 #=====================================================================
 #
@@ -57,6 +55,15 @@ task_mon_sshd() {
     check_abort
 
     #
+    #  If param not set, ensure nothing will be changed
+    #
+    if [ "$SPD_MON_SSHD" = "" ]; then
+        SPD_MON_SSHD="0"
+        warning_msg "SPD_MON_SSHD not defined, service mon_sshd will not be modified"
+        return
+    fi
+
+    #
     # Name of service
     #
     service_name=mon_sshd
@@ -66,78 +73,71 @@ task_mon_sshd() {
     #
     # source dependencies if not available
     #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function' ; then
+    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
         verbose_msg "task_mon_sshd() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/tools/openrc.sh"
     fi
 
-    #
-    #  If param not set, ensure nothing will be changed
-    #
-    if [ "$SPD_MON_SSHD" = "" ]; then
-        SPD_MON_SSHD="0"
-        warning_msg "SPD_MON_SSHD not defined, service mon_sshd will not be modified"
-    fi
-
     case "$SPD_MON_SSHD" in
 
-        -1 ) # disable
-            _mon_sshd_label
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-               msg_3 "Will be disabled"
+    -1) # disable
+        _mon_sshd_label
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_3 "Will be disabled"
+        else
+            check_abort
+            msg_3 "Disabling service"
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc # needed to handle services
+            service_installed="$(rc-service -l | grep $service_name)"
+            if [ "$service_installed" != "" ]; then
+                disable_service $service_name default
+                echo "now disabled"
             else
-                check_abort
-                msg_3 "Disabling service"
-                ensure_installed openrc  # needed to handle services
-                service_installed="$(rc-service -l |grep $service_name )"
-                if [ "$service_installed"  != "" ]; then
-                    disable_service $service_name default
-                    echo "now disabled"
-                else
-                    echo "Service $service_name was not active, no action needed"
-                fi
-                rm $service_fname -f
+                echo "Service $service_name was not active, no action needed"
             fi
-            echo
-            ;;
+            rm $service_fname -f
+        fi
+        echo
+        ;;
 
-        0 )  # unchanged
-            if [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-                _mon_sshd_label
-                echo "Will NOT be changed"
-            fi
-            ;;
-
-        1 )  # activate
+    0) # unchanged
+        if [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
             _mon_sshd_label
-            if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-                msg_3 "Will be enabled"
-            else
-                check_abort
-                msg_3 "Enabling service"
-                ensure_installed openrc  # needed to handle services
-                ensure_runlevel_default
+            echo "Will NOT be changed"
+        fi
+        ;;
 
-                #diff "$source_fname" "$service_fname" > /dev/null 2>&1
-                #if [ $? -ne 0 ]; then
+    1) # activate
+        _mon_sshd_label
+        if [ "$SPD_TASK_DISPLAY" = "1" ]; then
+            msg_3 "Will be enabled"
+        else
+            check_abort
+            msg_3 "Enabling service"
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc # needed to handle services
+            ensure_runlevel_default
 
-                #
-                #  Ensure that the latest service is deployed
-                #
-                msg_3 "Deploying sshd_monitor"
-                cp "$service_bin" /usr/local/bin
-                msg_3 "Deploying service file"
-                cp "$source_fname" "$service_fname"
-                chmod 755 "$service_fname"
+            #diff "$source_fname" "$service_fname" > /dev/null 2>&1
+            #if [ $? -ne 0 ]; then
 
-                msg_3 "Activating service"
-                ensure_service_is_added $service_name default restart
-            fi
-            ;;
+            #
+            #  Ensure that the latest service is deployed
+            #
+            msg_3 "Deploying sshd_monitor"
+            cp "$service_bin" /usr/local/bin
+            msg_3 "Deploying service file"
+            cp "$source_fname" "$service_fname"
+            chmod 755 "$service_fname"
 
-        *)
-            error_msg "task_mon_sshd($SPD_MON_SSHD) invalid option, must be one of -1, 0, 1"
+            msg_3 "Activating service"
+            ensure_service_is_added $service_name default restart
+        fi
+        ;;
+
+    *)
+        error_msg "task_mon_sshd($SPD_MON_SSHD) invalid option, must be one of -1, 0, 1"
+        ;;
     esac
     echo
 
@@ -146,8 +146,6 @@ task_mon_sshd() {
     unset source_fname
     unset service_installed
 }
-
-
 
 #=====================================================================
 #
@@ -161,17 +159,18 @@ _mon_sshd_label() {
     echo "  Ensuring sshd is responsive, restarts it if not."
 }
 
-
-
 #=====================================================================
 #
 #   Run this script via extras/script_base.sh
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

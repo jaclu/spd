@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com
 # License: MIT
@@ -21,16 +22,6 @@
 # when it is exited, since ash does not have the concept of local variables :(
 #
 
-#
-# This should only be sourced...
-#
-_this_script="utils.sh"
-if [ "$(basename "$0")" = ${_this_script} ]; then
-    echo "ERROR: ${_this_script} is not meant to be run stand-alone!"
-    exit 1
-fi
-unset _this_script
-
 #==========================================================
 #
 #     Messaging and Error display
@@ -38,6 +29,10 @@ unset _this_script
 #==========================================================
 
 error_msg() {
+    #
+    #  Param 1 - error msg
+    #  Param 2 - Optional, defaults to 1, if not 0 this will exit
+    #
     msg=$1
     err_code=${2:-1}
 
@@ -60,7 +55,7 @@ error_msg() {
     clear_work_dir # clear tmp extract dir
 
     # since we are exiting, no point in unseting local variables.
-    exit $err_code
+    exit "$err_code"
 }
 
 warning_msg() {
@@ -147,12 +142,180 @@ msg_3() {
 #
 #==========================================================
 
+#
+#  Some boolean checks
+#
+is_ish() {
+    test -d /proc/ish
+}
+
+is_aok_kernel() {
+    grep -qi aok /proc/ish/version 2>/dev/null
+}
+
 is_debian() {
     test -f /etc/debian_version
 }
 
 is_alpine() {
     test -f /etc/alpine-release
+}
+
+check_abort() {
+    #
+    # Check if actions can be done in this environment
+    #
+    # echo ">> check_abort() - SPD_ABORT=$SPD_ABORT"
+
+    [ "$SPD_ABORT" != "1" ] && return
+
+    if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+        msg_2 "SPD_ABORT=1"
+        error_msg "This prevents any action from being taken"
+    fi
+    return 0 # indicate the check indicated unsuitable environment
+}
+
+detect_env() {
+    # msg_2 ">> detect_env()"
+    #
+    #  Some constants
+    #
+    os_type_ish="ish"
+    os_type_Linux='Linux'
+    os_type_Darwin='Darwin'
+
+    kernel_ish="ish-kernel"
+    kernel_ish_aok="ish-aok"
+
+    # distro_family_debian='debian'
+
+    distro_ish_alpine="ish-alpine"
+    distro_ish_debian='ish-debian'
+    distro_ubuntu='ubuntu'
+    distro_MacOS='macos'
+
+    if is_debian; then
+        # Uses Debian apt as package manager, filtering out hint that apt
+        # is unavailable sometimes pressent in iSH FS
+        pkg_add="apt install -y -f"
+        pkg_remove="apt remove -y"
+        pkg_installed="dpkg -i"
+        pkgs_update="apt update"
+        pkgs_upgrade="apt upgrade"
+        #elif [ -n "$(command -v apk)" ]; then
+    else
+        # Uses Alpine apk package manager
+        pkg_add="apk add"
+        pkg_remove="apk del"
+        pkg_installed="apk info -e"
+        pkgs_update="apk update && apk fix"
+        pkgs_upgrade="apk upgrade"
+    #else
+    #    echo
+    #    echo "ERROR Failed to identify package manager!"
+    #    exit 1
+    fi
+
+    #
+    #  Detect environment
+    #
+    if is_ish; then
+        cfg_os_type=$os_type_ish
+        # cfg_distro=$distro_alpine
+        if is_aok_kernel; then
+            cfg_kernel=$kernel_ish_aok
+            is_debian && cfg_distro=$distro_ish_debian
+        else
+            cfg_kernel=$kernel_ish
+        fi
+        if is_alpine; then
+            cfg_distro="$distro_ish_alpine"
+        elif is_debian; then
+            cfg_distro="$distro_ish_debian"
+        else
+            error_msg "Unrecognized iSH FS"
+        fi
+
+    else
+        case "$(uname)" in
+
+        "$os_type_Linux")
+            cfg_os_type=$os_type_Linux
+            if is_debian; then
+                cfg_distro_family=distro_family_debian
+                if lsb_release -a 2>/dev/null | grep -qi ubuntu; then
+                    cfg_distro=$distro_ubuntu
+                fi
+            fi
+            ;;
+
+        "$os_type_Darwin")
+            cfg_os_type=$os_type_Darwin
+            cfg_distro=$distro_MacOS
+            ;;
+
+        *)
+            echo
+            echo "ERROR: Failed to detect environment"
+            exit 1
+            ;;
+
+        esac
+    fi
+
+    unset os_type_ish
+    unset os_type_Linux
+    unset os_type_Darwin
+    unset kernel_ish
+    unset kernel_ish_aok
+    unset distro_ish_debian
+    unset distro_ubuntu
+    unset distro_MacOS
+}
+
+#
+# See samples/config/Config.md for explanation how config files are
+# processed.
+#
+read_config() {
+    # msg_2 ">> read_config()"
+    detect_env
+
+    #
+    # the config files are located in $DEPLOY_PATH/custom/config/
+    # and have the extension .cfg
+    # In order to lowercase the cfg file names when they depend
+    # on env variables we only give the base name of the
+    # config file below
+    #
+    _read_cfg_file defaults 1
+
+    [ -n "$cfg_os_type" ] && _read_cfg_file "$cfg_os_type"
+    [ -n "$cfg_kernel" ] && _read_cfg_file "$cfg_kernel"
+    [ -n "$cfg_distro_family" ] && _read_cfg_file "$cfg_distro_family"
+    [ -n "$cfg_distro" ] && _read_cfg_file "$cfg_distro"
+
+    _read_cfg_file "$(hostname | sed 's/\./ /' | awk '{print $1}')"
+
+    _read_cfg_file settings-last
+
+    [ -n "$p_verbose" ] && echo # White space after listing config files parsed
+}
+
+#--
+
+run_as_root() {
+    #  if started by user account, execute again as root
+    if [ "$(whoami)" != "root" ]; then
+        msg_2 "Executing $0 as root"
+        # using $0 instead of full path makes location not hardcoded
+        if ! sudo "$0" "$@"; then
+            error_msg "Failed to sudo run: $0"
+        fi
+        # terminate the user initiated instance
+        exit 0
+    fi
 }
 
 repo_update() {
@@ -168,9 +331,9 @@ repo_upgrade() {
 }
 
 pkg_present() {
-    [ -z "$pkg_installed" ] && error_msg "No pkg_add defined" 1
+    [ -z "$pkg_installed" ] && error_msg "No pkg_installed defined" 1
 
-    if [ -n "$($pkg_installed $1 2>/dev/null)" ]; then
+    if [ -n "$($pkg_installed "$1" 2>/dev/null)" ]; then
         return 0 # was found
     else
         return 1 #  NOT found
@@ -178,30 +341,21 @@ pkg_present() {
 }
 
 pkg_install() {
-    packages="$1"
+    pi_pkgs="$1"
     [ -z "$pkg_add" ] && error_msg "No pkg_add defined" 1
 
-    $pkg_add $pkg
+    # shellcheck disable=SC2086
+    $pkg_add $pi_pkgs
+    unset pi_pkgs
 }
 
 pkg_remove() {
-    packages="$1"
+    pr_pkgs="$1"
     [ -z "$pkg_remove" ] && error_msg "No pkg_add defined" 1
 
-    $pkg_remove $pkg
-}
-
-check_abort() {
-    #
-    # Check if actions can be done in this environment
-    #
-    [ "$SPD_ABORT" != "1" ] && return
-
-    if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-        msg_2 "SPD_ABORT=1"
-        error_msg "This prevents any action from being taken"
-    fi
-    return 0 # indicate the check indicated unsuitable environment
+    # shellcheck disable=SC2086
+    $pkg_remove $pr_pkgs
+    unset pr_pkgs
 }
 
 expand_deploy_path() {
@@ -236,8 +390,8 @@ expand_deploy_path() {
 #     1 if package was installed now
 #
 ensure_installed() {
-    is_debian && return
-    
+    # is_debian && return
+
     pkg=$1
     msg=$2
     ret_val=0
@@ -305,8 +459,7 @@ clear_work_dir() {
 
     "") ;;
 
-    \
-        *)
+    *)
         echo
         echo "ERROR: clear_work_dir() accepted params: nothing|1"
         exit 1
@@ -392,7 +545,7 @@ unpack_home_dir() {
             msg_3 "Will be restored"
             [ "$save_current" = "1" ] && msg_3 "Previous content will be moved to ${old_home_dir}"
         else
-            ensure_installed unzip
+            [ -z "$(command -V unzip)" ] && ensure_installed unzip
             clear_work_dir 1
             msg_3 "Extracting"
             echo "$fhome_packed"
@@ -459,13 +612,11 @@ parse_command_line() {
             unset SPD_TASK_DISPLAY
             ;;
 
-        \
-            "-v" | "--verbose")
+        "-v" | "--verbose")
             p_verbose=1
             ;;
 
-        \
-            "-c")
+        "-c")
             p_cfg=1
             ;;
 
@@ -490,7 +641,6 @@ parse_command_line() {
 
     if [ $p_cfg -eq 1 ]; then
         # shellcheck disable=SC1091
-        . "$DEPLOY_PATH/scripts/tools/read_config.sh"
         read_config
     fi
 
@@ -543,53 +693,42 @@ _run_this() {
 
 #==========================================================
 #
+#   Internals
+#
+#==========================================================
+
+_read_cfg_file() {
+    cfg_file="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    [ -z "$cfg_file" ] && error_msg "_read_cfg_file() called with no param!"
+
+    # verbose_msg "Looking for config_file: ${CONFIG_PATH}/$cfg_file"
+
+    must_exist="${2:-0}"
+
+    cfg_file="$CONFIG_PATH/${cfg_file}.cfg"
+
+    if [ -f "$cfg_file" ]; then
+        verbose_msg "will read: $cfg_file"
+        #shellcheck disable=SC1090
+        . "$cfg_file"
+    elif [ "$must_exist" = "1" ]; then
+        error_msg "_read_cfg_file($cfg_file) obligatory config file not found!"
+    else
+        verbose_msg "NOT found: $cfg_file"
+    fi
+
+    unset cfg_file
+    unset musut_exist
+}
+
+#==========================================================
+#
 #     Main
 #
 #==========================================================
 
-#
-#  Identify filesystem, some operations depend on it
-# SPD_FILE_SYSTEM -> SPD_ISH_KERNEL
-if grep 2>/dev/null -q ish-AOK /proc/version; then
-    SPD_ISH_KERNEL='AOK'
-else
-    # shellcheck disable=SC2034
-    SPD_ISH_KERNEL='iSH'
+if test -z "$DEPLOY_PATH"; then
+    error_msg "ERROR: utils.sh MUST be sourced!"
 fi
 
-#
-# Since sourced mode can't be detected in a practical way using a posix shell,
-# I use this workaround; First script run is expected to set it,
-# if set all other modules can assume to be sourced.
-#
-if [ -z "$SPD_INITIAL_SCRIPT" ]; then
-    #
-    # Asume current script is the "base" script being run
-    #
-    parse_command_line "$@"
-
-    if [ $p_help = 1 ]; then
-        _display_help
-    else
-        #
-        # Limit in what conditions script can be executed
-        # Displaying what will happen is harmless and can run at any
-        # time.
-        #
-        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-            if [ "$SPD_ABORT" = "1" ]; then
-                error_msg "Detected SPD_ABORT=1  Your settings prevent this device to be modified"
-            fi
-            [ "$(uname)" != "Linux" ] && error_msg "This only runs on Linux!"
-            [ "$(whoami)" != "root" ] && error_msg "Need to be root to run this"
-        fi
-        _run_this
-        #
-        # Always display this final message  in standalone,
-        # to indicate process terminated successfully.
-        # And did not die in the middle of things...
-        #
-        echo "Task Completed."
-        echo
-    fi
-fi
+[ -z "$CONFIG_PATH" ] && CONFIG_PATH="${DEPLOY_PATH}/custom/config"

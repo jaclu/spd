@@ -20,10 +20,10 @@
 #=====================================================================
 
 # shellcheck disable=SC2034
-script_tasks="task_apk_update   - update and fix repository
-task_apks_delete  - deletes all apks listed in SPD_APKS_DEL
-task_apk_upgrade  - upgrades all installed apks
-task_apks_add     - adds all apks listed in SPD_APKS_ADD"
+script_tasks="task_pkgs_update   - update and fix repository
+task_pkgs_delete  - deletes all apks listed in SPD_PKGS_DEL
+task_pkgs_upgrade  - upgrades all installed apks
+task_pkgs_add     - adds all apks listed in SPD_PKGS_ADD"
 
 #=====================================================================
 #
@@ -33,15 +33,15 @@ task_apks_add     - adds all apks listed in SPD_APKS_ADD"
 #=====================================================================
 
 help_local_parameters() {
-    echo "SPD_APKS_DEL$(
-        test -z "$SPD_APKS_DEL" &&
+    echo "SPD_PKGS_DEL$(
+        test -z "$SPD_PKGS_DEL" &&
             echo ' - packages to remove, comma separated' ||
-            echo "='$SPD_APKS_DEL'"
+            echo "='$SPD_PKGS_DEL'"
     )"
-    echo "SPD_APKS_ADD$(
-        test -z "$SPD_APKS_ADD" &&
+    echo "SPD_PKGS_ADD$(
+        test -z "$SPD_PKGS_ADD" &&
             echo ' - packages to add, comma separated' ||
-            echo "='$SPD_APKS_ADD'"
+            echo "='$SPD_PKGS_ADD'"
     )"
 }
 
@@ -56,7 +56,7 @@ help_local_parameters() {
 #
 #=====================================================================
 
-task_apk_update() {
+task_pkgs_update() {
     msg_2 "update & fix apk index"
     check_abort
     # shellcheck disable=SC2154
@@ -71,7 +71,7 @@ task_apk_update() {
     echo
 }
 
-task_apk_upgrade() {
+task_pkgs_upgrade() {
     msg_2 "upgrade installed apks"
     if [ "$SPD_TASK_DISPLAY" = "1" ]; then
         msg_3 "Will happen"
@@ -82,26 +82,26 @@ task_apk_upgrade() {
     echo
 }
 
-task_apks_delete() {
+task_pkgs_delete() {
     msg_txt="Removing unwanted software"
 
     # shellcheck disable=SC2154
-    if [ -n "$SPD_APKS_DEL" ]; then
+    if [ -n "$SPD_PKGS_DEL" ]; then
         msg_2 "$msg_txt"
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
-            echo "$SPD_APKS_DEL"
+            echo "$SPD_PKGS_DEL"
         else
             check_abort
-            echo "$SPD_APKS_DEL"
+            echo "$SPD_PKGS_DEL"
             # TODO: fix
             # argh due to shellcheck complaining that
-            #   apk del $SPD_APKS_DEL
+            #   apk del $SPD_PKGS_DEL
             # should instead be:
-            #   apk del "$SPD_APKS_DEL"
+            #   apk del "$SPD_PKGS_DEL"
             # and that leads to apk not recognizing it as multiple apks
             # this seems to be a usable workaround
             #
-            cmd="apk del $SPD_APKS_DEL"
+            cmd="apk del $SPD_PKGS_DEL"
             verbose_msg "Will run: $cmd"
             $cmd
         fi
@@ -114,15 +114,15 @@ task_apks_delete() {
     unset msg_txt
 }
 
-task_apks_add() {
+task_pkgs_add() {
     msg_txt="Installing my selection of software"
-    if [ -n "$SPD_APKS_ADD" ]; then
+    if [ -n "$SPD_PKGS_ADD" ]; then
         msg_2 "$msg_txt"
         _filter_dels_from_add
         if [ "$SPD_TASK_DISPLAY" = "1" ]; then
             echo "$items_add"
         else
-            # TODO: see in task_apks_delete() for description
+            # TODO: see in task_pkgs_delete() for description
             # about why this seems needed ATM
             check_abort
             echo "$items_add"
@@ -144,13 +144,13 @@ task_apks_add() {
 #  Remove anything that should not be here from adds, to avoid repeated deletes and adds
 #
 _filter_dels_from_add() {
-    lst="$SPD_APKS_ADD"
+    lst="$SPD_PKGS_ADD"
     while true; do
         item="${lst%% *}" # up to first colon excluding it
         lst="${lst#* }"   # after fist colon
 
-        if [ "${SPD_APKS_DEL#*"$item"}" != "$SPD_APKS_DEL" ]; then
-            echo "WARNING: $item in both SPD_APK_ADD and SPD_APK_DEL - will not be added!"
+        if [ "${SPD_PKGS_DEL#*"$item"}" != "$SPD_PKGS_DEL" ]; then
+            echo "WARNING: $item in both SPD_PKGS_ADD and SPD_PKGS_DEL - will not be added!"
         else
             if [ -n "$items_add" ]; then
                 export items_add="$items_add $item"
@@ -168,9 +168,12 @@ _filter_dels_from_add() {
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

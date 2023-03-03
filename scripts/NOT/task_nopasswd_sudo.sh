@@ -24,8 +24,6 @@ script_tasks="task_nopasswd_sudo"
 script_description="Installs sudo and creates a no password sudo group wheel,
 if it does not already exist. This task has no direct parameters."
 
-
-
 #=====================================================================
 #
 #  Task (public) functions
@@ -41,14 +39,14 @@ task_nopasswd_sudo() {
     msg_2 "no-pw sudo for group wheel"
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
         check_abort
-        ensure_installed sudo
+        [ -z "$(command -V sudo)" ] && ensure_installed sudo
         if [ -f /etc/sudoers.d/wheel ]; then
             msg_3 "group wheel already setup by AOK-iSH"
         else
-            grep deploy-ish /etc/sudoers > /dev/null
+            grep deploy-ish /etc/sudoers >/dev/null
             if [ $? -eq 1 ]; then
                 msg_3 "adding %wheel NOPASSWD to /etc/sudoers"
-                echo "%wheel ALL=(ALL) NOPASSWD: ALL # added by deploy-ish" >> /etc/sudoers
+                echo "%wheel ALL=(ALL) NOPASSWD: ALL # added by deploy-ish" >>/etc/sudoers
             else
                 msg_3 "present"
             fi
@@ -61,17 +59,18 @@ task_nopasswd_sudo() {
     echo
 }
 
-
-
 #=====================================================================
 #
 #   Run this script via extras/script_base.sh
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

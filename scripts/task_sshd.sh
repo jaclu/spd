@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
@@ -60,6 +61,14 @@ help_local_parameters() {
 #=====================================================================
 
 task_sshd() {
+    msg_2 "task_sshd()"
+    # if [ -z "$SPD_SSHD_PORT" ]; then
+    #     msg_2 "task_sshd: No port set, aborting"
+    #     return
+    # fi
+
+    [ -z "$SPD_SSHD_SERVICE_NAME" ] && SPD_SSHD_SERVICE_NAME="sshd"
+
     _ts_expand_all_deploy_paths
 
     verbose_msg "task_sshd($SPD_SSHD_SERVICE)"
@@ -67,7 +76,11 @@ task_sshd() {
     #
     # Name of service
     #
-    service_name=sshd
+    if is_debian; then
+        service_name=ssh
+    else
+        service_name=sshd
+    fi
 
     #
     # source dependencies if not available
@@ -83,7 +96,7 @@ task_sshd() {
     #
     if [ -z "$SPD_SSHD_SERVICE" ]; then
         SPD_SSHD_SERVICE="0"
-        warning_msg "SPD_SSHD_SERVICE not defined, service sshd will not be modified"
+        # warning_msg "SPD_SSHD_SERVICE not defined, service sshd will not be modified"
     fi
 
     case "$SPD_SSHD_SERVICE" in
@@ -95,7 +108,7 @@ task_sshd() {
         else
             check_abort
             msg_3 "Disabling service"
-            ensure_installed openrc
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc
             service_installed="$(rc-service -l | grep $service_name)"
             if [ "$service_installed" != "" ]; then
                 disable_service $service_name default
@@ -128,8 +141,8 @@ task_sshd() {
             check_abort
             msg_3 "Enabling service"
             _ts_unpack_ssh_host_keys
-            ensure_installed openrc
-            ensure_installed openssh-server
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc
+            [ -z "$(command -V sshd)" ] && ensure_installed openssh-server
             ensure_runlevel_default
 
             msg_3 "Ensuring hostkeys exist"
@@ -178,24 +191,31 @@ _ts_task_label() {
 }
 
 _ts_unpack_ssh_host_keys() {
-    msg_3 "Device specific ssh host keys"
-
-    if [ "$SPD_SSH_HOST_KEYS" != "" ]; then
-        echo "$SPD_SSH_HOST_KEYS"
-        if test -f "$SPD_SSH_HOST_KEYS"; then
-            msg_3 "Will be untared into /etc/ssh"
-            if [ "$SPD_TASK_DISPLAY" != "1" ]; then
-                cd /etc/ssh || error_msg "Failed to cd into /etc/ssh"
-                # remove any previous host keys
-                rm 2>/dev/null /etc/ssh/ssh_host_*
-                tar 2>/dev/null xfz "$SPD_SSH_HOST_KEYS" || error_msg "Untar failed!"
-            fi
-        else
-            msg_3 "Not found"
+    msg="Device specific ssh host keys"
+    if [ -z "$SPD_SSH_HOST_KEYS" ]; then
+        if [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+            msg_3 "$msg"
+            unset msg
+            echo "Will NOT be used"
         fi
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
-        echo "Will NOT be used"
+        return
     fi
+    msg_3 "$msg"
+    unset msg
+
+    echo "$SPD_SSH_HOST_KEYS"
+    if test -f "$SPD_SSH_HOST_KEYS"; then
+        msg_3 "Will be untared into /etc/ssh"
+        if [ "$SPD_TASK_DISPLAY" != "1" ]; then
+            cd /etc/ssh || error_msg "Failed to cd into /etc/ssh"
+            # remove any previous host keys
+            rm 2>/dev/null /etc/ssh/ssh_host_*
+            tar 2>/dev/null xfz "$SPD_SSH_HOST_KEYS" || error_msg "Untar failed!"
+        fi
+    else
+        msg_3 "Not found"
+    fi
+
     echo
     # error_msg "Aborting after hostkey check" 1
 }
@@ -206,9 +226,12 @@ _ts_unpack_ssh_host_keys() {
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

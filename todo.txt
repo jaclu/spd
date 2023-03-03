@@ -8,8 +8,8 @@
 
 SPD_FILE_HOSTS              hosts_file
 
-SPD_APKS_DEL                sw_removed
-SPD_APKS_ADD                sw_installed
+SPD_PKGS_DEL                sw_removed
+SPD_PKGS_ADD                sw_installed
 
 SPD_EXTRA_TASK              extra_tasks
 SPD_FILE_REPOSITORIES       repositories_file
@@ -61,4 +61,3 @@ service hwdrivers machine-id non existent service 'dev'
 ### 3.16.0 (clean-2)
 
 - sshd autossh  restarting
-

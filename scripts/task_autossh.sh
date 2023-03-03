@@ -59,8 +59,6 @@ task_autossh() {
 
     service_fname="/etc/init.d/autossh"
 
-    echo ">> SPD_AUTOSSH_REVERSE_PORT: $SPD_AUTOSSH_REVERSE_PORT"
-    
     # unset SPD_AUTOSSH_REVERSE_PORT
     case "$SPD_AUTOSSH_REVERSE_PORT" in
 
@@ -72,7 +70,7 @@ task_autossh() {
         else
             check_abort
             msg_2 "Disabling autossh service"
-            ensure_installed openrc
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc
             service_installed="$(rc-service -l | grep autossh)"
             if [ "$service_installed" != "" ]; then
                 disable_service autossh default
@@ -96,8 +94,8 @@ task_autossh() {
                 error_msg "SPD_AUTOSSH_CONNECT, SPD_AUTOSSH_REVERSE_PORT and SPD_SSHD_PORT must be defined!"
             fi
             msg_2 "Setting up autossh"
-            ensure_installed openrc
-            ensure_installed autossh
+            [ -z "$(command -V openrc)" ] && ensure_installed openrc
+            [ -z "$(command -V autossh)" ] && ensure_installed autossh
             ensure_runlevel_default
             msg_3 "Setting reverse port to $SPD_AUTOSSH_CONNECT $SPD_AUTOSSH_REVERSE_PORT:localhost:$SPD_SSHD_PORT"
 
@@ -108,8 +106,7 @@ task_autossh() {
             # shellcheck disable=SC2086
             ssh -o StrictHostKeyChecking=no $SPD_AUTOSSH_CONNECT date
 
-            cat "$DEPLOY_PATH"/files/services/autossh |
-                sed "s/REVERSE_PORT_FORWARD/$SPD_AUTOSSH_REVERSE_PORT\:localhost\:$SPD_SSHD_PORT/" |
+            sed "s/REVERSE_PORT_FORWARD/$SPD_AUTOSSH_REVERSE_PORT\:localhost\:$SPD_SSHD_PORT/" "$DEPLOY_PATH"/files/services/autossh |
                 sed "s#REMOTE_CONNECTION#$SPD_AUTOSSH_CONNECT#" >"$service_fname"
             if is_debian; then
                 # Debian 10 autossh doesn't have the -e flag, so skip that line
@@ -129,9 +126,12 @@ task_autossh() {
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

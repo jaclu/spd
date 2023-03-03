@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
@@ -23,8 +24,6 @@
 script_tasks="task_restore_root"
 script_description="Restores root environment. currently shell and /root content can be modified."
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -34,25 +33,27 @@ script_description="Restores root environment. currently shell and /root content
 
 help_local_parameters() {
     echo "SPD_ROOT_SHELL$(
-        test -z "$SPD_ROOT_SHELL" \
-        && echo '        - switch to this shell' \
-        || echo "=$SPD_ROOT_SHELL")"
+        test -z "$SPD_ROOT_SHELL" &&
+            echo '        - switch to this shell' ||
+            echo "=$SPD_ROOT_SHELL"
+    )"
     echo "SPD_ROOT_HOME_TGZ$(
-        test -z "$SPD_ROOT_HOME_TGZ" \
-        && echo '     - unpack this into /root if found' \
-        || echo "=$SPD_ROOT_HOME_TGZ")"
+        test -z "$SPD_ROOT_HOME_TGZ" &&
+            echo '     - unpack this into /root if found' ||
+            echo "=$SPD_ROOT_HOME_TGZ"
+    )"
     echo
     echo "SPD_ROOT_UNPACKED_PTR$(
-        test -z "$SPD_ROOT_UNPACKED_PTR" \
-        && echo ' - Indicates root.tgz is unpacked' \
-        || echo "=$SPD_ROOT_UNPACKED_PTR")"
+        test -z "$SPD_ROOT_UNPACKED_PTR" &&
+            echo ' - Indicates root.tgz is unpacked' ||
+            echo "=$SPD_ROOT_UNPACKED_PTR"
+    )"
     echo "SPD_ROOT_REPLACE$(
-        test -z "$SPD_ROOT_REPLACE" \
-        && echo '      - if 1 move previous /root to /root-OLD and replace it' \
-        || echo "=$SPD_ROOT_REPLACE")"
+        test -z "$SPD_ROOT_REPLACE" &&
+            echo '      - if 1 move previous /root to /root-OLD and replace it' ||
+            echo "=$SPD_ROOT_REPLACE"
+    )"
 }
-
-
 
 #=====================================================================
 #
@@ -72,13 +73,11 @@ task_restore_root() {
 
     if [ "$SPD_ROOT_HOME_TGZ" != "" ]; then
         unpack_home_dir "Restoration of /root" root /root \
-                "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" \
-                "$SPD_ROOT_REPLACE"
+            "$SPD_ROOT_HOME_TGZ" "$SPD_ROOT_UNPACKED_PTR" \
+            "$SPD_ROOT_REPLACE"
         echo
     fi
 }
-
-
 
 #=====================================================================
 #
@@ -95,13 +94,12 @@ _trr_expand_all_deploy_paths() {
     SPD_ROOT_HOME_TGZ=$(expand_deploy_path "$SPD_ROOT_HOME_TGZ")
 }
 
-
 _trr_update_root_shell() {
-    SPD_ROOT_SHELL="${SPD_ROOT_SHELL:-"/bin/bash"}"
+    _trr_shell_fix
 
     [ "$SPD_ROOT_SHELL" = "" ] && return # no change requested
 
-    current_shell=$(grep ^root /etc/passwd | sed 's/:/ /g'|  awk '{ print $NF }')
+    current_shell=$(grep ^root /etc/passwd | sed 's/:/ /g' | awk '{ print $NF }')
 
     if [ "$current_shell" != "$SPD_ROOT_SHELL" ]; then
         msg_2 "Changing root shell"
@@ -115,8 +113,8 @@ _trr_update_root_shell() {
         fi
         echo
 
-    elif     [ "$SPD_TASK_DISPLAY" = "1" ] \
-          && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&
+        [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_3 "root shell unchanged"
         echo "$current_shell"
         echo
@@ -124,7 +122,12 @@ _trr_update_root_shell() {
     unset current_shell
 }
 
+_trr_shell_fix() {
+    SPD_ROOT_SHELL="${SPD_ROOT_SHELL:-/bin/bash}"
 
+    # Debian does not have /bin/ash...
+    is_debian && [ "$SPD_ROOT_SHELL" = "/bin/ash" ] && SPD_ROOT_SHELL="/bin/bash"
+}
 
 #=====================================================================
 #
@@ -132,9 +135,12 @@ _trr_update_root_shell() {
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

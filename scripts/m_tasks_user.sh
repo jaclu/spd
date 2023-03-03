@@ -35,6 +35,8 @@ first available ID at or above 1000 to ensure this user gets the desired IDS"
 #=====================================================================
 
 help_local_parameters() {
+
+    _mtu_shell_fix
     echo "SPD_UNAME$(
         test -z "$SPD_UNAME" && echo ' - username to ensure exists' ||
             echo "=$SPD_UNAME"
@@ -76,8 +78,8 @@ help_local_parameters() {
 
 task_restore_user() {
     msg_txt="Username: $SPD_UNAME"
-    SPD_SHELL=${SPD_SHELL:-/bin/sh}
 
+    _mtu_shell_fix
     _mtu_expand_all_deploy_paths
 
     if [ -n "$SPD_UNAME" ]; then
@@ -86,7 +88,8 @@ task_restore_user() {
         #
         msg_2 "$msg_txt"
         check_abort
-        ensure_installed shadow "Adding shadow (provides useradd & usermod)"
+
+        [ -z "$(command -V shadowconfig)" ] && ensure_installed shadow "Adding shadow (provides useradd & usermod)"
 
         if ! grep -q ^"$SPD_UNAME" /etc/passwd; then
             # ensure shadow and hence adduser is installed
@@ -190,7 +193,7 @@ task_restore_user() {
 }
 
 task_user_pw_reminder() {
-    if [ -n "$SPD_UNAME" ] && grep -q "$SPD_UNAME":\!: /etc/shadow; then
+    if [ -n "$SPD_UNAME" ] && sudo grep -q "$SPD_UNAME":\!: /etc/shadow; then
         echo "+------------------------------+"
         echo "|                              |"
         echo "|  Remember to set a password  |"
@@ -208,6 +211,13 @@ task_user_pw_reminder() {
 #   obvious they should not be called by other modules.
 #
 #=====================================================================
+
+_mtu_shell_fix() {
+    SPD_SHELL="${SPD_SHELL:-/bin/bash}"
+
+    # Debian does not have /bin/ash...
+    is_debian && [ "$SPD_SHELL" = "/bin/ash" ] && SPD_SHELL="/bin/bash"
+}
 
 _mtu_expand_all_deploy_paths() {
     #
@@ -303,9 +313,12 @@ _mtu_make_available_uid_gid() {
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi

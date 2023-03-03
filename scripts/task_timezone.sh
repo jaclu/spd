@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC2154
 #
 # Copyright (c) 2021: Jacob.Lundqvist@gmail.com 2021-07-25
 # License: MIT
@@ -27,8 +28,6 @@ or a two/three letter acronym like EST.
 If undefined/empty timezone will not be altered.
 If time_zone is not recognized this will abort with an error."
 
-
-
 #=====================================================================
 #
 #   Describe additional parameters, if none are used don't define
@@ -37,10 +36,8 @@ If time_zone is not recognized this will abort with an error."
 #=====================================================================
 
 help_local_parameters() {
-    echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo "=$SPD_TIME_ZONE" )"
+    echo "SPD_TIME_ZONE$(test -z "$SPD_TIME_ZONE" && echo ' - set time-zone' || echo "=$SPD_TIME_ZONE")"
 }
-
-
 
 #==========================================================
 #
@@ -54,6 +51,10 @@ help_local_parameters() {
 #==========================================================
 
 task_timezone() {
+    if [ -z "$SPD_TIME_ZONE" ]; then
+        msg_2 "task_timezone: No timezone set"
+        return
+    fi
     tz_file=/usr/share/zoneinfo/$SPD_TIME_ZONE
 
     msg_txt="Setting timezone"
@@ -62,18 +63,19 @@ task_timezone() {
         echo "$SPD_TIME_ZONE"
         if [ ! "$SPD_TASK_DISPLAY" = "1" ]; then
             check_abort
-            ensure_installed tzdata
-            if [ "$tz_file" != "" ] && test -f "$tz_file" ; then
-                cp "$tz_file" /etc/localtime
+            [ -z "$(command -V tzconfig)" ] && ensure_installed tzdata
+            if [ "$tz_file" != "" ] && test -f "$tz_file"; then
+                rm /etc/localtime
+                ln -sf "$tz_file" /etc/localtime
                 # remove obsolete file
-                2> /dev/null rm /etc/timezone
+                rm 2>/dev/null /etc/timezone
                 msg_3 "displaying time"
                 date
             else
                 error_msg "BAD TIMEZONE: $SPD_TIME_ZONE" 1
             fi
         fi
-    elif [ "$SPD_TASK_DISPLAY" = "1" ] &&  [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
+    elif [ "$SPD_TASK_DISPLAY" = "1" ] && [ "$SPD_DISPLAY_NON_TASKS" = "1" ]; then
         msg_2 "$msg_txt"
         echo "Timezone ill NOT be changed"
     fi
@@ -83,17 +85,18 @@ task_timezone() {
     unset msg_txt
 }
 
-
-
 #=====================================================================
 #
 #   Run this script via extras/script_base.sh
 #
 #=====================================================================
 
-script_dir="$(dirname "$0")"
+if test -z "$DEPLOY_PATH"; then
+    #  Run this in stand-alone mode
 
-# shellcheck disable=SC1091
-[ -z "$SPD_INITIAL_SCRIPT" ] && . "${script_dir}/tools/script_base.sh"
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    echo "DEPLOY_PATH=$DEPLOY_PATH  $0"
 
-unset script_dir
+    # shellcheck disable=SC1091
+    . "${DEPLOY_PATH}/scripts/tools/script_base.sh"
+fi
