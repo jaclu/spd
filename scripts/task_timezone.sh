@@ -63,7 +63,7 @@ task_timezone() {
         echo "$SPD_TIME_ZONE"
         if [ ! "$SPD_TASK_DISPLAY" = "1" ]; then
             check_abort
-            [ -z "$(command -V tzconfig)" ] && ensure_installed tzdata
+            [ -z "$(command -v tzconfig)" ] && ensure_installed tzdata
             if [ "$tz_file" != "" ] && test -f "$tz_file"; then
                 rm /etc/localtime
                 ln -sf "$tz_file" /etc/localtime

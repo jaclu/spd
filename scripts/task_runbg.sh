@@ -68,7 +68,7 @@ task_runbg() {
     #
     # source dependencies if not available
     #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
+    if ! command -v 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
         verbose_msg "task_runbg() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/tools/openrc.sh"
@@ -91,7 +91,7 @@ task_runbg() {
         else
             check_abort
             msg_3 "Disabling service"
-            [ -z "$(command -V openrc)" ] && ensure_installed openrc
+            [ -z "$(command -v openrc)" ] && ensure_installed openrc
             service_installed="$(rc-service -l | grep $service_name)"
             if [ "$service_installed" != "" ]; then
                 disable_service $service_name default
@@ -118,7 +118,7 @@ task_runbg() {
         else
             check_abort
             msg_3 "Enabling service"
-            [ -z "$(command -V openrc)" ] && ensure_installed openrc
+            [ -z "$(command -v openrc)" ] && ensure_installed openrc
             ensure_runlevel_default
 
             #diff "$source_fname" "$service_fname" > /dev/null 2>&1

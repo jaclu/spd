@@ -39,7 +39,7 @@ task_nopasswd_sudo() {
     msg_2 "no-pw sudo for group wheel"
     if [ "$SPD_TASK_DISPLAY" != "1" ]; then
         check_abort
-        [ -z "$(command -V sudo)" ] && ensure_installed sudo
+        [ -z "$(command -v sudo)" ] && ensure_installed sudo
         if [ -f /etc/sudoers.d/wheel ]; then
             msg_3 "group wheel already setup by AOK-iSH"
         else

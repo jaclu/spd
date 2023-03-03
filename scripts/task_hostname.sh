@@ -51,7 +51,7 @@ task_hostname() {
     #
     # source dependencies if not available
     #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
+    if ! command -v 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
         verbose_msg "task_hostname() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/tools/openrc.sh"

@@ -62,7 +62,7 @@ task_dcron() {
     #
     # source dependencies if not available
     #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
+    if ! command -v 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
         verbose_msg "task_dcron() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091
         . "$DEPLOY_PATH/scripts/tools/openrc.sh"
@@ -87,7 +87,7 @@ task_dcron() {
         else
             check_abort
             msg_3 "Disabling service"
-            [ -z "$(command -V openrc)" ] && ensure_installed openrc
+            [ -z "$(command -v openrc)" ] && ensure_installed openrc
             service_installed="$(rc-service -l | grep $service_name)"
             if [ "$service_installed" != "" ]; then
                 disable_service $service_name default
@@ -113,8 +113,8 @@ task_dcron() {
         else
             check_abort
             msg_3 "Enabling service"
-            [ -z "$(command -V openrc)" ] && ensure_installed openrc
-            [ -z "$(command -V $service_name)" ] && ensure_installed $service_name
+            [ -z "$(command -v openrc)" ] && ensure_installed openrc
+            [ -z "$(command -v $service_name)" ] && ensure_installed $service_name
             ensure_runlevel_default
 
             msg_3 "Activating service"

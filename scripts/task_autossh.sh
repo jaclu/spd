@@ -51,7 +51,7 @@ task_autossh() {
     #
     # source dependencies if not available
     #
-    if ! command -V 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
+    if ! command -v 'ensure_service_is_added' 2>/dev/null | grep -q 'function'; then
         verbose_msg "task_sshd() needs to source openrc to satisfy dependencies"
         # shellcheck disable=SC1091,SC2154
         . "$DEPLOY_PATH/scripts/tools/openrc.sh"
@@ -70,7 +70,7 @@ task_autossh() {
         else
             check_abort
             msg_2 "Disabling autossh service"
-            [ -z "$(command -V openrc)" ] && ensure_installed openrc
+            [ -z "$(command -v openrc)" ] && ensure_installed openrc
             service_installed="$(rc-service -l | grep autossh)"
             if [ "$service_installed" != "" ]; then
                 disable_service autossh default
@@ -94,8 +94,8 @@ task_autossh() {
                 error_msg "SPD_AUTOSSH_CONNECT, SPD_AUTOSSH_REVERSE_PORT and SPD_SSHD_PORT must be defined!"
             fi
             msg_2 "Setting up autossh"
-            [ -z "$(command -V openrc)" ] && ensure_installed openrc
-            [ -z "$(command -V autossh)" ] && ensure_installed autossh
+            [ -z "$(command -v openrc)" ] && ensure_installed openrc
+            [ -z "$(command -v autossh)" ] && ensure_installed autossh
             ensure_runlevel_default
             msg_3 "Setting reverse port to $SPD_AUTOSSH_CONNECT $SPD_AUTOSSH_REVERSE_PORT:localhost:$SPD_SSHD_PORT"
 
