@@ -87,11 +87,28 @@ run_tasks() {
     task_user_pw_reminder
 }
 
+display_time_elapsed() {
+    dte_t_in="$1"
+    dte_label="$2"
+
+    dte_mins="$((dte_t_in / 60))"
+    dte_seconds="$((dte_t_in - dte_mins * 60))"
+    echo
+    echo "Time elapsed: $dte_mins:$dte_seconds - $dte_label"
+    echo
+    unset dte_t_in
+    unset dte_label
+    unset dte_mins
+    unset dte_seconds
+}
+
 #===============================================================
 #
 #   Main
 #
 #===============================================================
+
+t_start="$(date +%s)"
 
 echo
 echo "Ensuring /iCloud/spd is cached"
@@ -208,4 +225,9 @@ run_tasks
 # Ensure tmp directory is gone
 clear_work_dir
 
-msg_2 "All tasks done, system restored!"
+t_duration="$(($(date +%s) - t_start))"
+t_mins="$((t_duration / 60))"
+t_seconds="$((t_duration - t_mins * 60))"
+echo
+echo "Time elapsed: $t_mins:$t_seconds - System restored"
+echo
