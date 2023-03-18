@@ -21,6 +21,7 @@ version="0.5.0  2022-05-31"
 #  so you can align it as you please.
 #  For the package lists, use \ for continuation on next line
 #
+#  mdcat-doc
 package_groups="
 
   :bash           |  bash bash-doc checkbashisms git-bash-completion \
@@ -34,7 +35,7 @@ package_groups="
 
   :editors        |  emacs-nox vim neovim
 
-  :man            |  man-db man-pages coreutils-doc tmux-doc mdcat-doc
+  :man            |  man-db man-pages coreutils-doc tmux-doc
 
   :python         |  py3-pip python3-doc py3-flake8  py3-pyflakes py3-pylint py3-pytest py3-wheel py3-build
 
