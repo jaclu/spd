@@ -1,10 +1,5 @@
 # TODO
 
-## iSH Debian
-
-hostname - done? delete debian files first
-autossh - done? comment out -e line
-
 ## Simple Posix Deploy
 
 Deploying in place for simple Posix environs, where ansible and similar more
