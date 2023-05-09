@@ -1,5 +1,5 @@
 #!/bin/sh
-_version="0.4.b4 2023-05-09"
+_version="0.4.b5 2023-05-09"
 #
 #  Copyright (c) 2023: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -24,6 +24,7 @@ log_file="/var/log/autossh_monitor.log"
 # How many seconds to sleep between each check
 #
 check_intervall=60
+
 
 #
 #  If $log_file is empty or undefined, no logging will occur.
@@ -64,7 +65,21 @@ while true; do
         log_it "restarting autossh"
         /etc/init.d/autossh stop
         /etc/init.d/sshd stop
-	sleep 5
+
+        #
+        #  Kill any remaining sshd
+        #
+        while true; do
+            sleep 2
+            sshd_pid="$(pgrep -f 'sshd: /usr')"
+            if [ -n "$sshd_pid" ]; then
+                log_it "sshd still present after stop, doing kill -9 $sshd_pid"
+                kill -9 "$sshd_pid"
+            else
+                break
+            fi
+        done
+
         /etc/init.d/sshd start
         /etc/init.d/autossh start
         sleep 30 #  allow autossh to connect
