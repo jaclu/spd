@@ -37,8 +37,10 @@ package_groups="
 
   :man            |  man-db man-pages coreutils-doc tmux-doc
 
-  :python         |  py3-pip python3-doc py3-flake8  py3-pyflakes py3-pylint py3-pytest py3-wheel py3-build
-
+  :python         |  py3-pip py3-build py3-flake8 py3-pendulum \
+                     py3-pyflakes py3-pylint py3-pytest py3-pytest-black \
+		     py3-pytest-cov py3-wheel
+		
   :go             |  go go-doc
 
   :devel          |  build-base ncurses-dev
@@ -143,6 +145,9 @@ process_items() {
         name="$(echo "$section" | cut -d'|' -f 1 | awk '{$1=$1};1' | tr '[:upper:]' '[:lower:]')"
         packages="$(echo "$section" | cut -d'|' -f 2 | awk '{$1=$1};1')"
 
+        echo ">> section [$section]"
+        echo ">> name [$name] packages [$packages]"
+        
         [ -z "$name" ] && continue # skip blank lines
 
         case "$task" in

@@ -1,0 +1,18 @@
+#!/sbin/openrc-run
+
+#
+#  Copyright (c) 2023: Jacob.Lundqvist@gmail.com
+#  License: MIT
+#
+#  Part of https://github.com/jaclu/spd
+#
+#  This service monitors that autossh is responsive.
+#
+
+name="autossh monitor"
+description="Restarts autossh if not responsive"
+
+command="/usr/local/sbin/autossh_monitor"
+command_background="YES"
+
+pidfile="/run/$RC_SVCNAME.pid"

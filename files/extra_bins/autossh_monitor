@@ -1,0 +1,75 @@
+#!/bin/sh
+_version="0.4.b4 2023-05-09"
+#
+#  Copyright (c) 2023: Jacob.Lundqvist@gmail.com
+#  License: MIT
+#
+#  Part of https://github.com/jaclu/spd
+#
+#  This script is normally controlled by the service mon_sshd.
+#
+#  Purpose is to restart autossh in case it is no longer responsive
+#  Side bonus is that if it doesn't start up on boot, this will notice
+#  it is not running, and ensure that it is started.
+#
+
+autossh_host="hetz1"
+
+#
+#  Set to /dev/null if no logging is desired, or a file if logging is preferred.
+#
+log_file="/var/log/autossh_monitor.log"
+
+#
+# How many seconds to sleep between each check
+#
+check_intervall=60
+
+#
+#  If $log_file is empty or undefined, no logging will occur.
+#
+log_it() {
+    if [ -z "$log_file" ]; then
+        return
+    fi
+    printf "[%s] %s\n" "$(date +'%y-%m-%d %H:%M:%S')" "$@" >>"$log_file"
+}
+
+
+
+hname=$(hostname | tr '[:upper:]' '[:lower:]')
+# hname="jacmac"
+# echo "hname $hname"
+
+if [ -z "$hname" ]; then
+    echo "ERROR: failed to extract lowercased hostname"
+    exit 1
+fi
+
+log_it "autossh monitor version: $_version for: $hname via: $autossh_host"
+
+# At startup wait a bit to give autossh time to actually start up
+log_it "Initial 30s wait to ensure autossh has time to startup"
+sleep 30
+
+log_it "Starting operations"
+while true; do
+    #
+    #  check this host responds via autossh host
+    #
+    
+    # log_it "Checking..."
+    # copy autossh connect sequence from SPD_AUTOSSH_CONNECT
+    if ! ssh -i /home/jaclu/.ssh/id_rsa -p 8037 jaclu@"$autossh_host" ssh "$hname" pwd &> /dev/null  ; then
+        log_it "restarting autossh"
+        /etc/init.d/autossh stop
+        /etc/init.d/sshd stop
+	sleep 5
+        /etc/init.d/sshd start
+        /etc/init.d/autossh start
+        sleep 30 #  allow autossh to connect
+        log_it "autossh should be ready, resuming"
+    fi    
+    # log_it "sleeping $check_intervall"
+    sleep $check_intervall
+done
