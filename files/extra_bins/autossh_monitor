@@ -1,5 +1,5 @@
 #!/bin/sh
-_version="0.4.b7 2023-05-09"
+_version="0.4.b8 2023-05-09"
 #
 #  Copyright (c) 2023: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -49,10 +49,10 @@ test_connection() {
     if ! check_connection; then        
         sleep 30
         ! check_connection && return 1
-        log_it "Second try suceeded"
+        log_it "Second try succeeded"
     fi
     return 0
-fi
+}
  
             
 
