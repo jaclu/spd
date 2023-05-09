@@ -1,5 +1,5 @@
 #!/bin/sh
-_version="0.4.b6 2023-05-09"
+_version="0.4.b7 2023-05-09"
 #
 #  Copyright (c) 2023: Jacob.Lundqvist@gmail.com
 #  License: MIT
@@ -36,7 +36,25 @@ log_it() {
     printf "[%s] %s\n" "$(date +'%y-%m-%d %H:%M:%S')" "$@" >>"$log_file"
 }
 
+check_connection() {
+    if ssh -i /home/jaclu/.ssh/id_rsa -p 8037 jaclu@"$autossh_host" ssh "$hname" pwd &> /dev/null  ; then
+        return 0
+    else
+        log_it "check_connection() failed"
+        return 1
+    fi
+}
 
+test_connection() {
+    if ! check_connection; then        
+        sleep 30
+        ! check_connection && return 1
+        log_it "Second try suceeded"
+    fi
+    return 0
+fi
+ 
+            
 
 hname=$(hostname | tr '[:upper:]' '[:lower:]')
 # hname="jacmac"
@@ -61,7 +79,8 @@ while true; do
     
     # log_it "Checking..."
     # copy autossh connect sequence from SPD_AUTOSSH_CONNECT
-    if ! ssh -i /home/jaclu/.ssh/id_rsa -p 8037 jaclu@"$autossh_host" ssh "$hname" pwd &> /dev/null  ; then
+    # if ! ssh -i /home/jaclu/.ssh/id_rsa -p 8037 jaclu@"$autossh_host" ssh "$hname" pwd &> /dev/null  ; then
+    if ! test_connection; then  
         log_it "restarting autossh"
         /etc/init.d/autossh stop
         /etc/init.d/sshd stop
