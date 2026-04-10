@@ -1,23 +1,25 @@
 # Simple Posix Deploy
 
 Deploying in place for simple Posix environs, where ansible and similar more
-advanced tools are not practically usable. Typical reasons:
+advanced tools do not make much sense since getting to the point of being able
+to run it, would enforce a lot of painful touch typing.
 
-- Can't be run locally on the target
-- Overhead per remote task is so high, that a deploy "takes for ever"
-- Setting up the target to run the deploy tool is so complex that it in it self
-  becomes a major pain.
+Especially since minimalist linux/linux like devices should ideally be self
+contained and it should be possible to set them up with minimal preparations
+or dependency of deployment servers.
 
-spd initially only depends on /bin/sh, any additional tools needed like
-grep/awk/sed etc will be scanned for, if possible be installed, otherwise
-reported as a failed dependency in need of manual handling.
+This tool-set achieves this by only depending on a posix shell, and a small
+enough number of generic nix tools, that it should hopefully be able to run
+out of the box on anything.
 
-If this is deployed on a mountable file system, be it iCloud, USB-stick etc
+It's current primary purpose is to be used for deployments of
+iSH environments, so it assumes apk packaging, but it should be possible to
+fairly easily adopt it to other systems.
 
 All that should be needed is to have this tool-set mounted on the target system
-and run `bin/deploy`
+and run `bin/deploy-ish`
 
-`bin/deploy` has two primary usage cases
+`bin/deploy-ish` has two primary usage cases
 
 - To restore a fresh install into your preferred state
 - To ensure any config changes are applied to this device
@@ -31,11 +33,11 @@ Since this uses POSIX scripts to avoid dependency on Bash, it is not
 possible within a given script to detect if this was sourced or run
 stand-alone. My workaround is to use this variable:
 
-DEPLOY_PATH Indicates top of this repo. If detected not to have
-been set, it is set relative to the script setting it.
-This also serves as a safe-guard for scripts that
-can not be sourced, if it is already set, they will
-abort with error.
+DEPLOY_PATH     Indicates top of this repo. If detected not to have
+                been set, it is set relative to the script setting it.
+                This also serves as a safe-guard for scripts that
+                can not be sourced, if it is already set, they will
+                abort with error.
 
 ### Procedure to setup your environment
 
@@ -53,8 +55,8 @@ My procedure on a pristine iSH system (as root)
 
 - `mount -t ios . /spd` (or any other local path) - Chose where this is located on your devices iCloud in the popup
 - `/spd/bin/deploy-ish` takes one to a couple of minutes, depending on how
-  many apks you install. - If user was defined, displays a reminder to set the user password if
-  it has not been set yet.
+many apks you install. - If user was defined, displays a reminder to set the user password if
+it has not been set yet.
 - Set the user password if requested to do so, following the instructions.
 
 ### export / import FS
@@ -67,8 +69,8 @@ so I typically do a delete / install cycle every now and then:
 - create the mount point dir if it does not exist
 - mount the intended location
 - run `/[MountPoint]/bin/deploy-ish` <br>
-  Make sure to hit Ctrl-C before actual deploy starts!
-  This way the deploy-ish command is in the history.
+Make sure to hit Ctrl-C before actual deploy starts!
+This way the deploy-ish command is in the history.
 - export the FS
 - run `/[MountPoint]/bin/deploy-ish`
 
@@ -120,26 +122,26 @@ param example usages
 
 - can be set as env variables
 
-  `SPD_TIME_ZONE=Europe/London ./task_timezone.sh -h`
+    `SPD_TIME_ZONE=Europe/London ./task_timezone.sh -h`
 
-  To see that the param was set as intended
+    To see that the param was set as intended
 
-  `SPD_TIME_ZONE=Europe/London ./task_timezone.sh -x`
+    `SPD_TIME_ZONE=Europe/London ./task_timezone.sh -x`
 
-  To run the task with the param(-s) given
+    To run the task with the param(-s) given
 
 - using config settings
 
-  `./task_timezone.sh -c -h`
+    `./task_timezone.sh -c -h`
 
-  To read config files and display what was found. Please note that config file settings override env settings, this is rather counter intuitive I guess.
+    To read config files and display what was found. Please note that config file settings override env settings, this is rather counter intuitive I guess.
 
 ### samples
 
 - config -- should be copied into custom/config
 - additional-restore-tasks -- A sample of a script that does some additional stuff. See `scripts/task_do_extra.sh -h` for more info.
 - additional-as-user -- A sample of a script that is run as a user by the supplied additional-restore-tasks
-  This is a subset of my extra_tasks, with any more private items filtered out :) Mostly to give you a general idea of how I use it.
+    This is a subset of my extra_tasks, with any more private items filtered out :) Mostly to give you a general idea of how I use it.
 
 ### custom
 
@@ -188,18 +190,20 @@ Syncing between devices is pretty flawed at the moment. Both inbound and outboun
 
 - inbound sync -- ie items changed elsewhere.
 
-  To some extent this also applies to MacOS, but there inbound sync is less error prone, but from time to time you will need to do this action if syncing seems out of date, the procedure is the same as for iOS. It seems the only reliable way to ensure your iOS device retrieves changes from other devices is to do a full tree walk, the two methods I have found to solve this so far (from within iSH) are:
-  - `find . > /dev/null`
-  - `ls -laR . > /dev/null` If using ls, ensure you also "display" the dot-files to make sure they are synced, so better keep the -la parameters, even if you don't really care that much about dot-files in every situation.
+    To some extent this also applies to MacOS, but there inbound sync is less error prone, but from time to time you will need to do this action if syncing seems out of date, the procedure is the same as for iOS. It seems the only reliable way to ensure your iOS device retrieves changes from other devices is to do a full tree walk, the two methods I have found to solve this so far (from within iSH) are:
 
-  Filtering out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necessary but you can always run the command again for ease of mind, this time you should see no output.
-  Either works, personally I usually use `find`
-  - quicker to type, since I can't rely on aliases at this point.
-  - If I also want to search for some file, I can combine the two tasks by just not piping to /dev/null
+    - `find . > /dev/null`
+    - `ls -laR . > /dev/null` If using ls, ensure you also "display" the dot-files to make sure they are synced, so better keep the -la parameters, even if you don't really care that much about dot-files in every situation.
+
+    Filtering out normal output saves you from drowning in a list of the entire filesystem. Only items in need of sync will be printed, and then they will be synced. Not necessary but you can always run the command again for ease of mind, this time you should see no output.
+    Either works, personally I usually use `find`
+
+    - quicker to type, since I can't rely on aliases at this point.
+    - If I also want to search for some file, I can combine the two tasks by just not piping to /dev/null
 
 - outbound sync -- ie items changed locally.
 
-  Less error prone, but if it seems something changed on one device isn't picked up by other devices, open Files/Finder on the device where the change has been done, if you see a cloud symbol in the iCloud entry point or in the location where the change was made, usually clicking on the changed file tends to resolve the issue and it is synced into iCloud.
+    Less error prone, but if it seems something changed on one device isn't picked up by other devices, open Files/Finder on the device where the change has been done, if you see a cloud symbol in the iCloud entry point or in the location where the change was made, usually clicking on the changed file tends to resolve the issue and it is synced into iCloud.
 
 Not sure if this is due to some iSH glitch, or that the status "wait for iOS to sync the file" gets mistaken for a file access error, since iOS doesn't seem to have problems with files not being locally present. For changes on other devices iOS is just as bad and gladly displays the old content instead of forcing an update right away. Eventually iOS will get the new file, but between an update has been "uploaded" and when it is present on the other device iOS will show the old version and be happy about it.
 
