@@ -6,10 +6,13 @@ verify_config_file() {
 
     while IFS= read -r line; do
 
+        # trim leading whitespace once
+        line=${line#"${line%%[![:space:]]*}"}
+
         case $in_q in
             1)
                 case $line in
-                    *'"')
+                    \"*)
                         echo "><> List end [$line]"
                         in_q=0
                         continue
@@ -23,23 +26,14 @@ verify_config_file() {
             *) ;;
         esac
 
-        # case $line in
-        #     ''|[ 	]*#*) continue ;;
-        # esac
-
         case $line in
-            '' | \#*) continue ;;                  # blank lines and uninented comments
-            [[:space:]]*[[:space:]]#*) continue ;; # inented comments
+            '' | \#*) continue ;; # blank lines and comments
             [A-Za-z_][A-Za-z0-9_]*=\"*)
                 # foo=" type list start - allow
-                echo "><> List start [$line]"
                 in_q=1
-                continue
                 ;;
             [A-Za-z_][A-Za-z0-9_]*=*)
                 # foo=bar type line - allow
-                echo "><> foo=bar [$line]"
-                continue
                 ;;
             *)
                 printf 'invalid config line: [%s]\n' "$line" >&2
@@ -51,12 +45,13 @@ verify_config_file() {
 }
 
 complee_pending_list() {
+    echo "><> complee_pending_list() - $1"
     [ -z "$list_var" ] && [ -n "$list_content" ] && {
         echo "ERROR: complee_pending_list() - list_content but no list_var"
         exit 1
     }
     [ -n "$list_var" ] && {
-        echo "><> complee_pending_list [$list_var] = [$list_content]"
+        # echo "  [$list_var] = [$list_content]"
         eval "$list_var=\$list_content"
     }
     # allways clear
@@ -67,57 +62,45 @@ complee_pending_list() {
 parse_config_file() {
     _f_cfg=$1
 
-    complee_pending_list
+    complee_pending_list init
     while IFS= read -r line; do
-        # Skip blank and comment lines
-        case $line in
-            '' | \#*) continue ;;                  # blank lines and uninented comments
-            [[:space:]]*[[:space:]]#*) continue ;; # inented comments
-            *) ;;
-        esac
+        # trim leading whitespace once
+        line=${line#"${line%%[![:space:]]*}"}
+
+        # trim leading whitespace once
+        line=${line#"${line%%[![:space:]]*}"}
 
         case $line in
+            '' | \#*) continue ;; # blank lines and uninented comments
+
             SPD_*=*)
-                # echo "PRSE: Assignment [$line]"
-                complee_pending_list
+                complee_pending_list pre-new-spd
                 list_var=${line%%=*}
                 list_content=${line#*=}
-
-                # detect start of quoted multiline
-                case $list_content in
-                    \") list_content='' ;; # start of multiline string
-                    *) ;;
-                esac
+                [ "$list_content" = '"' ] && list_content=''
                 ;;
 
-            *=*) complee_pending_list ;; # assignment of ignored variable
-
-            # [[:space:]]*[A-Za-z_]*)
-            [A-Za-z_]* | [[:space:]]*[A-Za-z_][A-Za-z0-9_]*)
-                # list continuation line
-                case $list_var in
-                    SPD_*)
-                        # echo "PRSE: New list item for [$list_var] [$list_content] [$line]"
-                        line=${line#"${line%%[![:space:]]*}"}
-                        list_content="$list_content $line"
-                        ;;
-                    *)
-                        printf 'invalid list context: %s\n' "$line" >&2
-                        exit 1
-                        ;;
-                esac
+            *=*) # Assignment without propper prefix - ignored
+                printf 'WARNING: Config file [%s]\n' "$_f_cfg" >&2
+                printf '         Invalid assignment: %s\n' "$line" >&2
+                complee_pending_list ignored-assignment
                 ;;
 
-            [[:space:]]*[[:space:]]'"')
-                complee_pending_list
+            \"*) complee_pending_list final-quote ;;
+
+            [A-Za-z_][A-Za-z0-9_]*)
+                [ -n "$list_var" ] || {
+                    printf 'ERROR: invalid list item: %s\n' "$line" >&2
+                    exit 1
+                }
+                list_content="$list_content $line"
                 ;;
-            *)
-                echo "Ignored line: [$line]"
-                ;;
+
+            *) echo "><> left over line type [$line]" ;;
+
         esac
-
     done <"$_f_cfg"
-    complee_pending_list
+    complee_pending_list final
     return 0
 }
 
