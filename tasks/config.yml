@@ -1,0 +1,16 @@
+---
+# sample list
+SPD_LST_1:
+  - bash
+  - zsh
+  - vim
+
+# valid test variables
+SPD_SUNE: gurka
+SPD_FOO: "bar"
+
+# ignores variable with incorect prefix
+HEPP: jausa
+
+# syntacticly correct, but should be ignored due to wrong prefix
+# testing indented comment
