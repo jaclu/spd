@@ -1,22 +1,17 @@
-#
-# Helper I use on editors that does not report current column...
-#
-# 80 col 1   hint  2         3         4         5         6         7         8
-#2345678901234567890123456789012345678901234567890123456789012345678901234567890
-#--------1---------2---------3---------4---------5---------6---------7---------8---------9--------10--------11--------12--------13--------14--------15--------16--------17
+---
 #
 # Dont run on this platform. This is to ensure no operations are done
 # on your workstation if you are working on the scripts.
 # Should be overrulled in OS or host dependant startup scripts,
 # for platforms where this should be run.
 #
-SPD_ABORT=1
+SPD_ABORT: true
 
 #
 # Also display what tasks will not be done in the summary, before restore begins.
 # If not set to 1 or if undefined, only tasks that will be done, will be listed.
 #
-SPD_DISPLAY_NON_TASKS=0
+SPD_DISPLAY_NON_TASKS: false
 
 #=====================================================================
 #
@@ -32,8 +27,6 @@ SPD_DISPLAY_NON_TASKS=0
 #   SPD_APK_DEL  each of theese will be removed if present
 # If emtpy/undefined, no action will be taken for that sub-task
 #
-SPD_PKGS_ADD=
-SPD_PKGS_DEL=
 
 #=====================================================================
 #
@@ -49,12 +42,12 @@ SPD_PKGS_DEL=
 #
 # If empty/undefined no user will be created / restored
 #
-SPD_UNAME=""
+SPD_UNAME: ""
 
 #
 # Shell to be used for this user, if not set default shell will be assigned.
 #
-SPD_SHELL=
+SPD_SHELL: /bin/bash
 
 #
 # If uid/gid is not set, the OS will decide on what to choose
@@ -66,8 +59,8 @@ SPD_SHELL=
 # user using 501 would make most sense, this prevents the need for doing sudo
 # on any disk write operation.
 #
-SPD_UID=501
-SPD_GID=501
+SPD_UID: 501
+SPD_GID: 501
 
 #
 # Pointing to a tar ball to unpack in the home dir
@@ -84,7 +77,7 @@ SPD_GID=501
 #
 #   SPD_ROOT_HOME_TGZ=SPD_HOME_DIR_TGZ=custom/tars/home_${SPD_UNAME}.tgz
 #
-SPD_HOME_DIR_CONTENT="custom/tars/home_${SPD_UNAME}.tgz"
+SPD_HOME_DIR_CONTENT: "custom/tars/home_{{ SPD_UNAME }}.tgz"
 
 #
 # A radnom something, if found, SPD_HOME_DIR_UNPACKED_PTR will not be unpacked
