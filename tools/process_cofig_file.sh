@@ -2,7 +2,7 @@
 
 # Strip inline comment and surrounding whitespace from a value
 # e.g.  "bar" # comment  ->  bar
-strip_inline_comment() {
+pcf_strip_inline_comment() {
     _sic_val=$1
     # Remove optional surrounding double-quotes first, then strip # comment
     # We process: remove leading/trailing quotes if paired, then cut at ' #'
@@ -26,7 +26,7 @@ strip_inline_comment() {
     printf '%s' "$_sic_val"
 }
 
-verify_config_file() {
+pcf_verify_config_file() {
     _vcf_f_cfg=$1
     _vcf_in_list=0
     _vcf_first_line=true
@@ -80,10 +80,10 @@ verify_config_file() {
     done <"$_vcf_f_cfg"
 }
 
-flush_pending() {
+pcf_flush_pending() {
     # Uses: $_fp_var, $_fp_content  -- sets them back to empty
     [ -z "$_fp_var" ] && [ -n "$_fp_content" ] && {
-        printf 'ERROR: flush_pending() - content but no var\n' >&2
+        printf 'ERROR: pcf_flush_pending() - content but no var\n' >&2
         exit 1
     }
     [ -n "$_fp_var" ] && {
@@ -93,9 +93,9 @@ flush_pending() {
     _fp_content=''
 }
 
-parse_config_file() {
+pcf_parse_config_file() {
     _pcf_f_cfg=$1
-    flush_pending
+    pcf_flush_pending
 
     while IFS= read -r _pcf_line; do
         # Trim leading whitespace
@@ -115,7 +115,7 @@ parse_config_file() {
                     exit 1
                 }
                 _pcf_item=${_pcf_trimmed#'- '}
-                _pcf_item=$(strip_inline_comment "$_pcf_item")
+                _pcf_item=$(pcf_strip_inline_comment "$_pcf_item")
                 # Append with space separator (first item has no leading space)
                 if [ -z "$_fp_content" ]; then
                     _fp_content=$_pcf_item
@@ -128,7 +128,7 @@ parse_config_file() {
         esac
 
         # Any new key: flush whatever was pending
-        flush_pending
+        pcf_flush_pending
 
         # Extract key and raw value
         _pcf_key=${_pcf_trimmed%%':'*}
@@ -164,21 +164,21 @@ parse_config_file() {
                 ;;
             *)
                 # Scalar value on same line
-                _val=$(strip_inline_comment "$_pcf_rest")
+                _val=$(pcf_strip_inline_comment "$_pcf_rest")
                 eval "$_pcf_key=\$_val"
                 ;;
         esac
 
     done <"$_pcf_f_cfg"
 
-    flush_pending
+    pcf_flush_pending
     return 0
 }
 
 read_config_file() {
-    _rcf_f_cfg=$1
-    verify_config_file "$_rcf_f_cfg"
-    parse_config_file "$_rcf_f_cfg"
+    _rcf_f_cfg="$1"
+    pcf_verify_config_file "$_rcf_f_cfg"
+    pcf_parse_config_file "$_rcf_f_cfg"
 }
 
 #
