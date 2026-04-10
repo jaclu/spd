@@ -26,6 +26,26 @@ pcf_strip_inline_comment() {
     printf '%s' "$_sic_val"
 }
 
+pcf_expand_template() {
+    _pet_val=$1
+    # Replace {{ VAR_NAME }} with ${VAR_NAME}
+    # Handles optional whitespace inside the braces
+    while case $_pet_val in *'{{'*'}}'*) true ;; *) false ;; esac do
+        _pet_before=${_pet_val%%'{{' *}
+        _pet_rest=${_pet_val#*'{{'}
+        # trim leading whitespace inside braces
+        _pet_rest=${_pet_rest#"${_pet_rest%%[![:space:]]*}"}
+        _pet_varname=${_pet_rest%%'}'*}
+        # trim trailing whitespace from varname
+        while case $_pet_varname in *' ' | *'	') true ;; *) false ;; esac do
+            _pet_varname=${_pet_varname%?}
+        done
+        _pet_after=${_pet_rest#*'}}'}
+        _pet_val="${_pet_before}\${${_pet_varname}}${_pet_after}"
+    done
+    printf '%s' "$_pet_val"
+}
+
 pcf_verify_config_file() {
     _vcf_f_cfg=$1
     _vcf_in_list=0
@@ -116,6 +136,7 @@ pcf_parse_config_file() {
                 }
                 _pcf_item=${_pcf_trimmed#'- '}
                 _pcf_item=$(pcf_strip_inline_comment "$_pcf_item")
+                _pcf_item=$(pcf_expand_template "$_pcf_item")
                 # Append with space separator (first item has no leading space)
                 if [ -z "$_fp_content" ]; then
                     _fp_content=$_pcf_item
@@ -165,6 +186,7 @@ pcf_parse_config_file() {
             *)
                 # Scalar value on same line
                 _val=$(pcf_strip_inline_comment "$_pcf_rest")
+                _val=$(pcf_expand_template "$_val")
                 eval "$_pcf_key=\$_val"
                 ;;
         esac
@@ -175,6 +197,15 @@ pcf_parse_config_file() {
     return 0
 }
 
+#===============================================================
+#
+#   Public content
+#
+#===============================================================
+
+#
+# Processes a yaml-style config file and assigns the corresponding posix variable
+#
 read_config_file() {
     _rcf_f_cfg="$1"
     pcf_verify_config_file "$_rcf_f_cfg"
@@ -182,18 +213,26 @@ read_config_file() {
 }
 
 #
-# Test
+# To handle nested referals, each script using config file derived variables
+# should run this for each of the variables it indends to use, before using them.
+# Referals are not expanded until this is done, this aproach handles nested referals
+# and allows referals to be overriden in other config files.
+# Since expansion is recursive, until no more ${} constructs remaini,
+# it does not matter in what order variables are expanded
 #
-d_here="$(dirname "$(realpath "$0")")"
-read_config_file "$d_here/config.yml"
-
-echo "Verify variables retrieved"
-# shellcheck disable=SC2154
-{
-    echo "SPD_FOO:          [$SPD_FOO]"
-    echo "SPD_SUNE:         [$SPD_SUNE]"
-    echo "HEPP (excluded):  [$HEPP]"
-    echo "SPD_LST_1:        [$SPD_LST_1]"
-    echo "SPD_LST_2:        [$SPD_LST_2]"
-    echo "SPD_LST_3:        [$SPD_LST_3]"
+# Sample usage
+# expand_config_var SPD_HOME_DIR
+# expand_config_var SPD_UNAME
+#
+# The first line will handle the case of the config: SPD_HOME_DIR: "/home/{{ SPD_UNAME }}"
+# even if SPD_UNAME itself is also a nested variable. SPD_UNAME can be expanded
+# after SPD_HOME_DIR, so expansion order does not depend on how they are nested
+#
+expand_config_var() {
+    _ev_varname=$1
+    while eval "_ev_val=\"\$$_ev_varname\""; do
+        # shellcheck disable=SC2154
+        [ "$_ev_val" = "${_ev_val#*\$\{}" ] && break
+        eval "$_ev_varname=\"$_ev_val\""
+    done
 }
