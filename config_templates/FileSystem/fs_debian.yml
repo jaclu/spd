@@ -1,5 +1,4 @@
-SPD_APTS_INSTALL="
-    bash
-    zsh
-    "
-
+---
+SPD_APTS_INSTALL:
+  - bash
+  - zsh

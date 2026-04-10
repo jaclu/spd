@@ -13,13 +13,13 @@ SPD_ABORT: true
 #
 SPD_DISPLAY_NON_TASKS: false
 
-#=====================================================================
+# ====================================================================
 #
 # m_tasks_packages.sh
 #
 #   Software to be installed / removed
 #
-#=====================================================================
+# ====================================================================
 
 #
 # Software preferences, each setting is a space separated string
@@ -28,7 +28,7 @@ SPD_DISPLAY_NON_TASKS: false
 # If emtpy/undefined, no action will be taken for that sub-task
 #
 
-#=====================================================================
+# ====================================================================
 #
 # m_tasks_user.sh
 #
@@ -37,7 +37,7 @@ SPD_DISPLAY_NON_TASKS: false
 #     userdel -r username
 #   And then run deploy-ish or m_tasks_user.sh again
 #
-#=====================================================================
+# ====================================================================
 
 #
 # If empty/undefined no user will be created / restored
@@ -83,9 +83,9 @@ SPD_HOME_DIR_CONTENT: "custom/tars/home_{{ SPD_UNAME }}.tgz"
 # A radnom something, if found, SPD_HOME_DIR_UNPACKED_PTR will not be unpacked
 # If SPD_HOME_DIR_UNPACKED_PTR is not set, this will be ignored.
 #
-SPD_HOME_DIR_UNPACKED_PTR="/home/${SPD_UNAME}/git_repos/mine/helpfull_scripts/deploy"
+SPD_HOME_DIR_UNPACKED_PTR: "/home/${SPD_UNAME}/git_repos/mine/helpfull_scripts/deploy"
 
-#=====================================================================
+# ====================================================================
 #
 # task_autossh.sh
 #
@@ -105,48 +105,48 @@ SPD_HOME_DIR_UNPACKED_PTR="/home/${SPD_UNAME}/git_repos/mine/helpfull_scripts/de
 #       hostname 127.0.0.1
 #       port 1234
 #
-#=====================================================================
+# ====================================================================
 
-SPD_AUTOSSH_CONNECT=""
-SPD_AUTOSSH_REVERSE_PORT=0
+SPD_AUTOSSH_CONNECT: ""
+SPD_AUTOSSH_REVERSE_PORT: 0
 
-#=====================================================================
+# ====================================================================
 #
 # task_dcron.sh
 #
 #   Usage of dcron, will install it and openrc if not present
 #
-#=====================================================================
+# ====================================================================
 
-SPD_DCRON=0 # -1 disables 0 no change 1 enables
+SPD_DCRON: 0 # -1 disables 0 no change 1 enables
 
 #
 # What root crontab to use (if any)
 #
-SPD_DCRON_ROOT_CRONTAB=
+SPD_DCRON_ROOT_CRONTAB:
 
-#=====================================================================
+# ====================================================================
 #
 # task_do_extra.sh
 #
 #    Additional restore tasks
 #
-#=====================================================================
+# ====================================================================
 #
 # If you want to run some additional restore tasks, here you can point
 # to a script that will be run at the end of deploy_ish.
 # Can be given relative to deploy dir, or a full path.
 # Since it is sourced all variables and functions are available.
 #
-SPD_EXTRA_TASK=
+SPD_EXTRA_TASK:
 
-#=====================================================================
+# ====================================================================
 #
 # task_etc_files.sh
 #
 #   Replacing some files in /etc
 #
-#=====================================================================
+# ====================================================================
 
 #
 # If you want to deploy a custom /etc/hosts file, point to it here
@@ -154,9 +154,9 @@ SPD_EXTRA_TASK=
 # Leaving it empty/undefined prevents this action.
 #
 # SPD_FILE_HOSTS=$DEPLOY_PATH/custom/etc_files/hosts
-SPD_FILE_REPOSITORIES=
+SPD_FILE_REPOSITORIES:
 
-#=====================================================================
+# ====================================================================
 #
 # task_hostname.sh
 #
@@ -169,11 +169,11 @@ SPD_FILE_REPOSITORIES=
 #   To see some explainations about this feature run
 #   scripts/task_hostname -h
 #
-#=====================================================================
+# ====================================================================
 
-SPD_HOSTNAME_SET=0
+SPD_HOSTNAME_SET: 0
 
-#=====================================================================
+# ====================================================================
 #
 # task_mon_sshd.sh
 #
@@ -181,20 +181,20 @@ SPD_HOSTNAME_SET=0
 #
 #   If activated a daemon monitoring daeomn is run (Pretty disturbing thought)
 #
-#=====================================================================
+# ====================================================================
 
-SPD_MON_SSHD=0
+SPD_MON_SSHD: 0
 
-#=====================================================================
+# ====================================================================
 #
 # task_restore_root.sh
 #
 #   If you want to select shell and/or populate /root
 #
-#=====================================================================
+# ====================================================================
 
 # Your prefered shell, if not given will not be changed.
-SPD_ROOT_SHELL="/bin/bash"
+SPD_ROOT_SHELL: "/bin/bash"
 
 #
 # Set this if you want to populate /root
@@ -227,20 +227,20 @@ SPD_ROOT_SHELL="/bin/bash"
 # will be removed.
 # If untar fails or has the wrong content, previous /root will not be altered.
 #
-SPD_ROOT_REPLACE=0
+SPD_ROOT_REPLACE: 0
 
-#=====================================================================
+# ====================================================================
 #
 # task_runbg.sh
 #
 #   Control of the runbg service, polling GPS to ensure ish continues
 #   to run in the background
 #
-#=====================================================================
+# ====================================================================
 
-SPD_RUN_BG=0 # -1 disables 0 no change 1 enables
+SPD_RUN_BG: 0 # -1 disables 0 no change 1 enables
 
-#=====================================================================
+# ====================================================================
 #
 # task_sshd.sh
 #
@@ -251,7 +251,7 @@ SPD_RUN_BG=0 # -1 disables 0 no change 1 enables
 #   probably most convenient to add openssh into SPD_PKGS_ADD,
 #   to ensure the entire ssh toolset is installed.
 #
-#=====================================================================
+# ====================================================================
 
 #
 # Handling of sshd service
@@ -259,12 +259,12 @@ SPD_RUN_BG=0 # -1 disables 0 no change 1 enables
 #  1 = activate, dependant stuff will be installed and setup.
 #  0 = do not touch, this is the default if undefined
 # -1 = disabled, ensures sshd is neither running nor autostarted
-SPD_SSHD_SERVICE=0
+SPD_SSHD_SERVICE: 0
 
 #
 # What port sshd should listen on, must be specified!
 #
-SPD_SSHD_PORT=22
+SPD_SSHD_PORT: 22
 
 #
 # If you want to maintain your ssh host keys across deploys
@@ -302,15 +302,15 @@ SPD_SSHD_PORT=22
 #
 # Can be given relative to deploy dir, or a full path.
 #
-SPD_SSH_HOST_KEYS="custom/device_specific/$(hostname)-ssh_host_keys.tgz"
+SPD_SSH_HOST_KEYS: "custom/device_specific/$(hostname)-ssh_host_keys.tgz"
 
-#=====================================================================
+# ====================================================================
 #
 # task_timezone.sh
 #
 #   Set timezone
 #
-#=====================================================================
+# ====================================================================
 
 #
 # Content should be in tz database format, so typically
