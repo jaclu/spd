@@ -1,0 +1,4 @@
+---
+SPD_UNAME: hepp
+
+SPD_HOME_DIR_CONTENT: "custom/tars/home_{{ SPD_UNAME }}.tgz"
