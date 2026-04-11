@@ -5,7 +5,7 @@
 #
 d_here="$(dirname "$(dirname "$(realpath "$0")")")"
 
-. "$d_here"/tools/process_cofig_file.sh
+. "$d_here"/tools/process_config_file.sh
 
 read_config_file "$d_here"/debug/dummy_config.yml
 
