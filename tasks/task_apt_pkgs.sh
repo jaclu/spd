@@ -27,12 +27,15 @@ task_abort() {
 #
 #=====================================================================
 
-echo "><> processing ask_apt_pkgs"
+# echo "><> processing ask_apt_pkgs"
 
 [ -n "$DEPLOY_PATH" ] || {
     #  Run this in stand-alone mode
-    echo "><> task_apt_pkgs.sh in standalone"
+    # echo "><> task_apt_pkgs.sh in standalone"
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    # shellcheck disable=SC2034
+    current_dbg_lvl=2
+    # shellcheck source=/dev/null
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 
@@ -40,6 +43,13 @@ echo "><> processing ask_apt_pkgs"
 #. Expand all SPD_ variables before being used, order doesn't matter
 #
 expand_config_var SPD_ABORT
+expand_config_var SPD_APT_INSTALL
+expand_config_var SPD_APT_PURGE
 
 # shellcheck disable=SC2154 # SPD_ABORT defined in sourced config
-[ "$SPD_ABORT" = 1 ] && err_msg "SPD_ABORT=1 prevents running on this host"
+{
+    echo "SPD_APT_INSTALL: $SPD_APT_INSTALL"
+    echo "SPD_APT_PURGE: $SPD_APT_PURGE"
+    echo "SPD_ABORT: $SPD_ABORT"
+    [ "$SPD_ABORT" = 1 ] && err_msg "SPD_ABORT=1 prevents running on this host"
+}
