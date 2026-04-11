@@ -1,0 +1,2 @@
+---
+SPD_SERVICE_HANDLER: sysv-init # used by Alpine, so the ish default

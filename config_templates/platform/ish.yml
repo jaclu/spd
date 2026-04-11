@@ -1,0 +1,3 @@
+---
+SPD_SERVICE_HANDLER: openrc # used by Alpine, so the ish default
+SPD_SVC_RUNBG_RUNLVL: default # only relevant for openrc

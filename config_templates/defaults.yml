@@ -4,6 +4,9 @@
 # on your workstation if you are working on the scripts.
 # Should be overrulled in OS or host dependant startup scripts,
 # for platforms where this should be run.
+# 0 - can run task_prepare & task_execute
+# 1 - can run task_prepare
+# 2 - neither
 #
 SPD_ABORT: 0
 
@@ -42,7 +45,7 @@ SPD_DISPLAY_NON_TASKS: false
 #
 # If empty/undefined no user will be created / restored
 #
-SPD_UNAME: ""
+SPD_UNAME: "jaclu"
 
 #
 # Shell to be used for this user, if not set default shell will be assigned.
@@ -84,6 +87,14 @@ SPD_HOME_DIR_CONTENT: "custom/tars/home_{{ SPD_UNAME }}.tgz"
 # If SPD_HOME_DIR_UNPACKED_PTR is not set, this will be ignored.
 #
 SPD_HOME_DIR_UNPACKED_PTR: "/home/${SPD_UNAME}/git_repos/mine/helpfull_scripts/deploy"
+
+# ====================================================================
+#
+# Service Handling
+#
+# ====================================================================
+
+SPD_SERVICE_HANDLER: # Identifies how services are handled openrc/sysv-init
 
 # ====================================================================
 #
