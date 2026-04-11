@@ -39,6 +39,19 @@ ensure_spd_var_defined() {
     fi
 }
 
+task_param_parse() {
+    while [ -n "$1" ]; do
+        case "$1" in
+            install) opt_task=install ;;
+            remove) opt_task=remove ;;
+            *) err_msg "Unrecognized option: $1" ;;
+        esac
+        shift
+    done
+    lbl_2 "Command line options:"
+    lbl_3 "opt_task     $opt_task"
+}
+
 check_for_abort() {
     _cfa_max="${1:-0}"
     _cfa_lbl="${2:- current task}"

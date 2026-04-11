@@ -1,10 +1,27 @@
 #!/bin/sh
 
-deploy_initd_script() {
-    # shellcheck disable=SC2154 # _svc_init_scr_org defined in svc_handler_common.sh
-    cp "$_svc_init_scr_org" "$svc_script" || {
-        err_msg "$module_name: Failed to copy $_svc_init_scr_org"
-    }
+handle_initd_script() {
+
+    # shellcheck disable=SC2154
+    case "$opt_task" in
+        install)
+            # shellcheck disable=SC2154 # _svc_init_scr_org defined in svc_handler_common.sh
+            cp "$_svc_init_scr_org" "$svc_script" || {
+                err_msg "$module_name: Failed to copy $_svc_init_scr_org"
+            }
+            ;;
+        remove)
+            if [ -f "$svc_script" ]; then
+                safe_remove --ignore-sys-path "$svc_script" && {
+                   log_3 "module_name: Removal of service script completed - svc_script"
+                }
+            else
+                log_3 "module_name: svc_script not present"
+            fi
+            ;;
+        *) ;;
+    esac
+
 }
 
 handler_openrc() {
@@ -13,14 +30,20 @@ handler_openrc() {
 }
 
 handler_sysv() {
-    ln -sf "$svc_script" /etc/rc0.d/K01runbg
-    ln -sf "$svc_script" /etc/rc1.d/K01runbg
-    ln -sf "$svc_script" /etc/rc6.d/K01runbg
+    case "$opt_task" in
+        install)
+            ln -sf "$svc_script" /etc/rc0.d/K01runbg
+            ln -sf "$svc_script" /etc/rc1.d/K01runbg
+            ln -sf "$svc_script" /etc/rc6.d/K01runbg
 
-    ln -sf "$svc_script" /etc/rc2.d/S01runbg
-    ln -sf "$svc_script" /etc/rc3.d/S01runbg
-    ln -sf "$svc_script" /etc/rc4.d/S01runbg
-    ln -sf "$svc_script" /etc/rc5.d/S01runbg
+            ln -sf "$svc_script" /etc/rc2.d/S01runbg
+            ln -sf "$svc_script" /etc/rc3.d/S01runbg
+            ln -sf "$svc_script" /etc/rc4.d/S01runbg
+            ln -sf "$svc_script" /etc/rc5.d/S01runbg
+            ;;
+        remove) safe_remove /etc/rc?.d/*runbg ;;
+        *) err_msg "handler_sysv() unrecognized option: [$opt_task]" ;;
+    esac
 }
 
 task_prepare() {
@@ -43,7 +66,12 @@ task_prepare() {
 task_execute() {
     check_for_abort 0 task_execute
 
-    deploy_initd_script
+    case "$opt_task" in
+        install | remove) ;;
+        *) err_msg "$module_name: Invalid option [$opt_task]" ;;
+    esac
+
+    handle_initd_script "$opt_task"
 
     # attach service to handler
     case "$SPD_SERVICE_HANDLER" in
@@ -65,6 +93,9 @@ task_execute() {
     # shellcheck source=/dev/null
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
+
+task_param_parse "$@"
+
 module_name="service_runbg.sh"
 source_it "$DEPLOY_PATH"/tools/svc_handler_common.sh
 source_it "$DEPLOY_PATH"/tools/svc_handler_openrc.sh
