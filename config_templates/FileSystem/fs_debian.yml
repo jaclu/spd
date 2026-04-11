@@ -1,4 +1,0 @@
----
-SPD_APTS_INSTALL:
-  - bash
-  - zsh

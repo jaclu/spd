@@ -1,0 +1,6 @@
+---
+SPD_APT_INSTALL:
+  - bash
+  - zsh
+
+SPD_APT_PURGE:

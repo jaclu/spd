@@ -1,0 +1,6 @@
+---
+SPD_APK_INSTALL:
+  - bash
+  - zsh
+
+SPD_APK_PURGE:
