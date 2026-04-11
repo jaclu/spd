@@ -5,7 +5,7 @@
 # Should be overrulled in OS or host dependant startup scripts,
 # for platforms where this should be run.
 #
-SPD_ABORT: true
+SPD_ABORT: 1
 
 #
 # Also display what tasks will not be done in the summary, before restore begins.
