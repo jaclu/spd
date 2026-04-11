@@ -1,0 +1,117 @@
+#!/sbin/openrc-run
+#
+#  Copyright (c) 2025-2026: Jacob.Lundqvist@gmail.com
+#  License: BSD
+#
+#
+#  If you keep getting errors like:
+#      Error: remote port forwarding failed for listen port 1234
+#  probably a process is left hanging on the server, binding to the
+#  loop-back port, to find it run this on the remote end:
+#     sudo netstat -lp | grep 1234
+#
+
+# log_file=/var/log/services.log
+
+log_it() {
+    /usr/local/bin/logger "$RC_SVCNAME" "$1"
+}
+
+depend() {
+    if [ -f /etc/init.d/hostname ]; then
+        need hostname
+    fi
+    # need runbg
+    need sshd
+}
+
+start_post() {
+    log_it started
+}
+
+stop_post() {
+    log_it stopped
+}
+
+# shellcheck disable=SC2034 # command defined for openrc handling
+command="/usr/bin/autossh"
+pidfile="/run/${RC_SVCNAME}.pid"
+
+export AUTOSSH_PIDFILE="$pidfile"
+export AUTOSSH_LOGFILE="/var/log/autossh.log"
+
+# To get more autossh logging, enable this
+#export AUTOSH_DEBUG=1
+
+#
+#  Found this hint on the net, trying it...
+#  When doing Remote Port forwards you’ll also want to use:
+#  -o ExitOnForwardFailure=yes
+#
+#  Without this, if autossh detects the dropped connection before the
+#  remote end notices (likely) the subsequent reconnect will be unable to
+#  bind to your specified remote port because it’s still bound to the
+#  stale SSH session. So the session will be up, but the reason for the
+#  session (the port forward) will be unavailable. With this extra option
+#  SSH immediately quits if that bind fails and autossh will just retry
+#  until it succeeds (after the remote end detects the stale session).
+#
+
+#
+#  Add this to command_args for extensive ssh session logging
+#   -v -E /var/log/autossh-ssh.log \
+#
+#  autossh -f is needed for this init script to notice service is up
+#  Soo annoying, sometimes it only connects if the ssh param is
+#  -NT  at other times only if it is -N    (25-02-03 investigate this)
+#
+
+#
+#  ---  what reverse port to use?  ---
+#
+# Match vs lowercase hostname
+case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
+    # iPads
+    jacpad) reverse_port=2272 ;;
+    oldpad) reverse_port=2273 ;;
+    jacphone) reverse_port=2274 ;;
+    pad5) reverse_port=2276 ;;
+    jacaok) reverse_port=2277 ;;
+    jacdroid) reverse_port=2278 ;;
+    jacold) reverse_port=2280 ;;
+    jacoldsmall) reverse_port=2282 ;;
+    *)
+        msg="ERROR: reverse port not defined - set hostname or inspect /etc/init.d/autossh to fix"
+        log_it "$msg"
+        eerror "$msg"
+        eend 1
+        return 1
+        ;;
+esac
+
+# Remember that the last item on the line must match your sshd port!
+LOOPBACK_DIRECIVE # loopback_directive="[reverse_port]:localhost:[sshd port]"
+
+autossh_opts="-M 0 -f \
+    -NT \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=10 \
+    -o ExitOnForwardFailure=yes \
+    -o PasswordAuthentication=no \
+    -o PubkeyAuthentication=yes \
+    -o ServerAliveCountMax=3 \
+    -o ServerAliveInterval=5 \
+    -E /var/log/autossh-ssh.log \
+    -R $loopback_directive"
+
+KEY_FILE # key_file="[SPD_SVC_AUTOSSH_KEY_FILE]"
+[ -n "$key_file" ] && autossh_opts="$autossh_opts -i $key_file"
+
+JUMP_PORT # jump_port="[SPD_SVC_AUTOSSH_JUMP_PORT]"
+[ -n "$jump_port" ] && autossh_opts="$autossh_opts -p $jump_port"
+
+JUMP_ACCOUNT # jump_account="[SPD_UNAME]@[SPD_SVC_AUTOSSH_JUMP_HOST]"
+
+# shellcheck disable=SC2034 # command_args defined for openrc handling
+command_args="$autossh_opts $jump_account"

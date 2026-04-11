@@ -9,7 +9,7 @@ svc_runlevel_set() {
         [ "$rl" = "$_srs_srvc_runlevel" ] && continue
         if rc-status "$rl" | grep -qw "$_srs_srvc_name"; then
             rc-update del "$_srs_srvc_name" "$rl" || exit 30
-            echo "removed from: $rl"
+            echo "$_srs_srvc_name removed from runlevel: $rl"
         fi
     done
 
@@ -20,6 +20,6 @@ svc_runlevel_set() {
             _m="$_m to runlevel $_srs_srvc_runlevel"
             err_msg "$_m"
         }
-        echo "added to $_srs_srvc_runlevel"
+        echo "$_srs_srvc_name added to runlevel: $_srs_srvc_runlevel"
     fi
 }

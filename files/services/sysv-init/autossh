@@ -1,0 +1,127 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          autossh
+# Required-Start:    hostname sshd runbg
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Reverse sshd connection via jumphost
+# Description:       Connects to jumphost and offers ssh.
+### END INIT INFO
+
+# set -e # invalid due to ! conditions below
+
+# export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+DESC="reverse ssh daemon"
+NAME=autossh
+PIDFILE="/run/autossh.pid"
+
+# shellcheck disable=SC2034 # used by autossh
+{
+    export AUTOSSH_PIDFILE="$PIDFILE"
+    export AUTOSSH_LOGFILE="/var/log/autossh.log"
+    # To get more autossh logging, enable this
+    # export AUTOSH_DEBUG=1
+}
+
+#
+#  Found this hint on the net, trying it...
+#  When doing Remote Port forwards you’ll also want to use:
+#  -o ExitOnForwardFailure=yes
+#
+#  Without this, if autossh detects the dropped connection before the
+#  remote end notices (likely) the subsequent reconnect will be unable to
+#  bind to your specified remote port because it’s still bound to the
+#  stale SSH session. So the session will be up, but the reason for the
+#  session (the port forward) will be unavailable. With this extra option
+#  SSH immediately quits if that bind fails and autossh will just retry
+#  until it succeeds (after the remote end detects the stale session).
+#
+
+# shellcheck source=/dev/null
+. /lib/lsb/init-functions
+
+#
+#  ---  what reverse port to use?  ---
+#
+# Match vs lowercase hostname
+case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
+    # known iSH hosts
+    jacpad) reverse_port=2272 ;;
+    oldpad) reverse_port=2273 ;;
+    jacphone) reverse_port=2274 ;;
+    pad5) reverse_port=2276 ;;
+    jacaok) reverse_port=2277 ;;
+    jacdroid) reverse_port=2278 ;;
+    jacold) reverse_port=2280 ;;
+    jacoldsmall) reverse_port=2282 ;;
+    *)
+        log_daemon_msg "$NAME" "Hostname not matching any reverse_port"
+        log_end_msg 1
+        ;;
+esac
+
+# Remember that the last item on the line must match your sshd port!
+loopback_directive="$reverse_port:localhost:{{ ift_port_sshd }}"
+
+autossh_opts="-M 0 -f \
+    -NT \
+    -o StrictHostKeyChecking=no \
+    -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=10 \
+    -o ExitOnForwardFailure=yes \
+    -o PasswordAuthentication=no \
+    -o PubkeyAuthentication=yes \
+    -o ServerAliveCountMax=3 \
+    -o ServerAliveInterval=5 \
+    -E /var/log/autossh-ssh.log \
+    -R $loopback_directive"
+
+key_file="{{ ift_jump_key_file }}"
+[ -n "$key_file" ] && autossh_opts="$autossh_opts -i /home/{{ ift_user_name }}/$key_file"
+
+jump_port="{{ ift_jump_port }}"
+[ -n "$jump_port" ] && autossh_opts="$autossh_opts -p $jump_port"
+
+jump_account="{{ ift_user_name }}@{{ ift_jump_host }}"
+
+case "$1" in
+    start)
+        # log_action_msg "DBG: autossh_opts [$autossh_opts]"
+        log_daemon_msg "Starting $DESC" "$NAME"
+        # shellcheck disable=SC2086
+        start-stop-daemon --start \
+            --exec /usr/lib/autossh/autossh \
+            --startas /usr/bin/autossh -- $autossh_opts "$jump_account"
+        log_end_msg "$?"
+        ;;
+
+    stop)
+        log_daemon_msg "Stopping $DESC" "$NAME"
+        start-stop-daemon --stop \
+            --quiet --oknodo \
+            --pidfile "$PIDFILE" \
+            --exec /usr/lib/autossh/autossh \
+            --retry 5
+        log_end_msg "$?"
+        ;;
+
+    restart)
+        log_action_msg "Restarting $DESC" "$NAME"
+        $0 stop
+        $0 start
+        ;;
+
+    status)
+        log_action_msg "Status of $DESC" "$NAME"
+        status_of_proc -p "$PIDFILE" /usr/lib/autossh/autossh autossh
+        exit $?
+        ;;
+
+    *)
+        _s="{start|stop|restart|reload|force-reload|status}"
+        log_action_msg "Usage: $0 $_s"
+        exit 1
+        ;;
+esac
