@@ -57,11 +57,13 @@ expand_config_var SPD_APT_PURGE
 is_linux || err_msg "Will not run apt on non-Linux"
 
 [ -n "$SPD_APT_PURGE" ] && {
+    lbl_2 "Will purge apt packages: $SPD_APT_PURGE"
     # shellcheck disable=SC2086
-    apt -y purge $SPD_APT_PURGE
+    apt -y purge "$SPD_APT_PURGE"
 }
 
 [ -n "$SPD_APT_INSTALL" ] && {
+    lbl_2 "Will install apt packages: $SPD_APT_INSTALL"
     # shellcheck disable=SC2086
     apt -y install $SPD_APT_INSTALL
 }
