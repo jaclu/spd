@@ -44,9 +44,10 @@ check_for_abort() {
     _cfa_lbl="${2:- current task}"
 
     expand_config_var SPD_ABORT
+    [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
     # shellcheck disable=SC2154 # SPD_ABORT defined in configs
     {
-        echo "echeck_for_abort() $SPD_ABORT  max: $_cfa_max"
+        echo "check_for_abort() $SPD_ABORT  max: $_cfa_max"
         # log_it "SPD_ABORT: $SPD_ABORT"
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
             err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
