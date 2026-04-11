@@ -208,8 +208,14 @@ pcf_parse_config_file() {
 #
 read_config_file() {
     _rcf_f_cfg="$1"
-    pcf_verify_config_file "$_rcf_f_cfg"
-    pcf_parse_config_file "$_rcf_f_cfg"
+    # log_it "Processing: $_rcf_f_cfg"
+    [ -f "$_rcf_f_cfg" ] && {
+        msg_dbg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 2
+
+        pcf_verify_config_file "$_rcf_f_cfg"
+        pcf_parse_config_file "$_rcf_f_cfg"
+    }
+
 }
 
 #
@@ -236,8 +242,6 @@ expand_config_var() {
         eval "$_ev_varname=\"$_ev_val\""
     done
 }
-
-echo "><> processing process_config_file"
 
 # shellcheck disable=SC1073
 [ -n "$DEPLOY_PATH" ] || {
