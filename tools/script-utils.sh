@@ -63,6 +63,14 @@ is_linux() { # returns true if kernel is Linux, very broad check
     [ "$(uname -s)" = "Linux" ]
 }
 
+is_linux_native() { # Filters out chrooted and various Linux based derivates
+    is_linux || return 1
+    if is_ish || is_termux || is_android || is_chrooted; then
+        return 1
+    fi
+    return 0
+}
+
 is_macos() {
     [ "$(uname -s)" = "Darwin" ]
 }
@@ -97,14 +105,6 @@ is_chrooted_ish() {
     # Relies on /opt/AOK/tools/do_chroot.sh or similar creating/removing this
     # file inside the chrooted env when entering/leaving the chroot
     is_chrooted && [ -f /etc/opt/chrooted_ish ]
-}
-
-is_linux_native() { # Filters out chrooted and various Linux based derivates
-    is_linux || return 1
-    if is_ish || is_termux || is_android || is_chrooted; then
-        return 1
-    fi
-    return 0
 }
 
 #
@@ -263,7 +263,7 @@ msg_dbg() {
     else
         _md_this_dbg_lvl=0
     fi
-    [ "$_md_this_dbg_lvl" -le "$current_dbg_lvl" ] && log_it "><>  $1" "$3"
+    [ "$_md_this_dbg_lvl" -le "$current_dbg_lvl" ] && log_it "DBG  $1" "$3"
 }
 
 lbl_1() {
@@ -489,8 +489,7 @@ safe_remove() {
 }
 
 source_it() {
-    # Fails if any output to stderr happened during sourcing, or if $2 was provided
-    # and that variable was not defined as non-empty
+    # Fails if $2 was provided and that variable was not defined as non-empty
     _f="$1"
     _si_inspect_variable="$2"
 
@@ -500,19 +499,9 @@ source_it() {
         echo "WARNING: Attempt at self sourcing ignored: $_f"
         echo
     }
-    [ -f "$_f" ] || err_msg "Source file not found: $_f"
-    _si_errfile=$(mktemp)
-    # shellcheck source=/dev/null
-    . "$_f" 2>"$_si_errfile"
-    [ -s "$_si_errfile" ] && _si_errors=$(cat "$_si_errfile")
-    rm -f "$_si_errfile"
 
-    [ -n "$_si_errors" ] && {
-        lbl_1 "stderr during sourcing"
-        echo "$_si_errors"
-        echo
-        err_msg "Errors detected when sourcing: $_f"
-    }
+    # shellcheck source=/dev/null
+    . "$_f"
     [ -n "$_si_inspect_variable" ] && {
         # if variable name provided verify that it has content
         eval "_v2=\"\${$_si_inspect_variable}\""
@@ -570,7 +559,7 @@ use_log_file() {
 #  Locations for various stuff
 #
 
-echo "><> processing script_utils"
+# echo "><> processing script_utils"
 
 TMPDIR="${TMPDIR:-/tmp}"
 TMPDIR="${TMPDIR%/}" # strip trailing slah, mostly for MacOS
