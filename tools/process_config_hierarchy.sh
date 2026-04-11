@@ -19,9 +19,16 @@ current_dbg_lvl=2
 read_config_file "$DEPLOY_PATH"/configs/defaults.yml
 is_linux && read_config_file "$DEPLOY_PATH"/configs/platform/linux.yml
 is_macos && read_config_file "$DEPLOY_PATH"/configs/platform/macos.yml
-is_ish && read_config_file "$DEPLOY_PATH"/configs/platform/ish.yml
-# command -v apk >/dev/null && read_config_file "$DEPLOY_PATH"/configs/PktHandlers/pkg_apk.yml
-# command -v brew >/dev/null && read_config_file "$DEPLOY_PATH"/configs/PktHandlers/pkg_homebrew.yml
+# echo "SPD_SVC_RUNBG_RUNLVL: $SPD_SVC_RUNBG_RUNLVL"
+is_chrooted_ish && read_config_file "$DEPLOY_PATH"/configs/platform/ish.yml
+# echo "post ish: SPD_SVC_RUNBG_RUNLVL: $SPD_SVC_RUNBG_RUNLVL"
+read_config_file "$DEPLOY_PATH"/configs/services/autossh.yml
+read_config_file "$DEPLOY_PATH"/configs/services/runbg.yml
+
+command -v apk >/dev/null && read_config_file "$DEPLOY_PATH"/configs/PktHandlers/pkg_apk.yml
+command -v brew >/dev/null && read_config_file "$DEPLOY_PATH"/configs/PktHandlers/pkg_homebrew.yml
+
 read_config_file "$DEPLOY_PATH/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
+echo "SPD_ABORT: $SPD_ABORT"
 # shellcheck disable=SC2034
 SPD_CONFIG_PROCESSED="Done by: $0"
