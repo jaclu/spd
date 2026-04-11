@@ -36,21 +36,6 @@
 #  after stopping.
 #
 
-notification() {
-    msg="$1"
-    _w=/usr/local/bin/wall
-
-    if [ -e "$_w" ]; then
-        $_w --nobanner "$msg"
-    else
-        (
-            echo
-            echo "$msg"
-            echo
-        ) >/dev/pts/0
-    fi
-}
-
 log_daemon_msg() {
     local msg="$1"
     local service="$2"
@@ -82,7 +67,6 @@ start_pre() {
 
 start_post() {
     log_it started
-    # notification "*****  runbg started - iSH can run in the background!  *****"
 }
 
 stop_post() {
@@ -92,7 +76,5 @@ stop_post() {
         msg="WARNING: Other processes polling GPS [ $other_pids]"
         log_it "$msg"
         eerror "$msg"
-    # else
-    #    notification "*****  runbg stopped - iSH can NOT run in the background!  *****"
     fi
 }
