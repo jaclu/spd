@@ -8,7 +8,6 @@ deploy_initd_script() {
 }
 
 handler_openrc() {
-    source_it "$DEPLOY_PATH"/tools/svc_handler_openrc.sh
     # shellcheck disable=SC2154 # SPD_SVC_AUTOSSH_RUNLVL defined in openrc_dependency_check()
     svc_runlevel_set "$(basename "$svc_script")" "$SPD_SVC_RUNBG_RUNLVL"
 }
@@ -67,5 +66,7 @@ task_execute() {
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 module_name="service_runbg.sh"
+source_it "$DEPLOY_PATH"/tools/svc_handler_common.sh
+source_it "$DEPLOY_PATH"/tools/svc_handler_openrc.sh
 
 task_prepare && task_execute
