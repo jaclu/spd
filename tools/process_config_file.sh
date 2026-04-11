@@ -236,3 +236,12 @@ expand_config_var() {
         eval "$_ev_varname=\"$_ev_val\""
     done
 }
+
+echo "><> processing process_config_file"
+
+# shellcheck disable=SC1073
+[ -n "$DEPLOY_PATH" ] || {
+    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    . "$DEPLOY_PATH"/tools/prepare_env.sh
+    err_msg "This can not be run directly"
+}
