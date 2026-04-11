@@ -51,27 +51,12 @@ handler_sysv() {
     ln -sf "$svc_script" /etc/rc5.d/S01runbg
 }
 
-verify_spd_var() {
-    _vsv_variable="$1"
-    # shellcheck disable=SC2154
-    # lbl_4 "_vsv_variable [$_vsv_variable] _vsv_value [$_vsv_value]"
-    expand_config_var "$_vsv_variable"
-    eval "_vsv_value=\"\${$_vsv_variable}\""
-    if [ -n "$_vsv_value" ]; then
-        # shellcheck disable=SC2154
-        echo "$_vsv_variable: $_vsv_value"
-    else
-        lbl_2 "$module_name: Dependency issue - $_vsv_variable not defined2"
-        prep_result=1
-    fi
-}
-
 task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
 
-    prep_result=0
+    dependency_issue=0
     svc_script=/etc/init.d/autossh
 
     check_for_abort 1 task_prepare
@@ -82,18 +67,18 @@ task_prepare() {
         [ "$SPD_SERVICE_HANDLER" = openrc ] && {
             command -v openrc >/dev/null 2>&1 || {
                 lbl_2 "$module_name: Dependency issue - openrc not found"
-                prep_result=1
+                dependency_issue=1
             }
         }
 
         _svc_init_scr_src="$DEPLOY_PATH/files/services/$SPD_SERVICE_HANDLER/autossh"
         [ -f "$_svc_init_scr_src" ] || {
             lbl_2 "$module_name: Service script not found: $_svc_init_scr_src"
-            prep_result=1
+            dependency_issue=1
         }
     else
         lbl_2 "$module_name: Dependency issue - SPD_SERVICE_HANDLER not defined"
-        prep_result=1
+        dependency_issue=1
     fi
 
     expand_config_var SPD_SVC_AUTOSSH_RUNLVL
@@ -102,29 +87,21 @@ task_prepare() {
             echo "SPD_SVC_AUTOSSH_RUNLVL: $SPD_SVC_AUTOSSH_RUNLVL"
         else
             lbl_2 "$module_name: Dependency issue - SPD_SVC_AUTOSSH_RUNLVL not defined"
-            prep_result=1
+            dependency_issue=1
         fi
     }
 
     [ -d /etc/init.d ] || {
         lbl_2 "$module_name: Dependency issue - /etc/init.d not found"
-        prep_result=1
+        dependency_issue=1
     }
 
-    verify_spd_var SPD_SVC_AUTOSSH_JUMP_HOST
-    # expand_config_var SPD_SVC_AUTOSSH_JUMP_HOST
-    # if [ -n "$SPD_SVC_AUTOSSH_JUMP_HOST" ]; then
-    # echo "SPD_SVC_AUTOSSH_JUMP_HOST: $SPD_SVC_AUTOSSH_JUMP_HOST"
-    # else
-    #     lbl_2 "$module_name: Dependency issue - SPD_SVC_AUTOSSH_JUMP_HOST not defined"
-    #     prep_result=1
-    # fi
-
-    verify_spd_var SPD_SSHD_PORT
-    verify_spd_var SPD_SVC_AUTOSSH_JUMP_PORT
-    verify_spd_var SPD_SVC_AUTOSSH_REVERSE_PORT
-    verify_spd_var SPD_SVC_AUTOSSH_KEY_FILE
-    return "$prep_result"
+    ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
+    ensure_spd_var_defined SPD_SSHD_PORT
+    ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
+    ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
+    ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
+    return "$dependency_issue"
 }
 
 task_execute() {

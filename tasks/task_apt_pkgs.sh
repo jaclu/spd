@@ -3,11 +3,13 @@
 task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
-    prep_result=0
+    dependency_issue=0
+
+    check_for_abort 1 task_prepare
 
     command -v apt >/dev/null 2>&1 || {
         lbl_2 "$module_name: Dependency issue - apt not found"
-        prep_result=1
+        dependency_issue=1
     }
     # is_linux || err_msg "Will not run apt on non-Linux"
 
@@ -23,7 +25,7 @@ task_prepare() {
         echo "SPD_APT_INSTALL: $SPD_APT_INSTALL"
         echo "SPD_APT_PURGE: $SPD_APT_PURGE"
     }
-    return "$prep_result"
+    return "$dependency_issue"
 }
 
 task_execute() {

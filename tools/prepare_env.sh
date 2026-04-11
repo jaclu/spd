@@ -20,6 +20,25 @@ populate_config() {
     }
 }
 
+ensure_spd_var_defined() {
+    # Expands variable, then displays it if defined,
+    # oherwise print dependency warning and set dependency_issue=1
+    # to inicate dependency issue for caller
+    # if defined module_name is used as prefix for dependency waning, in order
+    # to pinpoint the issue, in case multiple tasks are run in the same app
+    _vsv_variable="$1"
+    expand_config_var "$_vsv_variable"
+    eval "_vsv_value=\"\${$_vsv_variable}\""
+    if [ -n "$_vsv_value" ]; then
+        echo "$_vsv_variable: $_vsv_value"
+    else
+        # shellcheck disable=SC2154
+        lbl_2 "$module_name: Dependency issue - $_vsv_variable not defined2"
+        # shellcheck disable=SC2034
+        dependency_issue=1
+    fi
+}
+
 check_for_abort() {
     _cfa_max="${1:-0}"
     _cfa_lbl="${2:- current task}"
@@ -30,7 +49,7 @@ check_for_abort() {
         echo "echeck_for_abort() $SPD_ABORT  max: $_cfa_max"
         # log_it "SPD_ABORT: $SPD_ABORT"
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
-            err_msg "$module_name - SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
+            err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
         }
     }
 }

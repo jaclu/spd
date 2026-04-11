@@ -2,7 +2,7 @@
 
 deploy_initd_script() {
     cp "$_svc_init_scr_src" "$svc_script" || {
-        err_msg "$module_name - Failed to copy $_svc_init_scr_src"
+        err_msg "$module_name: Failed to copy $_svc_init_scr_src"
     }
 }
 
@@ -29,7 +29,7 @@ task_prepare() {
 
     check_for_abort 1 task_prepare
 
-    prep_result=0
+    dependency_issue=0
     svc_script=/etc/init.d/runbg
 
     expand_config_var SPD_SERVICE_HANDLER
@@ -38,18 +38,18 @@ task_prepare() {
         [ "$SPD_SERVICE_HANDLER" = openrc ] && {
             command -v openrc >/dev/null 2>&1 || {
                 lbl_2 "$module_name: Dependency issue - openrc not found"
-                prep_result=1
+                dependency_issue=1
             }
         }
 
         _svc_init_scr_src="$DEPLOY_PATH/files/services/$SPD_SERVICE_HANDLER/runbg"
         [ -f "$_svc_init_scr_src" ] || {
             lbl_2 "$module_name: Service script not found: $_svc_init_scr_src"
-            prep_result=1
+            dependency_issue=1
         }
     else
         lbl_2 "$module_name: Dependency issue - SPD_SERVICE_HANDLER not defined"
-        prep_result=1
+        dependency_issue=1
     fi
 
     expand_config_var SPD_SVC_RUNBG_RUNLVL
@@ -58,15 +58,15 @@ task_prepare() {
             echo "SPD_SVC_RUNBG_RUNLVL: $SPD_SVC_RUNBG_RUNLVL"
         else
             lbl_2 "$module_name: Dependency issue - SPD_SVC_RUNBG_RUNLVL not defined"
-            prep_result=1
+            dependency_issue=1
         fi
     }
 
     [ -d /etc/init.d ] || {
         lbl_2 "$module_name: Dependency issue - /etc/init.d not found"
-        prep_result=1
+        dependency_issue=1
     }
-    return "$prep_result"
+    return "$dependency_issue"
 }
 
 task_execute() {
