@@ -1,5 +1,11 @@
 #!/bin/sh
 
+relative_path() { # Needed here due to: prepare_menu() - set_menu_env_variables()
+    # remove D_TM_BASE_PATH prefix
+    # log_it "relative_path($1) - removing prefix: $D_TM_BASE_PATH"
+    printf '%s\n' "${1#"$DEPLOY_PATH"/}"
+}
+
 populate_config() {
     # If config/ is empty populate it with config_templates as a default
     _pc_d_conf="$DEPLOY_PATH"/configs
@@ -36,7 +42,7 @@ load_utils() {
 #
 #=====================================================================
 
-echo "><> processing prepare_env"
+# echo "><> processing prepare_env"
 
 [ -n "$DEPLOY_PATH" ] || {
     printf '\n%s[%s] ERROR: This can not be run directly.\n' "$0" "$$" >&2
@@ -46,5 +52,6 @@ echo "><> processing prepare_env"
 load_utils
 populate_config
 
+log_it "prepare_env will process configs"
 _fp="${DEPLOY_PATH}"/tools/process_config_hierarchy.sh
 [ "$app_name_full_path" != "$_fp" ] && source_it "$_fp"
