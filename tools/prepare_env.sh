@@ -19,6 +19,15 @@ populate_config() {
     }
 }
 
+check_for_abort() {
+    expand_config_var SPD_ABORT
+    # shellcheck disable=SC2154 # SPD_ABORT defined in configs
+    {
+        # log_it "SPD_ABORT: $SPD_ABORT"
+        [ "$SPD_ABORT" = 1 ] && err_msg "SPD_ABORT=1 prevents running on this host"
+    }
+}
+
 load_utils() {
     _lu_f_utils="$DEPLOY_PATH"/tools/script-utils.sh
     [ -f "$_lu_f_utils" ] || {

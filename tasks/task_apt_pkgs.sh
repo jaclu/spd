@@ -3,12 +3,38 @@
 task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
-    :
+    command -v apt >/dev/null || err_msg "apt not found"
+    # is_linux || err_msg "Will not run apt on non-Linux"
+
+    read_config_file "$DEPLOY_PATH"/configs/PktHandlers/pkg_apt.yml
+    #
+    #. Expand all SPD_ variables before being used, order doesn't matter
+    #
+    expand_config_var SPD_APT_INSTALL
+    expand_config_var SPD_APT_PURGE
+
+    # shellcheck disable=SC2154 # SPD_ABORT defined in sourced config
+    {
+        echo "SPD_APT_INSTALL: $SPD_APT_INSTALL"
+        echo "SPD_APT_PURGE: $SPD_APT_PURGE"
+    }
 }
 
 task_execute() {
+    check_for_abort
     # perform the actual task
-    :
+
+    [ -n "$SPD_APT_PURGE" ] && {
+        lbl_2 "Will purge apt packages: $SPD_APT_PURGE"
+        # shellcheck disable=SC2086
+        apt -y purge "$SPD_APT_PURGE"
+    }
+
+    [ -n "$SPD_APT_INSTALL" ] && {
+        lbl_2 "Will install apt packages: $SPD_APT_INSTALL"
+        # shellcheck disable=SC2086
+        apt -y install $SPD_APT_INSTALL
+    }
 }
 
 task_cleanup() {
@@ -31,39 +57,10 @@ task_abort() {
 
 [ -n "$DEPLOY_PATH" ] || {
     #  Run this in stand-alone mode
-    # echo "><> task_apt_pkgs.sh in standalone"
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck disable=SC2034
-    current_dbg_lvl=2
     # shellcheck source=/dev/null
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 
-#
-#. Expand all SPD_ variables before being used, order doesn't matter
-#
-expand_config_var SPD_ABORT
-expand_config_var SPD_APT_INSTALL
-expand_config_var SPD_APT_PURGE
-
-# shellcheck disable=SC2154 # SPD_ABORT defined in sourced config
-{
-    echo "SPD_APT_INSTALL: $SPD_APT_INSTALL"
-    echo "SPD_APT_PURGE: $SPD_APT_PURGE"
-    echo "SPD_ABORT: $SPD_ABORT"
-    [ "$SPD_ABORT" = 1 ] && err_msg "SPD_ABORT=1 prevents running on this host"
-}
-
-is_linux || err_msg "Will not run apt on non-Linux"
-
-[ -n "$SPD_APT_PURGE" ] && {
-    lbl_2 "Will purge apt packages: $SPD_APT_PURGE"
-    # shellcheck disable=SC2086
-    apt -y purge "$SPD_APT_PURGE"
-}
-
-[ -n "$SPD_APT_INSTALL" ] && {
-    lbl_2 "Will install apt packages: $SPD_APT_INSTALL"
-    # shellcheck disable=SC2086
-    apt -y install $SPD_APT_INSTALL
-}
+task_prepare
+task_execute
