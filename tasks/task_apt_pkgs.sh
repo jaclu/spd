@@ -53,3 +53,13 @@ expand_config_var SPD_APT_PURGE
     echo "SPD_ABORT: $SPD_ABORT"
     [ "$SPD_ABORT" = 1 ] && err_msg "SPD_ABORT=1 prevents running on this host"
 }
+
+is_linux || err_msg "Will not run apt on non-Linux"
+
+[ -n "$SPD_APT_PURGE" ] && {
+    apt -y purge "$SPD_APT_PURGE"
+}
+
+[ -n "$SPD_APT_INSTALL" ] && {
+    apt -y install "$SPD_APT_INSTALL"
+}
