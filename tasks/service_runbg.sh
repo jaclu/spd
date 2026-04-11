@@ -9,9 +9,11 @@ task_prepare() {
 }
 
 handler_openrc() {
+    :
 }
 
 handler_sysv() {
+    :
 }
 
 task_execute() {
@@ -22,7 +24,7 @@ task_execute() {
 
     [ -z "$SPD_SVC_RUNBG_RUNLVL" ] && err_msg "service_runbg.sh: Not defined - SPD_SVC_RUNBG_RUNLVL"
     [ -z "$SPD_SERVICE_HANDLER" ] && err_msg "service_runbg.sh: Not defined - SPD_SERVICE_HANDLER"
-    
+
     _svc_file="$DEPLOY_PATH/files/service/$SPD_SERVICE_HANDLER/runbg"
     [ -f "$_svc_file" ] || err_msg "Service file not found: _svc_file"
     cp "$_svc_file" /etc/init.d || err_msg "Failed to copy $_svc_file"
