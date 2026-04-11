@@ -16,15 +16,22 @@ populate_config() {
         cp -av "$_pc_d_templates"/* "$_pc_d_conf" || {
             error_msg "Failed to copy templates"
         }
+        echo
     }
 }
 
 check_for_abort() {
+    _cfa_max="${1:-0}"
+    _cfa_lbl="${2:- current task}"
+
     expand_config_var SPD_ABORT
     # shellcheck disable=SC2154 # SPD_ABORT defined in configs
     {
+        echo "echeck_for_abort() $SPD_ABORT  max: $_cfa_max"
         # log_it "SPD_ABORT: $SPD_ABORT"
-        [ "$SPD_ABORT" = 1 ] && err_msg "SPD_ABORT=1 prevents running on this host"
+        [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
+            err_msg "$module_name - SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
+        }
     }
 }
 
@@ -61,6 +68,6 @@ load_utils() {
 load_utils
 populate_config
 
-log_it "prepare_env will process configs"
+# log_it "prepare_env will process configs"
 _fp="${DEPLOY_PATH}"/tools/process_config_hierarchy.sh
 [ "$app_name_full_path" != "$_fp" ] && source_it "$_fp"
