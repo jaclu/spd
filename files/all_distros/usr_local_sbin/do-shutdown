@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  License: MIT
+#
+#  Copyright (c) 2023-2025: Jacob.Lundqvist@gmail.com
+#
+# This script is called by 'shutdown' to carry out the actual shutdown procedure.
+#
+# For a standard shutdown, run: shutdown
+#
+# This is the second stage: the real shutdown logic. It runs in the background,
+# launched by the 'shutdown' wrapper, so it's unaffected by SSH sessions ending
+# or services terminating. Once started, it will not be interrupted.
+#
+display_msg() {
+    dm_msg="$1"
+
+    echo "$dm_msg"
+    /usr/local/bin/logger do-shutdown "$dm_msg"
+    unset dm_msg
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+prog_name=$(basename "$0")
+# busybox poweroff does not work on iSH, so we use our own halt
+poweroff_app=/usr/local/sbin/halt
+
+[ -d /proc/ish ] || {
+    echo "This can only run on iSH"
+    exit 2
+}
+
+[ "$(whoami)" != "root" ] && {
+    echo "$prog_name must be run by root!"
+    exit 1
+}
+
+#
+#  Terminates all running services, not completing until all are done.
+#  During this, most remote sessions will be terminated...
+#
+if [ -f /etc/alpine-release ]; then
+    [ -x /sbin/openrc ] && {
+        display_msg "Will do openrc shutdown"
+        openrc shutdown
+        display_msg "Completed openrc shutdown"
+    }
+    $poweroff_app
+elif [ -f /etc/debian_version ]; then
+    display_msg "Doing init 0"
+    init 0
+fi
+sleep 5
+display_msg "ERROR: Failed to shutdown system!!"

@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  Copyright (c) 2025-2026: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+#  Since PAM is disabled, this processes motd at ssh login
+#
+
+/usr/local/bin/ift-versions >/etc/motd

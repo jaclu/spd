@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  Copyright (c) 2024-2025: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+#  Display installed versions of iSH, File system being used
+#  and ish-fstools release
+#
+
+#
+#  Display versions of deployed environment
+#
+
+# printf "\e[35m" # set color - magenta
+
+ish_version="$(cat /proc/ish/version 2>/dev/null)"
+[ -z "$ish_version" ] && ish_version="can't be detected whilst chrooted"
+echo "iSH release:     $ish_version"
+
+if [ -f /etc/alpine-release ]; then
+    echo "Alpine release:  $(cat /etc/alpine-release)"
+elif [ -f /etc/devuan_version ]; then
+    echo "Devuan version:  $(cat /etc/devuan_version)"
+elif [ -f /etc/debian_version ]; then
+    echo "Debian version:  $(cat /etc/debian_version)"
+elif [ -f /etc/gentoo-release ]; then
+    echo "Gentoo version:  $(cat /etc/gentoo-release)"
+else
+    echo "***  Failed to detect FS  ***"
+fi
+
+release_ift="$(cat /etc/ish-fstools-release 2>/dev/null)"
+[ -z "$release_ift" ] && release_ift="Not found: /etc/ish-fstools-release"
+echo "ish-fstools:     $release_ift"
+
+# printf "\e[0m" # clear color

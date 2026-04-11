@@ -1,0 +1,570 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  License: MIT
+#
+#  Copyright (c) 2022-2025: Jacob.Lundqvist@gmail.com
+#
+#  Script to do various things related to the configuration of ish
+#
+
+show_help() {
+    txt="Management of ish-fstools FS specific setting.
+
+Without options, current settings are displayed.
+
+Available options:
+
+-h --help          Print this help and exit
+-a --autologin     Auto-login as user [disable|username]
+                   disable  - Will give login prompt
+                   username - Will auto-login as username
+-c --continuous     New login prompt after vterm logout [on|off]
+-H --profile-hints Show env hints in /etc/profile [on|off]
+"
+    is_ish && {
+        txt="${txt}-d --defaults      Set defaults where applicable
+-C --console       Use first vterm (/dev/pts/0) as console,
+                   disabling logins on this vterm
+
+Boot Cmd & Launch Cmd have very strict syntax requirements for custom_cmd.
+  1. wrap it in '[ ]'
+  2. Each statement/param must be wrapped in \"\"
+  3. If more than one statement, separate with comma space
+
+-b --boot-cmd      Choose Init cmd: $boot_cmd_options
+                   default: '$boot_cmd_default'
+-l --launch-cmd    Choose Launch cmd: $launch_cmd_options
+                   ift:     '$launch_cmd_ift'
+                   default: '$launch_cmd_default'
+"
+    }
+    echo "$txt"
+}
+
+show_on_off_by_file() {
+    [ -z "$1" ] && {
+        error_msg "show_on_off_by_file() - no param given"
+    }
+    if [ -f "$1" ]; then
+        echo "on"
+    else
+        echo "off"
+    fi
+}
+
+current_settings() {
+    echo "---  Current settings  ---"
+    autologin_display
+    continuous_sessions_display
+    profile_hints_display
+    is_ish && {
+        console_mode_display
+        boot_cmd_display
+        launch_cmd_display
+    }
+}
+
+set_defaults() {
+    opts=""
+    if is_ish; then
+        eval "$prog_name" "$opts -C off -b default -l default"
+    else
+        echo "No options can be defaulted when chrooted"
+    fi
+}
+
+#---------------------------------------------------------------
+#
+#       auto-login
+#
+#---------------------------------------------------------------
+
+autologin_change() {
+    [ -z "$1" ] && {
+        error_msg "autologin_change() - no param given"
+    }
+    uname_autologin="$1"
+
+    if [ "$uname_autologin" = "disable" ]; then
+        # echo "disabling auto-login"
+        # shellcheck disable=SC2154 # f_login_default_user sourced at runtime
+        rm -f "$f_login_default_user"
+    else
+        eval "_h=~$uname_autologin"
+        # shellcheck disable=SC2154
+        [ -d "$_h" ] || {
+            error_msg "$uname_autologin does not seem to be a valid user on this system"
+        }
+        echo "$uname_autologin" >"$f_login_default_user"
+        # if [ -f "$f_logins_continuous" ]; then
+        #     continuous_setting="continuous "
+        # else
+        #     continuous_setting=""
+        # fi
+        # echo "Enabled ${continuous_setting}auto-login for user: $uname_autologin"
+        # unset continuous_setting
+    fi
+    autologin_display syslog
+
+    unset uname_autologin
+}
+
+autologin_settting() {
+    if [ -f "$f_login_default_user" ]; then
+        cat "$f_login_default_user"
+    else
+        echo "disabled"
+    fi
+}
+
+autologin_display() {
+    _m="autologin:     $(autologin_settting)"
+    if [ "$1" = "syslog" ]; then
+        syslog "$_m"
+    else
+        echo "$_m"
+    fi
+    unset _m
+}
+
+autologin_disabled="disabled"
+
+#---------------------------------------------------------------
+#
+#       continuous login sessions
+#
+#---------------------------------------------------------------
+
+continuous_sessions_change() {
+    continuous_mode="$1"
+    [ -z "$continuous_mode" ] && {
+        error_msg "continuous_sessions_change() - no param given, options are on/off"
+    }
+    [ -z "$f_logins_continuous" ] && {
+        error_msg "continuous_sessions_change() - f_logins_continuous undefined"
+    }
+    case "$continuous_mode" in
+        "on")
+            if is_ish; then
+                continuous_sessions_change "off"
+            fi
+            touch "$f_logins_continuous"
+            ;;
+
+        "off") rm -f "$f_logins_continuous" ;;
+
+        *)
+            error_msg "continuous_sessions_change() - options are on/off"
+            ;;
+    esac
+    continuous_sessions_display syslog
+
+    unset continuous_mode
+}
+
+continuous_sessions_setting() {
+    cont_ses_setting="$(show_on_off_by_file "$f_logins_continuous")"
+    if [ "$cont_ses_setting" = "off" ]; then
+        echo "vterm will terminate after logout"
+    else
+        cont_ses_setting="$(autologin_settting)"
+        if [ "$cont_ses_setting" = "$autologin_disabled" ]; then
+            echo "vterm will sttart a new session after logout"
+        else
+            echo "vterm will autlogin as username: $cont_ses_setting"
+        fi
+    fi
+    unset cont_ses_setting
+}
+
+continuous_sessions_display() {
+    _m="continnous:    $(continuous_sessions_setting)"
+    if [ "$1" = "syslog" ]; then
+        syslog "$_m"
+    else
+        echo "$_m"
+    fi
+    unset _m
+}
+
+#---------------------------------------------------------------
+#
+#   Kernel Defaults
+#
+#---------------------------------------------------------------
+
+get_kernel_default() {
+    #
+    #  It is reported as a multiline, here it is wrapped into a one-line
+    #  notation, to make it easier to compare vs the launch_md_XXX
+    #  templates
+    #
+    [ -z "$1" ] && error_msg "get_kernel_default() - missing 1st param"
+    _f=/proc/ish/defaults/"$1"
+    [ -f "$_f" ] || error_msg "get_kernel_default() - Not found: $_f"
+    is_fs_chrooted && {
+        error_msg "get_kernel_default() not available when chrooted" -1
+    }
+    is_ish || error_msg "get_kernel_default($1) - this is not iSH" -1
+
+    tr -d '\n' <"$_f" | sed 's/  \+/ /g' | sed 's/"]/" ]/'
+
+    unset _f
+}
+
+set_kernel_default() {
+    _fname="$1"
+    _param="$2"
+    _lbl="$3"
+    _silent="$4"
+
+    [ -z "$_fname" ] && error_msg "set_kernel_default() - missing param 1 _fname"
+    [ -z "$_param" ] && error_msg "set_kernel_default($_fname) - missing param 2 _param"
+    _f="/proc/ish/defaults/$_fname"
+    [ -f "$_f" ] || error_msg "set_kernel_default($_fname) - No such file: $_f"
+    is_fs_chrooted && {
+        error_msg "set_kernel_default($_fname) not available when chrooted" -1
+    }
+
+    [ -n "$_lbl" ] && lbl_3 "$_lbl"
+    echo "$_param" >"$_f" || error_msg "Failed to set $_f as $_param"
+    [ -n "$_silent" ] && [ "$_silent" != "silent" ] && {
+        error_msg "set_kernel_default($_fname,v$_param, $_lbl) - param 4 ($_silent) must be unset or silent"
+    }
+
+    _setting="$(tr -d '\n' <"$_f" | sed 's/  \+/ /g' | sed 's/"]/" ]/')"
+    if [ "$_setting" = "$_param" ]; then
+        [ "$_silent" != "silent" ] && lbl_4 "$_fname set to: $_setting"
+    else
+        error_msg "value is <$_setting> - expected <$_param>"
+    fi
+
+    unset _fname
+    unset _param
+    unset _lbl
+    unset _f
+}
+
+#---------------------------------------------------------------
+#
+#       Boot Cmd
+#
+#---------------------------------------------------------------
+
+boot_cmd_change() {
+    boot_cmd="$1"
+
+    [ -z "$boot_cmd" ] && {
+        error_msg "boot_cmd_change() - no param given"
+    }
+    is_ish || error_msg "Can't change boot_command on chrooted system"
+
+    case "$boot_cmd" in
+        "default") set_kernel_default boot_command "$boot_cmd_default" "" silent ;;
+        *) set_kernel_default boot_command "$boot_cmd" ;;
+    esac
+    boot_cmd_display syslog
+}
+
+boot_cmd_display() {
+    _m="Boot Cmd:      '$(get_kernel_default boot_command)'"
+    if [ "$1" = "syslog" ]; then
+        syslog "$_m"
+    else
+        echo "$_m"
+    fi
+    unset _m
+}
+
+boot_cmd_options="default|'[ \"custom_cmd\" ]'"
+boot_cmd_default='[ "/sbin/init" ]'
+
+#---------------------------------------------------------------
+#
+#       Launch Cmd
+#
+#---------------------------------------------------------------
+
+launch_cmd_change() {
+    lnch_cmd="$1"
+
+    [ -z "$lnch_cmd" ] && {
+        error_msg "launch_cmd_change() - no param given"
+    }
+    is_ish || error_msg "Can't change launch_command on chrooted system"
+
+    case "$lnch_cmd" in
+        "default")
+            set_kernel_default launch_command "$launch_cmd_default" "" silent
+            # shellcheck disable=SC2154 # f_pts_0_as_console sourced at runtime
+            [ -f "$f_pts_0_as_console" ] && {
+                echo
+                echo "WARNING: With the default launcher, using console"
+                echo "         will not work great!"
+                echo
+            }
+            ;;
+        "ift") set_kernel_default launch_command "$launch_cmd_ift" ;;
+
+        *) set_kernel_default launch_command "$lnch_cmd" ;;
+    esac
+    launch_cmd_display syslog
+}
+
+launch_cmd_display() {
+    _m="Launch Cmd:    '$(get_kernel_default launch_command)'"
+    if [ "$1" = "syslog" ]; then
+        syslog "$_m"
+    else
+        echo "$_m"
+    fi
+    unset _m
+}
+
+launch_cmd_options="ift|default|'[ \"custom_cmd\" ]'"
+launch_cmd_ift='[ "/usr/local/sbin/ift-launcher" ]'
+launch_cmd_default='[ "/bin/login", "-f", "root" ]'
+
+#---------------------------------------------------------------
+#
+#       Profile hints
+#
+#  Display suggestons about sshd and sudo in profile
+#
+#---------------------------------------------------------------
+
+profile_hints_change() {
+    hints_mode="$1"
+    [ -z "$hints_mode" ] && {
+        error_msg "profile_hints_change() - no param given, options are on/off"
+    }
+    # shellcheck disable=SC2154 # f_profile_hints sourced at runtime
+    case "$hints_mode" in
+        "on") touch "$f_profile_hints" ;;
+        "off") rm -f "$f_profile_hints" ;;
+        *)
+            error_msg "profile_hints_change() - options are on/off"
+            ;;
+    esac
+    profile_hints_display syslog
+}
+
+profile_hints_setting() {
+    show_on_off_by_file "$f_profile_hints"
+}
+
+profile_hints_display() {
+    _m="profile-hints: $(profile_hints_setting)"
+    if [ "$1" = "syslog" ]; then
+        syslog "$_m"
+    else
+        echo "$_m"
+    fi
+    unset _m
+}
+
+#---------------------------------------------------------------
+#
+#       console mode
+#
+#---------------------------------------------------------------
+
+console_mode_change() {
+    use_console="$1"
+    f_rc_conf=/etc/rc.conf
+
+    [ -z "$use_console" ] && {
+        error_msg "console_mode_change() - no param given, options are on/off"
+    }
+    is_ish || error_msg "Can't change console on chrooted system"
+
+    case "$use_console" in
+        "on")
+            touch "$f_pts_0_as_console"
+            [ "$(stat -c "%t %T" /dev/console)" != "88 0" ] && {
+                echo "Setting up /dev/pts/0 as console"
+                rm -f /dev/console
+                mknod -m 666 /dev/console c 136 0
+            }
+
+            if [ -f /etc/alpine-release ]; then
+                #
+                #  Activating logging in /etc/rc.conf leads to openrc getting
+                #  stuck on debian
+                #  Disabled for now
+                #  TODO: Investigate
+                #
+                [ -f "$f_rc_conf" ] && {
+                    if grep -q "rc_logger=" "$f_rc_conf"; then
+                        sed -i '/^[[:space:]]*#*[[:space:]]*rc_logger=/c\rc_logger="YES"' \
+                            "$f_rc_conf" || {
+
+                            error_msg "Failed to enable rc_logger in $f_rc_conf"
+                        }
+                    else
+                        # If it wasn't present, add it
+                        echo 'rc_logger="YES"' >>"$f_rc_conf"
+                    fi
+                    if grep -q "rc_log_path=" "$f_rc_conf"; then
+                        sed -i '/^[[:space:]]*#*[[:space:]]*rc_log_path=/c\rc_log_path="/var/log/rc.log"' \
+                            "$f_rc_conf" || {
+
+                            error_msg "Failed to enable rc_log_path in $f_rc_conf"
+                        }
+                    else
+                        # If it wasn't present, add it
+                        echo 'rc_log_path="/var/log/rc.log"' >>"$f_rc_conf"
+                    fi
+                }
+            fi
+
+            [ "$(get_kernel_default launch_command)" = "$launch_cmd_default" ] && {
+                echo
+                echo "WARNING: With the default launcher, using console"
+                echo "         will not work great!"
+                echo
+            }
+
+            ;;
+        "off")
+            rm -f "$f_pts_0_as_console"
+            [ "$(stat -c "%t %T" /dev/console)" != "5 1" ] && {
+                echo "Reverting console to normal mode"
+                rm -f /dev/console
+                mknod -m 666 /dev/console c 5 1
+            }
+
+            # if /dev/console is not used and rc_logger=YES openrc gets stuck
+            [ -f "$f_rc_conf" ] && {
+                sed -i '/^[[:space:]]*#*[[:space:]]*rc_logger=/c\#rc_logger="NO"' \
+                    "$f_rc_conf" || {
+
+                    error_msg "Failed to disable rc_logger in $f_rc_conf"
+                }
+                sed -i '/^[[:space:]]*#*[[:space:]]*rc_log_path=/c\#rc_log_path="/var/log/rc.log"' \
+                    "$f_rc_conf" || {
+
+                    error_msg "Failed to disable rc_log_path in $f_rc_conf"
+                }
+            }
+            ;;
+        *)
+            error_msg "console_mode_change() - options are on/off"
+            ;;
+    esac
+    console_mode_display syslog
+}
+
+console_mode_setting() {
+    show_on_off_by_file "$f_pts_0_as_console"
+}
+
+console_mode_display() {
+    _m="console:       $(console_mode_setting)"
+    if [ "$1" = "syslog" ]; then
+        syslog "$_m"
+    else
+        echo "$_m"
+    fi
+    unset _m
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+# shellcheck disable=SC1091 # Check is usually done on deploy platform...
+hide_run_as_root=1 . /usr/local/bin/ift-run-as-root.sh
+# shellcheck source=/dev/null # not available on deploy machines
+. /usr/local/lib/ift-utils.sh
+
+prog_name=$(basename "$0")
+
+[ -z "$1" ] && {
+    echo "For help use: $prog_name -h"
+    echo
+    current_settings
+    exit 0
+}
+
+while [ -n "$1" ]; do
+    case "$1" in
+
+        "-h" | "--help")
+            show_help
+            exit 0
+            ;;
+
+        "-a" | "--autologin")
+            #  skip if $2 starts with - another option
+            if [ -n "$2" ] && [ "${2%"${2#?}"}" != "-" ]; then
+                autologin_change "$2"
+                shift # get rid of extra option
+            fi
+            autologin_display
+            ;;
+
+        "-b" | "--boot-cmd")
+            if [ -n "$2" ] && [ "${2%"${2#?}"}" != "-" ]; then
+                if is_ish; then
+                    boot_cmd_change "$2"
+
+                else
+                    lbl_4 "Can only set Launch Cmd on iSH systems"
+                fi
+                shift # get rid of extra option
+            fi
+            is_ish && boot_cmd_display
+            ;;
+
+        "-c" | "--continuous")
+            if [ -n "$2" ] && [ "${2%"${2#?}"}" != "-" ]; then
+                continuous_sessions_change "$2"
+                shift # get rid of extra option
+            fi
+            continuous_sessions_display
+            ;;
+
+        "-C" | "--console")
+            if [ -n "$2" ] && [ "${2%"${2#?}"}" != "-" ]; then
+                if ! is_ish; then
+                    lbl_4 "Can't set console mode on chrooted systems"
+                else
+                    console_mode_change "$2"
+                fi
+                shift # get rid of extra option
+            fi
+            is_ish && console_mode_display
+            ;;
+
+        "-d" | "--defaults") set_defaults ;;
+
+        "-l" | "--launch-cmd")
+            if [ -n "$2" ] && [ "${2%"${2#?}"}" != "-" ]; then
+                if is_ish; then
+                    launch_cmd_change "$2"
+                else
+                    lbl_4 "Can only set Launch Cmd on iSH systems"
+                fi
+                shift # get rid of extra option
+            fi
+            is_ish && launch_cmd_display
+            ;;
+
+        "-H" | "--profile-hints")
+            if [ -n "$2" ] && [ "${2%"${2#?}"}" != "-" ]; then
+                profile_hints_change "$2"
+                shift # get rid of extra option
+            fi
+            profile_hints_display
+            ;;
+
+        *) lbl_2 "ERROR: Bad option: $1" ;;
+
+    esac
+    shift
+done

@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  Copyright (c) 2021-2025: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+#  Checks if this chrooted - returns 0 if chrooted, 1 if not
+#
+
+# shellcheck source=/dev/null # not available on deploy machines
+. /usr/local/lib/ift-utils.sh
+
+if [ "$1" = "-v" ]; then
+    if is_fs_chrooted; then
+        echo "yes"
+    else
+        echo "no"
+    fi
+fi
+
+is_fs_chrooted

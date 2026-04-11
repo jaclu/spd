@@ -1,0 +1,96 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  Copyright (c) 2024,2025: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+#  This does several checks that the env is suitable for iSH
+#
+
+notification() {
+    if $use_wall; then
+        wall --nobanner "$1"
+    else
+        echo "$1"
+    fi
+}
+
+uptime_check() {
+    #
+    #  On Alpine >= 3.19  /usr/bin/uptime segfaults if procps is installed
+    #  Workaround is to link /usr/bin/uptime to busybox
+    #
+
+    # Only relevant for Alpine
+    fs_is_alpine || return
+
+    # if version check is not available, no check can be done
+    [ -f /usr/local/lib/ift-vers-check.sh ] || {
+        echo "Unable to check Alpine version."
+        echo "If procps is installed on Alpine >= 3.19"
+        echo "/usr/bin/uptime will segfault."
+        return
+    }
+
+    # shellcheck source=/dev/null # not available on deploy machines
+    . /usr/local/lib/ift-vers-check.sh || err_msg "Failed to source: ift-vers-check.sh"
+
+    # if older Alpine - all is good
+    ! min_release 3.19 && return
+
+    cmd_uptime=/usr/bin/uptime
+    [ "$(realpath "$cmd_uptime")" = /bin/busybox ] && return
+
+    rm -f "$cmd_uptime"
+    ln -sf /bin/busybox "$cmd_uptime"
+
+    #region warning
+    notification "
+
+WARNING: If procps is installed on Alpine /usr/bin/uptime will segfault.
+
+This has been solved by soft-linking /usr/bin/uptime to /bin/busybox
+So this warning is just informational, and won't be seen again until
+procps is updated and potentially installs an incompatible uptime.
+At that point this issue will be self corrected again.
+"
+    #endregion
+}
+
+load_utils() {
+    _lu_f_utils=/usr/local/lib/ift-utils.sh
+
+    # shellcheck source=/dev/null disable=SC1091,SC2317
+    . "$_lu_f_utils" || {
+        printf '\nERROR: Failed to source: %s\n' "$_lu_f_utils" >&2
+        exit 1
+    }
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+load_utils
+
+#
+# If called from somewhere that isn't connected to stdio, make announcements
+# using wall
+#
+if [ "$1" = "wall" ]; then
+    use_wall=true
+    shift
+else
+    use_wall=false
+fi
+
+[ ! -d /proc/ish ] && ! is_chrooted && {
+    notification "---  WARNING: $(basename "$0") - should only run on iSH"
+    exit 0
+}
+
+uptime_check

@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstools
+#
+#  Copyright (c) 2021: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+#  Displays the iSH kernel version.
+#
+
+if [ ! -d /proc/ish ]; then
+    echo "This can only be run on iSH kernels!"
+    exit 1
+fi
+
+echo "This is running iSH kernel version: $(cat /proc/ish/version)"

@@ -1,0 +1,114 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  License: MIT
+#
+#  Copyright (c) 2023-2025: Jacob.Lundqvist@gmail.com
+#
+#  Terminates the system, as nicely as possible,
+#  to minimize risk of getting a crash popup
+#
+
+display_msg() {
+    dm_msg="$1"
+
+    echo "$dm_msg"
+    /usr/local/bin/logger "$prog_name" "$dm_msg"
+    unset dm_msg
+}
+
+do_shutdown() {
+    pids="$(echo "$key_pids" | tr '\n' ' ')"
+    msg="Will shutdown, by killing based on: $1 - pids: $pids"
+    echo
+    display_msg "$msg"
+    echo
+    echo "$pids" | xargs -r kill -9
+    sleep 2
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+prog_name=$(basename "$0")
+
+[ -d /proc/ish ] || {
+    echo "This can only run on iSH"
+    exit 2
+}
+
+[ "$(whoami)" != "root" ] && {
+    echo "$prog_name must be run by root!"
+    exit 1
+}
+
+[ -n "$1" ] && {
+    echo "Usage: $prog_name"
+    echo "This script does not take any parameters, it will halt the system"
+    echo "To control shutdown, use the 'shutdown -h' command instead, to see options"
+    exit 1
+}
+
+# remove some stat files
+
+state_prefix=/etc/opt/ift
+f_inittab_can_start="$state_prefix"/inittab_can_start
+
+[ -f "$f_inittab_can_start" ] && {
+    display_msg "WARNING found: $f_inittab_can_start"
+}
+rm -f "$f_inittab_can_start"
+rm -f "$state_prefix"/recovery-mode
+rm -f /var/log/recovery-mode.log
+
+#
+#  sync & sleep probably not needed on iSH, but its supposed to be
+#  done now :)
+#
+sync
+sync
+sleep 1
+
+#
+#  Halting the system, different methods in falling priorities
+#
+
+# kill ift-launcher
+key_pids="$(pgrep -f ift-launcher)"
+[ -n "$key_pids" ] && do_shutdown ift-launcher
+
+# login sessions
+key_pids="$(pgrep -f "login -f")"
+[ -n "$key_pids" ] && do_shutdown "'login -f'"
+
+# All processes on pts/0
+# This is the main terminal, so we want to kill all processes on it.
+if [ -f /etc/alpine-release ]; then
+    #
+    #  Alpine busybox pgrep does not have -t option
+    #  workaround is to scan for pts/0 procs via ps -o pid,tty
+    #
+    pts0_id="$(stat -c "%t %T\n" /dev/pts/0 \
+        | awk '{ printf("%d,%d\n", strtonum("0x"$1), strtonum("0x"$2)) }')"
+    # shellcheck disable=SC2009 # we need to do ps grep in this case
+    key_pids="$(ps -o pid,tty | grep "$pts0_id" | awk '{print $1}')"
+else
+    key_pids="$(pgrep -t pts/0)"
+fi
+[ -n "$key_pids" ] && do_shutdown "pts/0 sessions"
+
+# find init pid - usually but not absolutely always 1...
+# On normal Linux it is always pid 1, but due to how iSH workks, it is not
+# technically guaraneed to be pid 1.
+key_pids="$(pgrep -f "init ")"
+[ -n "$key_pids" ] && do_shutdown "init via pgrep"
+
+# Kill pid 1 and hope it shuts down the system.
+key_pids="1"
+do_shutdown "pid 1"
+
+display_msg "ERROR: Still alive after kills - giving up!"

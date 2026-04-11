@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# Copyright (c) 2021,2024-2025: Jacob.Lundqvist@gmail.com
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+# License: MIT
+#
+#  reports uptime every X seconds, minimalistic fallback to use instead of htop
+#
+
+sleep_time="${1:-5}"
+
+if [ -n "$1" ]; then
+    if echo "$1" | grep -qvE '^[0-9]+$'; then
+        echo "param is not a positive integer."
+        exit 1
+    elif [ "$sleep_time" -lt 1 ]; then
+        echo "param must be positive"
+        exit 1
+    fi
+    echo "Using selected interval: $sleep_time"
+else
+    echo "Using default interval: $sleep_time  -  change by providing a param"
+fi
+
+darwin_uptime() {
+    # Adding a time stamp with seconds
+    printf ' %s%s\n' "$(date +%H:%M:%S)" "$(uptime | cut -d' ' -f2-)"
+}
+
+normal_uptime() {
+    uptime
+}
+
+uptime_func=normal_uptime
+
+if [ "$(uname -s)" = "Darwin" ]; then
+    uptime_func=darwin_uptime
+fi
+
+# echo "Will display uptime every $sleep_time seconds"
+while :; do
+    $uptime_func
+    sleep "$sleep_time"
+done

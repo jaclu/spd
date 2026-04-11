@@ -1,0 +1,125 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  Copyright (c) 2023-2025: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+#  Custom hostname, solving that iOS >= 17 no longer provides hostname
+#  to Apps.
+#
+#  iSH provides: /proc/ish/defaults/hostname_override
+#  but since it can't be changed, it seems to be of little use.
+#
+#  Working around regular iSH inability to use /etc/hostname with the native
+#  hostname command.
+#
+#  Ensure this is in your PATH, before /bin, or remove/rename /bin/hostname
+#
+
+show_help() {
+    [ -d /proc/ish ] || {
+        echo
+        echo "WARNING: this is meant o be used on iSH"
+        echo
+    }
+    echo "Usage: hostname [-b] {hostname|-F file}         set host name (from file)
+       hostname                                 display host name
+
+       hostname -h|--help                       print info and exit
+
+Program options:
+    -F  --file  read host name from given file
+    name        set hostname to name
+
+All other options are ignored, for compatibility with the default hostname.
+This limited hostname just reports what is in /etc/hostname."
+}
+
+error_msg() {
+    echo
+    echo "ERROR[$0]: $1"
+    echo
+
+    exit 1
+}
+
+root_check() {
+    [ "$(id -u)" -eq 0 ] || {
+        error_msg "hostname: you must be root to change the host name"
+    }
+}
+
+set_hostname() {
+    new_hostname="$1"
+    [ -z "$new_hostname" ] && error_msg "no hostname param"
+    root_check
+    echo "$new_hostname" >"$f_etc_hostname" || {
+        error_msg "Failed to write '$new_hostname' to '$f_etc_hostname'!"
+    }
+}
+
+set_hostname_from_file() {
+    f_new_hostname="$1"
+
+    [ -z "$f_new_hostname" ] && {
+        error_msg "hostname param missing"
+    }
+    [ -f "$f_new_hostname" ] || {
+        error_msg "No such file '$f_new_hostname'!"
+    }
+    [ -s "$f_new_hostname" ] || {
+        error_msg "File '$f_new_hostname' is empty!"
+    }
+    root_check
+
+    f_tmp=$(mktemp) || exit 1
+    if head -n 1 "$f_new_hostname" >"$f_tmp" && mv "$f_tmp" /etc/hostname; then
+        # success, tmp file already moved, now ensure new file is globally readable
+        chmod 0644 "$f_etc_hostname" || {
+            error_msg "Failed to make new $f_etc_hostname readable"
+        }
+    else
+        [ -f "$f_tmp" ] && rm "$f_tmp" # cleanup leftover temp file
+        error_msg "Failed to use '$f_new_hostname' to update '$f_etc_hostname'!"
+    fi
+
+    # head -n 1 "$f_new_hostname" >"$f_etc_hostname" || {
+    #     error_msg "Failed to use '$f_new_hostname' to update '$f_etc_hostname'!"
+    # }
+}
+
+display_hostname() {
+    cat "$f_etc_hostname"
+    exit 0
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+f_etc_hostname=/etc/hostname
+
+[ -z "$1" ] && display_hostname # no options, just display hostname
+
+while [ -n "$1" ]; do
+    case "$1" in
+        -h | --help)
+            show_help
+            exit 255 # odd but that is what hostname does...
+            ;;
+        -F | --file)
+            if [ -z "$2" ] || [ ! -f "$2" ]; then
+                error_msg "-F/--file expects a file name param"
+            fi
+            set_hostname_from_file "$2"
+            shift # purge param 2
+            ;;
+        -*) display_hostname ;; # Ignore all other options, for compatibility with default hostname
+        *) set_hostname "$1" ;;
+    esac
+    shift
+done

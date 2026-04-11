@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstools
+#
+#  Copyright (c) 2021: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+# To minimize risk of running shutdown on a "real" Linux-node when using ssh,
+# and not noticing the session was ended by iSH crachsing, thisis somewhat of
+# a safety measure.
+#
+shutdown

@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  License: MIT
+#
+#  Copyright (c) 2023,2025: Jacob.Lundqvist@gmail.com
+#
+#  Since iSH does not mount /run as a tmpfs it is not cleared when booting up.
+#
+#  This is assumed to be run via inittab, as one of the first tasks,
+#  before requesting openrc to do anything.
+#
+#  Amongst other things, not clearing /run connfuses openrc into believing
+#  that things might already be in a started state.
+#
+
+rm /run/* -rf
+/usr/local/bin/logger reset-run-dir cleared /run

@@ -1,0 +1,195 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  License: MIT
+#
+#  Copyright (c) 2023-2025: Jacob.Lundqvist@gmail.com
+#
+#  Will also stop services on openrc based systems
+#
+#  if first parameter is now, this will happen without delay
+#  if there is an additional parameter, it will be used
+#  in the system shutdown notice
+#
+
+display_msg() {
+    dm_msg="$1"
+
+    echo "$dm_msg"
+    /usr/local/bin/logger shutdown "$dm_msg"
+    unset dm_msg
+}
+
+is_int() {
+    case $1 in
+        '' | *[!0-9]*) return 1 ;; # Contains non-numeric characters
+        *) return 0 ;;             # Contains only digits
+    esac
+}
+
+# Define a function to handle Ctrl+C
+# shellcheck disable=SC2329
+interrupt_handler() {
+    echo "Ctrl+C (SIGINT) received. Cancelling shutdown..."
+    shutdown_cancelled
+    exit 1
+}
+
+shutdown_cancelled() {
+    /usr/local/bin/wall -n "shutdown was canceled, the shutdown notice can be ignored"
+    display_msg "Shutdown was cancelled"
+}
+
+show_help() {
+    #region help text
+    echo " shutdown [OPTIONS...] [DELAY] [WALL...]
+
+Shut down the system.
+
+Options:
+  -h --help      Show this help
+  -H --halt      Compatibility - ignored
+  -P --poweroff  Compatibility - ignored
+  -r --reboot    Compatibility - ignored
+  -h             Compatibility - ignored, but give warning
+  -k             Don't halt/power-off/reboot, just send warnings
+     --no-wall   Don't send wall message before halt/power-off/reboot
+  -c --cancel    Cancel a pending shutdown
+     --show      Compatibility - ignored
+
+  DELAY          Delays shutdown this amount of seconds
+  WALL           Additional text to be displayed in the shutdown notice
+
+     *** SYSTEM SHUTDOWN NOTICE ***
+Will always be displayed (unless --no-wall is given)
+If text is provided after the options this message will be displayed below
+the header.
+
+"
+    #endregion
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+[ -d /proc/ish ] || {
+    echo "This can only run on iSH"
+    exit 2
+}
+
+# execute again as root
+if [ "$(whoami)" != "root" ]; then
+    echo "Executing as root via sudo"
+    # using $0 instead of full path makes location not hardcoded
+    sudo "$0" "$@" || {
+        echo "ERROR: sudo failed"
+        exit 1
+    }
+    exit 0
+fi
+
+display_msg "Shutdown initiated with args: $*"
+
+do_shutdown=true
+do_wall=true
+hold_time=0
+notification_extra=""
+
+while [ -n "$1" ]; do
+    is_int "$1" && {
+        hold_time="$1"
+        shift
+        continue
+    }
+    case "$1" in
+        # most default options are ignored
+        now) ;;
+        --help)
+            show_help
+            exit 0
+            ;;
+        -H | --halt) ;;     # Compatibility - ignored
+        -P | --poweroff) ;; # Compatibility - ignored
+        -r | --reboot) ;;   # Compatibility - ignored
+        -h)                 # Compatibility - warning given, then ignored
+            echo "The system is halted and powered off at the specified time."
+            echo
+            echo "WARNING: Extremely unintuitive result of this option!"
+            echo "         Use 'shutdown --help' to see the help text."
+            echo
+            [ -t 0 ] && {
+                echo "shutdown will continue in 10s, unless Ctrl-C is pressed"
+                sleep 10
+            }
+            ;;
+        -k) do_shutdown=false ;;
+        --no-wall) do_wall=false ;;
+        -c | --cancel)
+            # Custom option, to cancel a shutdown.
+            # First kill all other shutdown procsto minimize shutdown happening
+            # during shutdown_cancelled processing
+            pgrep -f shutdown | grep -v $$ | xargs kill -9
+            shutdown_cancelled
+            exit 0
+            ;;
+        --show) ;;
+        *)
+            # use rest of options as additional shutdown notice
+            notification_extra="$*"
+            break
+            ;;
+    esac
+    shift
+done
+
+notification="
+    *** SYSTEM SHUTDOWN NOTICE ***
+$notification_extra
+"
+
+[ "$hold_time" != "0" ] && {
+    notification="${notification}
+$(hostname) will be shutdown in $hold_time seconds!!
+"
+}
+
+$do_wall && /usr/local/bin/wall "$notification"
+
+if [ "$hold_time" != "0" ]; then
+    #
+    #  Set the interrupt_handler function to be called when Ctrl+C is pressed
+    #  Since this will wall announcing shutdown is cancelled, it is better
+    #  to activate after the initial wall is made
+    #
+    trap interrupt_handler INT
+
+    echo
+    echo "Abort shut down by hitting Ctrl-C within $hold_time secoonds"
+    echo
+    sleep "$hold_time"
+fi
+trap '' INT # abort capturing Ctrl-C
+
+$do_shutdown || {
+    display_msg "Aborting shutdown due to -k param given"
+    exit 0
+}
+
+#
+#  Trigger second stage - actual shutdown. This will run in the background
+#  and will not be interrupted by any services stopping an ssh session or similar.
+#
+/usr/local/sbin/do-shutdown &
+
+#
+#  This should never happen, just a last resort to do a shutdown
+#
+sleep 15
+display_msg "Still running after 10s - should not happen..."
+display_msg "Remaining processes: $(ps ax)"
+display_msg "Will exit this proc [$$] - hopefully this will shutdown"
+exit 1

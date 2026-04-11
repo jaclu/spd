@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Copyright (c) 2024-2025: Jacob.Lundqvist@gmail.com
+# License: MIT
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+# Displays default GW and some related networking info
+# Works on: Linux, Darwin, iSH & Android (Termux)
+#
+
+[ -d /proc/ish ] && {
+    echo "ERROR: Not supported on iSH"
+    exit 1
+}
+
+if [ "$(uname)" = "Darwin" ]; then
+    ifconfig en0 | grep -q 'status: active' && {
+        ssid="$(networksetup -getairportnetwork en0 | cut -d: -f2)"
+        ssid=${ssid# } # remove leading space
+
+        # Get the IP address
+        ip_address=$(ifconfig en0 | awk '/inet / {print $2}')
+        # ip6_address=$(ifconfig en0 | awk '/inet6 / {print $2}')
+        echo "WiFi (en0): $ssid - $ip_address"
+        echo
+    }
+    route_info="$(ip route get default)"
+    gw_node="$(echo "$route_info" | awk '{ print $3 }')"
+    gw_dev="$(echo "$route_info" | awk '{ print $5 }')"
+else
+    if [ "$(uname -o)" = "Android" ]; then
+        cmd="ip route get to 8.8.8.8"
+    else
+        cmd="ip route show default"
+    fi
+    gw_node="$($cmd | awk '{print $3}')"
+    gw_dev="$($cmd | awk '{print $5}')"
+fi
+echo "GW device:  $gw_dev"
+
+if [ "$(uname -o)" = "Android" ]; then
+    gw_ip="$(ip address | grep global | awk '{print $2}' | cut -d'/' -f 1)"
+else
+    gw_ip="$(ifconfig "$gw_dev" | grep 'inet ' | awk '{print $2}')"
+fi
+echo "my GW IP:   $gw_ip"
+[ "$gw_dev" != "$gw_node" ] && echo "GW address: $gw_node"
+
+printf "Public IP:  "
+if curl -s -4 https://ifconfig.me || curl -s https://ifconfig.me; then
+    printf '\n'
+else
+    echo "Error: Unable to determine"
+fi
+echo
+if [ "$(uname -o)" = "Android" ]; then
+    echo "No name-server info available on Termux!"
+else
+    grep nameserver /etc/resolv.conf | awk '{ print "Namerver:   "$2 }'
+fi
