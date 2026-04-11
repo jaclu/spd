@@ -29,6 +29,8 @@ Main workflow is to first set up the env, reading relevant configs and overrides
 - Execute task list one by one
 - Update global state of he deploy
 
+Add a passive option, to just list what tasks would be done
+
 #### tasks
 
 - Simple to detect config params needed
