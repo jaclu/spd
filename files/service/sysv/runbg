@@ -1,0 +1,88 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          runbg
+# Required-Start:
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: GPS monitoring ensuring app continues in background
+# Description:       This service reads the GPS and discards the output to /dev/null.
+#                    So this is not tracking you in any way. The sole purpose of this
+#                    is that this is the only way to ensure an iOS program continues
+#                    to run in the background.
+#                    This process has no noticeable impact on battery life.
+### END INIT INFO
+
+# set -e # invalid due to ! conditions below
+
+# export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+DESC="background keep alive daemon"
+NAME=runbg
+PIDFILE="/run/runbg.pid"
+
+# shellcheck source=/dev/null
+. /lib/lsb/init-functions
+
+check_dev() {
+    c_dev="$1"
+    if [ ! -c "$c_dev" ]; then
+        log_daemon_msg "$NAME" "$c_dev is not a character device!"
+        log_end_msg 1
+        exit 1
+    fi
+}
+
+check_env() {
+    check_dev /dev/location
+    [ -d /proc/ish ] || {
+        log_daemon_msg "$NAME" "Can only be run on iSH!"
+        log_end_msg 1
+        exit 1
+    }
+    check_dev /dev/null
+}
+
+case "$1" in
+    start)
+        check_env
+        log_daemon_msg "Starting $DESC" "$NAME"
+        start-stop-daemon --start \
+            --background \
+            --make-pidfile \
+            --pidfile "$PIDFILE" \
+            --startas /bin/sh -- \
+            -c 'exec /bin/cat /dev/location > /dev/null'
+        log_end_msg "$?"
+        ;;
+
+    stop)
+        log_daemon_msg "Stopping $DESC" "$NAME"
+        start-stop-daemon --stop \
+            --remove-pidfile \
+            --pidfile "$PIDFILE" \
+            --retry 5
+        log_end_msg "$?"
+        ;;
+
+    restart)
+        log_action_msg "Restarting $DESC" "$NAME"
+        $0 stop && $0 start
+        ;;
+
+    # reload | force-reload)
+    #     log_daemon_msg "Reloading $DESC (has no impact) "
+    #     log_end_msg 0
+    #     ;;
+
+    status)
+        status_of_proc -p "$PIDFILE" /bin/cat runbg
+        exit $?
+        ;;
+
+    *)
+        _s="{start|stop|restart|reload|force-reload|status}"
+        log_action_msg "Usage: $0 $_s"
+        exit 1
+        ;;
+esac
