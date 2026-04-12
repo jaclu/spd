@@ -46,70 +46,6 @@ pcf_expand_template() {
     printf '%s' "$_pet_val"
 }
 
-pcf_verify_config_file() {
-    _vcf_f_cfg=$1
-    _vcf_in_list=0
-    _vcf_first_line=true
-    while IFS= read -r _vcf_line; do
-        # Trim leading whitespace
-        _vcf_line=${_vcf_line#"${_vcf_line%%[![:space:]]*}"}
-
-        $_vcf_first_line && {
-            [ "$_vcf_line" != "---" ] && {
-                printf 'ERROR: first line in yaml config file must be: "---"\n' >&2
-                exit 1
-            }
-            _vcf_first_line=false
-            continue
-        }
-        [ -z "$_vcf_line" ] && continue # ignore blank lines
-
-        case $_vcf_in_list in
-            1)
-                case $_vcf_line in
-                    '-'\ *) continue ;; # list item
-                    '#'*) continue ;;   # comment
-                    [A-Za-z_][A-Za-z0-9_]*':'*)
-                        # new key: check if list or scalar follows
-                        _vcf_rest=${_vcf_line#*':'}
-                        _vcf_rest=${_vcf_rest#"${_vcf_rest%%[![:space:]]*}"}
-                        case $_vcf_rest in
-                            '' | '#'*) _vcf_in_list=1 ;;
-                            *) _vcf_in_list=0 ;;
-                        esac
-                        ;;
-                    '') _vcf_in_list=0 ;; # blank (consumed earlier, safety net)
-                    *)
-                        printf 'ERROR: invalid list item: [%s]\n' \
-                            "$_vcf_line" >&2
-                        exit 1
-                        ;;
-                esac
-                ;;
-            *)
-                case $_vcf_line in
-                    '' | '#'*) continue ;; # in this case both comment and blanks ignored
-                    [A-Za-z_][A-Za-z0-9_]*':'\ * | \
-                        [A-Za-z_][A-Za-z0-9_]*':')
-                        # Valid key: or key: value line
-                        # Extract everything after the colon and strip leading whitespace
-                        _vcf_rest=${_vcf_line#*':'}
-                        _vcf_rest=${_vcf_rest#"${_vcf_rest%%[![:space:]]*}"}
-                        case $_vcf_rest in
-                            '' | '#'*) _vcf_in_list=1 ;;  # bare key or key with only a comment -> list follows
-                            *) _vcf_in_list=0 ;;
-                        esac
-                        ;;
-                    *)
-                        printf 'invalid config line: [%s]\n' "$_vcf_line" >&2
-                        exit 1
-                        ;;
-                esac
-                ;;
-        esac
-    done <"$_vcf_f_cfg"
-}
-
 pcf_flush_pending() {
     # Uses: $_fp_var, $_fp_content  -- sets them back to empty
     [ -z "$_fp_var" ] && [ -n "$_fp_content" ] && {
@@ -221,8 +157,6 @@ read_config_file() {
     msg_dbg "Processing: $_rcf_f_cfg" 1
     if [ -f "$_rcf_f_cfg" ]; then
         msg_dbg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 1
-
-        pcf_verify_config_file "$_rcf_f_cfg"
         pcf_parse_config_file "$_rcf_f_cfg"
     else
         msg_dbg "Config file not found: $_rcf_f_cfg" 2
@@ -248,14 +182,14 @@ read_config_file() {
 expand_config_var() {
     _ev_varname=$1
     while eval "_ev_val=\"\$$_ev_varname\""; do
-        # shellcheck disable=SC2154
+        # shellcheck disable=SC2154 # _ev_val defined in eval above
         [ "$_ev_val" = "${_ev_val#*\$\{}" ] && break
         eval "$_ev_varname=\"$_ev_val\""
     done
 }
 
+# DEPLOY_PATH is set by $0 to give the path to the repository
 [ -n "$DEPLOY_PATH" ] || {
-    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    . "$DEPLOY_PATH"/tools/prepare_env.sh
-    err_msg "This can not be run directly"
+    echo  "ERROR: This can not be run directly"
+    exit 1
 }
