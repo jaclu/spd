@@ -136,11 +136,6 @@ SPD_APK_INSTALL:
   - procps # Utilities for monitoring your system and processes on your system.
 
 #
-#  Support for man pages
-#
-SPD_APK_MAN: # will be installed if SPD_PKGS_MAN=1
-  - docs
-#
 #  General Build env for Alpine iSH, will be included if ift_pkgs_devel is true
 #  in vars/overrides.yml
 #
