@@ -21,20 +21,36 @@ populate_config() {
 }
 
 ensure_spd_var_defined() {
-    # Expands variable, then displays it if defined,
+    # Expands variable, then displays it if current_dbg_lvl>=1
     # oherwise print dependency warning and set dependency_issue=1
     # to inicate dependency issue for caller
-    # if defined module_name is used as prefix for dependency waning, in order
-    # to pinpoint the issue, in case multiple tasks are run in the same app
-    _vsv_variable="$1"
-    expand_config_var "$_vsv_variable"
-    eval "_vsv_value=\"\${$_vsv_variable}\""
-    if [ -n "${_vsv_value+x}" ]; then
-        msg_dbg "$_vsv_variable: $_vsv_value" 1
+    _esvd_variable="$1"
+
+    expand_config_var "$_esvd_variable"
+    eval "_esvd_value=\"\${$_esvd_variable}\""
+    if [ -n "$_esvd_value" ]; then
+        msg_dbg "$_esvd_variable: $_esvd_value" 1
     else
-        # shellcheck disable=SC2154
-        lbl_2 "$module_name: Dependency issue - $_vsv_variable not defined"
-        # shellcheck disable=SC2034
+        lbl_2 "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable"
+        # shellcheck disable=SC2034 # dependency_issue used by caller
+        dependency_issue=1
+    fi
+}
+
+display_list_content() {
+    # Displays content of list variable, with each item on a new line, if current_dbg_lvl>=1
+    # otherwise print dependency warning and set dependency_issue=1
+    # to inicate dependency issue for caller
+    _dlc_variable="$1"
+
+    expand_config_var "$_dlc_variable"
+    eval "_dlc_value=\"\${$_dlc_variable}\""
+    if [ -n "$_dlc_value" ]; then
+        msg_dbg "$_dlc_variable:" 1
+        printf '%s\n' $'\t'"$_dlc_value" | sed 's/ /\n\t/g'
+    else
+        lbl_2 "${module_name:-}: Dependency issue - no content/undefined: $_dlc_variable"
+        # shellcheck disable=SC2034 # dependency_issue used by caller
         dependency_issue=1
     fi
 }
@@ -47,12 +63,14 @@ indicate_unset() {
 }
 
 cmd_line_param_list() {
-    lbl_1 "Listing of cmd line options"
-    lbl_2 "  opt_task    $(indicate_unset "$opt_task")"
+    _lbl="${1:-Listing of cmd line options}"
+    lbl_2 "$_lbl"
+    lbl_4 "  opt_task    $(indicate_unset "$opt_task")"
 }
 
 cmd_line_param_error() {
-    cmd_line_param_list
+    lbl_1 "Invalid command-line param"
+    cmd_line_param_list "Processed options"
     err_msg "$1"
 }
 
@@ -65,8 +83,8 @@ cmd_line_param_parse() {
         esac
         shift
     done
-    lbl_2 "Command line options:"
-    lbl_3 "opt_task     $opt_task"
+
+    cmd_line_param_list
 }
 
 check_for_abort() {
@@ -75,9 +93,8 @@ check_for_abort() {
 
     expand_config_var SPD_ABORT
     [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
-    # shellcheck disable=SC2154 # SPD_ABORT defined in configs
     {
-        msg_dbg "check_for_abort() $SPD_ABORT  max: $_cfa_max" 1
+        msg_dbg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 1
         # log_it "SPD_ABORT: $SPD_ABORT"
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
             err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
@@ -123,5 +140,5 @@ populate_config
     msg_dbg "will process config_hierarchy" 1
     # log_it "prepare_env will process configs"
     _fp="${DEPLOY_PATH}"/tools/process_config_hierarchy.sh
-    [ "$app_name_full_path" != "$_fp" ] && source_it "$_fp"
+    [ "${app_name_full_path:-0}" != "$_fp" ] && source_it "$_fp"
 }
