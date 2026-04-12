@@ -1,0 +1,191 @@
+---
+#
+#  Part of https://github.com/jaclu/ish-fstools
+#
+#  Copyright (c) 2025-2026: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+# Variables for Alpine FS
+#
+
+#
+#  ift_alpine_packages - defines what Alpine packages will be installed if FS is Alpine
+#  some temp variables are first used to define what packages to use.
+#
+#  If the intent is just add more packages in overrides, they can be listed using
+#  the variable ift_extra_alpine_packages, to avoid having to duplicate the entire
+#  ift_alpine_packages
+#
+# Items commented out notation:
+#   valid packets, just temporary disabled: # - name
+#   common packets, not working on iSH: # name - doesn't work on iSH
+#
+SPD_APK_INSTALL:
+  #
+  #  Shells
+  #
+  - bash # The GNU Bourne Again shell
+  - bash-completion # Command-line tab-completion for bash
+  - zsh # Very advanced and programmable command interpreter (shell)
+  - zsh-completions # Additional completion definitions for Zsh
+    # (packaged as a plugin).
+
+  #
+  #  Core utils
+  #
+  - coreutils # The basic file, shell and text manipulation utilities
+  - diffutils # Show differences among files
+  - file # File type identification utility
+  - findutils # GNU utilities for finding files
+  - gawk # GNU awk pattern-matching language
+  - git # Distributed version control system
+  - fzf # A command-line fuzzy finder - rather slow on iSH - is it meaningful?
+  - jq # Lightweight and flexible command-line JSON processor
+  - mc # Filemanager/shell that emulates Norton Commander
+  - pigz # Parallel implementation of gzip
+  - psmisc # set of some small useful utilities that use the proc filesystem
+    # provides a full pstree vs the basic BusyBox implementation.
+  - ripgrep # Fast recursive searcher with regex, respects .gitignore, grep-like.
+  - rsync # A file transfer program to keep remote files in sync
+  - dialog
+  - newt # whiptail
+  - zoxide # Faster way to navigate your filesystem
+
+  #
+  #  Access
+  #
+  - sudo # Give certain users the ability to run some commands as root
+  - shadow # PAM-using login and passwd utilities (usermod, useradd, ...)
+  - musl-locales # Locales support for musl
+  - gettext # GNU locale utilities
+  - tzdata # Timezone data
+
+  #
+  #  Editors
+  #
+  - mg # microscopic EMACS style editor
+  - nano # Enhanced clone of the Pico text editor
+  - vim # advanced text editor, with GUI
+
+  #
+  # File managers
+  #
+  - ranger # VIM-inspired filemanager for the console
+  # yazi - doesn't work on iSH
+
+  #
+  #  Remote
+  #
+  - inetutils-telnet
+  - mosh # Mobile shell surviving disconnects with local echo and line editing
+  - openssh # Port of OpenBSD's free SSH release
+
+  #
+  #  Web Tools
+  #
+  - curl # URL retrieval utility and library
+  - wget # Network utility to retrieve files from the Web
+  - w3m # text-based web & gopher browser, as well as pager
+  # - elinks  # Advanced and well-established feature-rich text mode web browser
+  # - lynx  # Cross-platform text-based browser
+
+  #
+  #  System info
+  #
+  # atop - doesn't work on iSH
+  # btop - doesn't work on iSH
+  # glances - doesn't work on iSH
+  - htop # Interactive process viewer
+  - ncdu # Text-based disk usage viewer
+
+  #
+  #  Scripting
+  #
+  - py3-pip # Installs both Python3 and all that is needed for pip
+  - sqlite # Popular minimal sql engine
+
+  #
+  #  Terminal / session management
+  #
+  - tmux # Tool to control multiple terminals from a single terminal
+  - dvtm # Dynamic virtual terminal manager
+  - abduco # Session management in a clean and simple way
+
+  #
+  #  Services
+  #
+  # - dcron  # dillon's lightweight cron daemon
+  # - dcron-openrc  # dillon's lightweight cron daemon (OpenRC init scripts)
+  - openrc # OpenRC manages the services, startup and shutdown of a host
+
+  #
+  #  Trust
+  #
+  - ca-certificates # Common CA certificates PEM files from Mozilla
+
+  #
+  # Works on iSH on Alpine 3.17 and up
+  #
+  - lsb-release-minimal # Minimal fake lsb-release that uses os-release
+
+  #
+  # Works on iSH on Alpine 3.20 and up
+  #
+  - procps # Utilities for monitoring your system and processes on your system.
+
+#
+#  Support for man pages
+#
+SPD_APK_MAN: # will be installed if SPD_PKGS_MAN=1
+  - docs
+#
+#  General Build env for Alpine iSH, will be included if ift_pkgs_devel is true
+#  in vars/overrides.yml
+#
+SPD_APK_DEVEL: # will be installed if SPD_PKGS_DEVEL=1
+  - build-base # Meta package for build base
+  - automake # GNU tool for automatically creating Makefiles
+  - autoconf # GNU tool for automatically configuring source code
+  - bison # The GNU general-purpose parser generator
+  - cmake # Cross-platform, open-source make system
+  - libtool # A generic library support script
+  - bzip2-dev # A high-quality data compression program
+  - libevent-dev # An event notification library
+  # lazygit       doesn't work on iSH
+  - ncurses-dev # Console display library
+  - openssl-dev # Toolkit for Transport Layer Security (TLS)
+  - readline-dev # GNU readline library
+  - sqlite-dev # C library that implements an SQL database engine
+  - xz-dev # Library and CLI tools for XZ and LZMA compressed files
+  - zlib-dev # A compression/decompression Library
+
+SPD_APK_LINTING: # will be installed if SPD_PKGS_LINTING=1
+  # pip install only linters: bandit bashate codespell pymarkdownlnt
+  - checkbashisms # really slow in iSH
+  - cppcheck
+  - shfmt
+  - py3-codespell
+  - py3-flake8
+  - py3-isort
+  - py3-mypy
+  - py3-pycodestyle
+  - py3-pyflakes
+  - py3-pylint
+  - yamllint
+
+  #
+  # Works on iSH on Alpine  3.20 and up
+  #
+  - py3-codespell # linter
+  #
+  # Works on iSH on Alpine 3.23 and up
+  #
+  # 3.19 - segfaults
+  # 3.22 - segfaults
+  - taplo # linter
+
+#
+#  Packages that should be actively removed
+#
+SPD_APK_REMOVE:

@@ -1,0 +1,97 @@
+---
+SPD_APK_INSTALL:
+  #
+  #  Shells
+  #
+  - bash # The GNU Bourne Again shell
+  - bash-completion # Command-line tab-completion for bash
+
+  #
+  #  Core utils
+  #
+  - coreutils # The basic file, shell and text manipulation utilities
+  - diffutils # Show differences among files
+  - file # File type identification utility
+  - findutils # GNU utilities for finding files
+  - gawk # GNU awk pattern-matching language
+  - git # Distributed version control system
+  - psmisc # set of some small useful utilities that use the proc filesystem
+    # provides a full pstree vs the basic BusyBox implementation.
+  - ripgrep # Fast recursive searcher with regex, respects .gitignore, grep-like.
+  - rsync # A file transfer program to keep remote files in sync
+  - dialog
+  - newt # whiptail
+
+  #
+  #  Access
+  #
+  - sudo # Give certain users the ability to run some commands as root
+  - shadow # PAM-using login and passwd utilities (usermod, useradd, ...)
+  - musl-locales # Locales support for musl
+  - gettext # GNU locale utilities
+  - tzdata # Timezone data
+
+  #
+  #  Editors
+  #
+  - mg # microscopic EMACS style editor
+
+  #
+  #  Remote
+  #
+  - inetutils-telnet
+  - mosh # Mobile shell surviving disconnects with local echo and line editing
+  - openssh # Port of OpenBSD's free SSH release
+
+  #
+  #  Web Tools
+  #
+  - curl # URL retrieval utility and library
+  - wget # Network utility to retrieve files from the Web
+  - w3m # text-based web & gopher browser, as well as pager
+  # - elinks  # Advanced and well-established feature-rich text mode web browser
+  # - lynx  # Cross-platform text-based browser
+
+  #
+  #  System info
+  #
+  # atop - doesn't work on iSH
+  # btop - doesn't work on iSH
+  # glances - doesn't work on iSH
+  - htop # Interactive process viewer
+  - ncdu # Text-based disk usage viewer
+
+  #
+  #  Scripting
+  #
+  - py3-pip # Installs both Python3 and all that is needed for pip
+  - sqlite # Popular minimal sql engine
+
+  #
+  #  Terminal / session management
+  #
+  - tmux # Tool to control multiple terminals from a single terminal
+  # - dvtm # Dynamic virtual terminal manager
+  # - abduco # Session management in a clean and simple way
+
+  #
+  #  Services
+  #
+  # - dcron  # dillon's lightweight cron daemon
+  # - dcron-openrc  # dillon's lightweight cron daemon (OpenRC init scripts)
+  - openrc # OpenRC manages the services, startup and shutdown of a host
+
+  #
+  #  Trust
+  #
+  - ca-certificates # Common CA certificates PEM files from Mozilla
+
+  #
+  # Works on iSH on Alpine 3.17 and up
+  #
+  - lsb-release-minimal # Minimal fake lsb-release that uses os-release
+
+  #
+  # Works on iSH on Alpine 3.20 and up
+  #
+  - procps # Utilities for monitoring your system and processes on your system.

@@ -13,7 +13,7 @@ populate_config() {
         _pc_d_templates="$DEPLOY_PATH"/config_templates
         lbl_1 "No configs found, populating $_pc_d_conf from templates"
         mkdir -p "$_pc_d_conf"
-        cp -av "$_pc_d_templates"/* "$_pc_d_conf" || {
+        cp -a "$_pc_d_templates"/* "$_pc_d_conf" || {
             error_msg "Failed to copy templates"
         }
         echo
@@ -30,7 +30,7 @@ ensure_spd_var_defined() {
     expand_config_var "$_vsv_variable"
     eval "_vsv_value=\"\${$_vsv_variable}\""
     if [ -n "$_vsv_value" ]; then
-        echo "$_vsv_variable: $_vsv_value"
+        msg_dbg "$_vsv_variable: $_vsv_value" 1
     else
         # shellcheck disable=SC2154
         lbl_2 "$module_name: Dependency issue - $_vsv_variable not defined2"
@@ -39,12 +39,29 @@ ensure_spd_var_defined() {
     fi
 }
 
-task_param_parse() {
+indicate_unset() {
+    case "$1" in
+        '') echo "*unset*" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+cmd_line_param_list() {
+    lbl_1 "Listing of cmd line options"
+    lbl_2 "  opt_task    $(indicate_unset "$opt_task")"
+}
+
+cmd_line_param_error() {
+    cmd_line_param_list
+    err_msg "$1"
+}
+
+cmd_line_param_parse() {
     while [ -n "$1" ]; do
         case "$1" in
             install) opt_task=install ;;
             remove) opt_task=remove ;;
-            *) err_msg "Unrecognized option: $1" ;;
+            *) err_msg "Unrecognized major option: $1" ;;
         esac
         shift
     done
@@ -60,7 +77,7 @@ check_for_abort() {
     [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
     # shellcheck disable=SC2154 # SPD_ABORT defined in configs
     {
-        echo "check_for_abort() $SPD_ABORT  max: $_cfa_max"
+        msg_dbg "check_for_abort() $SPD_ABORT  max: $_cfa_max" 1
         # log_it "SPD_ABORT: $SPD_ABORT"
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
             err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
@@ -99,6 +116,7 @@ load_utils() {
 }
 
 load_utils
+cmd_line_param_parse "$@"
 populate_config
 
 # log_it "prepare_env will process configs"

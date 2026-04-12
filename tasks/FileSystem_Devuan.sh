@@ -1,19 +1,5 @@
 #!/bin/sh
 
-copy_items() {
-    f_src="$1"
-    d_dst="$2"
-    lbl_2 "copy from $f_src"
-    lbl_2 "  to $d_dst"
-    mkdir -p "$d_dst" || err_msg "Failed: mkdir -p $d_dst"
-
-    if [ -d "$f_src" ]; then
-        cp -a "$f_src"/* "$d_dst" || err_msg "$module_name: Failed to copy to $d_dst"
-    else
-        cp -a "$f_src" "$d_dst" || err_msg "$module_name: Failed to copy to $d_dst"
-    fi
-}
-
 task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
@@ -22,16 +8,11 @@ task_prepare() {
 
     check_for_abort 1 task_prepare
 
-    d_files_base="$DEPLOY_PATH"/files/all_distros
     return "$dependency_issue"
 }
 
 task_execute() {
     check_for_abort 0 task_execute
-
-    copy_items "$d_files_base"/usr_local_bin /usr/local/bin
-    copy_items "$d_files_base"/usr_local_sbin /usr/local/sbin
-    copy_items "$d_files_base"/etc/sudoers.d/sudo_no_passwd /etc/sudoers.d
 }
 
 #=====================================================================
@@ -46,6 +27,18 @@ task_execute() {
     # shellcheck source=/dev/null
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
-module_name="all_distros.sh"
+module_name="file_systems/Devuan"
+
+# Ensure opions are valid
+# shellcheck disable=SC2154 # opt_task defined in prepare_env.sh
+case "$opt_task" in
+    install) ;;
+    *)
+        cmd_line_param_error "$module_name: opt_task must be install"
+        ;;
+esac
+
+# task overrides
+source_it "$DEPLOY_PATH"/configs/tasks/filesystem_devuan.sh
 
 task_prepare && task_execute

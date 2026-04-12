@@ -13,7 +13,7 @@ handle_initd_script() {
         remove)
             if [ -f "$svc_script" ]; then
                 safe_remove --ignore-sys-path "$svc_script" && {
-                   log_3 "module_name: Removal of service script completed - svc_script"
+                    log_3 "module_name: Removal of service script completed - svc_script"
                 }
             else
                 log_3 "module_name: svc_script not present"
@@ -58,18 +58,16 @@ task_prepare() {
     ensure_spd_var_defined SPD_SERVICE_HANDLER
     [ -n "$SPD_SERVICE_HANDLER" ] && {
         check_service_env
-        [ "$SPD_SERVICE_HANDLER" = openrc ] && openrc_dependency_check
+        [ "$SPD_SERVICE_HANDLER" = openrc ] && {
+            source_it "$DEPLOY_PATH"/tools/svc_handler_openrc.sh
+            openrc_dependency_check
+        }
     }
     return "$dependency_issue"
 }
 
 task_execute() {
     check_for_abort 0 task_execute
-
-    case "$opt_task" in
-        install | remove) ;;
-        *) err_msg "$module_name: Invalid option [$opt_task]" ;;
-    esac
 
     handle_initd_script "$opt_task"
 
@@ -94,10 +92,16 @@ task_execute() {
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 
-task_param_parse "$@"
-
 module_name="service_runbg.sh"
+
+# Ensure opions are valid
+case "$opt_task" in
+    install | remove) ;;
+    *)
+        cmd_line_param_error "$module_name: opt_task must be install/remove"
+        ;;
+esac
+
 source_it "$DEPLOY_PATH"/tools/svc_handler_common.sh
-source_it "$DEPLOY_PATH"/tools/svc_handler_openrc.sh
 
 task_prepare && task_execute

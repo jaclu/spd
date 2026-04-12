@@ -243,8 +243,11 @@ err_msg() {
     fi
 
     [ -z "$app_name" ] && app_name=$(basename "$0")
+
     echo >&2
     log_it "${app_name}[$$] ${_em_label}: $_em_msg" -t # should always have timestamps
+    echo >&2
+
     [ "$_em_exit_code" -gt -1 ] && script_utils_cleanup "$_em_exit_code"
     unset _em_in_progress # in case exit code was < 0
 }
