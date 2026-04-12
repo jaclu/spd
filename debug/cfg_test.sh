@@ -1,36 +1,5 @@
 #!/bin/sh
 
-populate_config() {
-    # If config/ is empty populate it with config_templates as a default
-    _pc_d_conf="$DEPLOY_PATH"/configs
-    [ -n "$(ls -A "$_pc_d_conf" 2>/dev/null)" ] || {
-        _pc_d_templates="$DEPLOY_PATH"/config_templates
-        lbl_1 "No configs found, populating $_pc_d_conf from templates"
-        mkdir -p "$_pc_d_conf"
-        cp -a "$_pc_d_templates"/* "$_pc_d_conf" || {
-            error_msg "Failed to copy templates"
-        }
-        echo
-    }
-}
-
-load_utils() {
-    _lu_f_utils="$DEPLOY_PATH"/tools/script-utils.sh
-    [ -f "$_lu_f_utils" ] || {
-        printf '\n%s[%s] ERROR: source file not found: %s\n' \
-            "$0" "$$" "$_lu_f_utils" >&2
-        exit 1
-    }
-    # shellcheck source=tools/script-utils.sh
-    . "$_lu_f_utils"
-    [ -n "$t_start" ] || {
-        # guaranteed variable undefined, sourcing must have failed
-        printf '\n%s[%s] ERROR: Sourcing %s failed to define: t_start\n' \
-            "$0" "$$" "$_lu_f_utils" >&2
-        exit 1
-    }
-}
-
 #=====================================================================
 #
 #   Main
