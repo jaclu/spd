@@ -62,16 +62,23 @@ pcf_verify_config_file() {
             _vcf_first_line=false
             continue
         }
+        [ -z "$_vcf_line" ] && continue # ignore blank lines
+
         case $_vcf_in_list in
             1)
                 case $_vcf_line in
                     '-'\ *) continue ;; # list item
                     '#'*) continue ;;   # comment
-                    *':')
-                        _vcf_in_list=1
-                        continue
-                        ;;                        # bare key: list follows
-                    *':'* | '') _vcf_in_list=0 ;; # blank line or nev key: value scalar
+                    [A-Za-z_][A-Za-z0-9_]*':'*)
+                        # new key: check if list or scalar follows
+                        _vcf_rest=${_vcf_line#*':'}
+                        _vcf_rest=${_vcf_rest#"${_vcf_rest%%[![:space:]]*}"}
+                        case $_vcf_rest in
+                            '' | '#'*) _vcf_in_list=1 ;;
+                            *) _vcf_in_list=0 ;;
+                        esac
+                        ;;
+                    '') _vcf_in_list=0 ;; # blank (consumed earlier, safety net)
                     *)
                         printf 'ERROR: invalid list item: [%s]\n' \
                             "$_vcf_line" >&2
@@ -85,8 +92,11 @@ pcf_verify_config_file() {
                     [A-Za-z_][A-Za-z0-9_]*':'\ * | \
                         [A-Za-z_][A-Za-z0-9_]*':')
                         # Valid key: or key: value line
-                        case $_vcf_line in
-                            *':') _vcf_in_list=1 ;;
+                        # Extract everything after the colon and strip leading whitespace
+                        _vcf_rest=${_vcf_line#*':'}
+                        _vcf_rest=${_vcf_rest#"${_vcf_rest%%[![:space:]]*}"}
+                        case $_vcf_rest in
+                            '' | '#'*) _vcf_in_list=1 ;;  # bare key or key with only a comment -> list follows
                             *) _vcf_in_list=0 ;;
                         esac
                         ;;
@@ -208,14 +218,15 @@ pcf_parse_config_file() {
 #
 read_config_file() {
     _rcf_f_cfg="$1"
-    # log_it "Processing: $_rcf_f_cfg"
-    [ -f "$_rcf_f_cfg" ] && {
-        msg_dbg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 2
+    msg_dbg "Processing: $_rcf_f_cfg" 1
+    if [ -f "$_rcf_f_cfg" ]; then
+        msg_dbg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 1
 
         pcf_verify_config_file "$_rcf_f_cfg"
         pcf_parse_config_file "$_rcf_f_cfg"
-    }
-
+    else
+        msg_dbg "Config file not found: $_rcf_f_cfg" 2
+    fi
 }
 
 #
