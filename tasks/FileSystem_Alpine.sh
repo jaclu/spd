@@ -6,19 +6,60 @@ task_prepare() {
     # is_linux || err_msg "Will not run apt on non-Linux"
     dependency_issue=0
 
+    lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
 
     fs_is_alpine || {
-        lbl_2 "$module_name: Dependency issue - This is not running on an Alpine FS"
+        lbl_3 "$module_name: Dependency issue - This is not running on an Alpine FS"
         dependency_issue=1
     }
 
+    # Read related config files, before variables are expanded
+    read_config_file "$DEPLOY_PATH"/configs/files_systems/alpine.yml
+    read_config_file "$DEPLOY_PATH"/configs/task_overrides/filesystem_alpine.yml
+
+    ensure_spd_var_defined SPD_APK_INSTALL
     ensure_spd_var_defined SPD_APK_DEVEL
+    ensure_spd_var_defined SPD_APK_LINTING
+    expand_config_var SPD_APK_REMOVE # dont nag if it is empty
+
+    ensure_spd_var_defined SPD_PKGS_MAN
+    ensure_spd_var_defined SPD_PKGS_DEVEL
+    ensure_spd_var_defined SPD_PKGS_LINTING
+
+    # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
+    yaml_true "$SPD_PKGS_MAN" && {
+        lbl_4 "Will install man pages"
+        SPD_APK_INSTALL="$SPD_APK_INSTALL docs"
+    }
+    # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
+    yaml_true "$SPD_PKGS_DEVEL" && {
+        lbl_4 "Will install devel packages"
+        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_PKGS_DEVEL"
+    }
+    # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
+    yaml_true "$SPD_PKGS_LINTING" && {
+        lbl_4 "Will install linting packages"
+        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_PKGS_LINTING"
+    }
     return "$dependency_issue"
 }
 
 task_execute() {
+    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
+
+    # current_dbg_lvl=2
+    [ -n "$SPD_APK_REMOVE" ] && {
+        lbl_3 "Will remove items in SPD_APK_REMOVE"
+        display_list_content SPD_APK_REMOVE
+        # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
+        apk del $SPD_APK_REMOVE || err_msg "Failed to run apk del SPD_APK_REMOVE"
+    }
+    lbl_3 "Installing seleted Alpine packages"
+    display_list_content SPD_APK_INSTALL
+    # shellcheck disable=SC2086 # SPD_APK_INSTALL should be expanded
+    apk add $SPD_APK_INSTALL || err_msg "Failed to run apk add SPD_APK_INSTALL"
 }
 
 #=====================================================================
@@ -27,36 +68,21 @@ task_execute() {
 #
 #=====================================================================
 
+module_name="FileSystem_Alpine"
+
 [ -n "$DEPLOY_PATH" ] || {
     #  Run this in stand-alone mode
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=/dev/null
+    # shellcheck source=tools/prepare_env.sh
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
-module_name="file_systems/Alpine"
 
 # Ensure opions are valid
-# shellcheck disable=SC2154 # opt_task defined in prepare_env.sh
 case "$opt_task" in
     install) ;;
     *)
         cmd_line_param_error "$module_name: opt_task must be install"
         ;;
 esac
-
-
-read_config_file "$DEPLOY_PATH"/configs/files_systems/alpine.yml
-
-# current_dbg_lvl=2
-# msg_dbg "before task_overrides"
-ensure_spd_var_defined SPD_APK_INSTALL
-
-# current_dbg_lvl=0
-# # task overrides
-read_config_file "$DEPLOY_PATH"/configs/task_overrides/filesystem_alpine.yml
-
-# current_dbg_lvl=2
-# msg_dbg "after task_overrides"
-ensure_spd_var_defined SPD_APK_INSTALL
 
 task_prepare && task_execute
