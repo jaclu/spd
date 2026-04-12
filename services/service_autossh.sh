@@ -99,14 +99,14 @@ task_execute() {
 #
 #=====================================================================
 
-[ -n "$DEPLOY_PATH" ] || {
+[ -n "$D_REPO" ] || {
     #  Run this in stand-alone mode
-    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
-    . "$DEPLOY_PATH"/tools/prepare_env.sh
+    . "$D_REPO"/tools/prepare_env.sh
 }
 module_name="service_auossh.sh"
-source_it "$DEPLOY_PATH"/tools/svc_handler_common.sh
-source_it "$DEPLOY_PATH"/tools/svc_handler_openrc.sh
+source_it "$D_REPO"/tools/svc_handler_common.sh
+source_it "$D_REPO"/tools/svc_handler_openrc.sh
 
 task_prepare && task_execute

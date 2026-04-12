@@ -188,8 +188,8 @@ expand_config_var() {
     done
 }
 
-# DEPLOY_PATH is set by $0 to give the path to the repository
-[ -n "$DEPLOY_PATH" ] || {
-    echo  "ERROR: This can not be run directly"
+# D_REPO is set by $0 to give the path to the repository
+[ -n "$D_REPO" ] || {
+    echo "ERROR: This can not be run directly"
     exit 1
 }

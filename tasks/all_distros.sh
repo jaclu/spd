@@ -22,7 +22,7 @@ task_prepare() {
 
     check_for_abort 1 task_prepare
 
-    d_files_base="$DEPLOY_PATH"/files/all_distros
+    d_files_base="$D_REPO"/files/all_distros
     return "$dependency_issue"
 }
 
@@ -40,11 +40,11 @@ task_execute() {
 #
 #=====================================================================
 
-[ -n "$DEPLOY_PATH" ] || {
+[ -n "$D_REPO" ] || {
     #  Run this in stand-alone mode
-    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
-    . "$DEPLOY_PATH"/tools/prepare_env.sh
+    . "$D_REPO"/tools/prepare_env.sh
 }
 module_name="all_distros.sh"
 

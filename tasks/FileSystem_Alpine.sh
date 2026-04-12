@@ -15,8 +15,8 @@ task_prepare() {
     }
 
     # Read related config files, before variables are expanded
-    read_config_file "$DEPLOY_PATH"/configs/files_systems/alpine.yml
-    read_config_file "$DEPLOY_PATH"/configs/task_overrides/filesystem_alpine.yml
+    read_config_file "$D_REPO"/configs/files_systems/alpine.yml
+    read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
 
     ensure_spd_var_defined SPD_APK_INSTALL
     ensure_spd_var_defined SPD_APK_DEVEL
@@ -70,11 +70,11 @@ task_execute() {
 
 module_name="FileSystem_Alpine"
 
-[ -n "$DEPLOY_PATH" ] || {
+[ -n "$D_REPO" ] || {
     #  Run this in stand-alone mode
-    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
-    . "$DEPLOY_PATH"/tools/prepare_env.sh
+    . "$D_REPO"/tools/prepare_env.sh
 }
 
 # Ensure opions are valid

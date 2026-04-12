@@ -168,7 +168,7 @@ SPD_EXTRA_TASK:
 # Usefull if you have local nodes that are not defined in DNS
 # Leaving it empty/undefined prevents this action.
 #
-# SPD_FILE_HOSTS=$DEPLOY_PATH/custom/etc_files/hosts
+# SPD_FILE_HOSTS=$D_REPO/custom/etc_files/hosts
 SPD_FILE_REPOSITORIES:
 
 # ====================================================================

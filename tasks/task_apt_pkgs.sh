@@ -13,7 +13,7 @@ task_prepare() {
     }
     # is_linux || err_msg "Will not run apt on non-Linux"
 
-    read_config_file "$DEPLOY_PATH"/configs/PktHandlers/pkg_apt.yml
+    read_config_file "$D_REPO"/configs/PktHandlers/pkg_apt.yml
     #
     #. Expand all SPD_ variables before being used, order doesn't matter
     #
@@ -63,11 +63,11 @@ task_abort() {
 
 # echo "><> processing ask_apt_pkgs"
 
-[ -n "$DEPLOY_PATH" ] || {
+[ -n "$D_REPO" ] || {
     #  Run this in stand-alone mode
-    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
-    . "$DEPLOY_PATH"/tools/prepare_env.sh
+    . "$D_REPO"/tools/prepare_env.sh
 }
 module_name="task_apt_pkgs.sh"
 

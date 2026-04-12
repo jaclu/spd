@@ -12,7 +12,7 @@
 # If caller is a POSIX script, use this, changing path to this if need-be:
 #
 # load_utils() {
-#     _lu_f_utils="$DEPLOY_PATH"/tools/script-utils.sh
+#     _lu_f_utils="$D_REPO"/tools/script-utils.sh
 #     [ -f "$_lu_f_utils" ] || {
 #         printf '\n%s[%s] ERROR: source file not found: %s\n' \
 #             "$0" "$$" "$_lu_f_utils" >&2

@@ -3,8 +3,8 @@
 check_service_env() {
 
     if [ -n "$SPD_SERVICE_HANDLER" ]; then
-        # shellcheck disable=SC2154 # DEPLOY_PATH defined by $0
-        _svc_init_scr_org="$DEPLOY_PATH/files/services/$SPD_SERVICE_HANDLER/autossh"
+        # shellcheck disable=SC2154 # D_REPO defined by $0
+        _svc_init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/autossh"
         [ -f "$_svc_init_scr_org" ] || {
             lbl_2 "${module_name:-}: Service script not found: $_svc_init_scr_org"
             dependency_issue=1

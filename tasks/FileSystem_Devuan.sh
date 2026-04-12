@@ -21,11 +21,11 @@ task_execute() {
 #
 #=====================================================================
 
-[ -n "$DEPLOY_PATH" ] || {
+[ -n "$D_REPO" ] || {
     #  Run this in stand-alone mode
-    DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
-    . "$DEPLOY_PATH"/tools/prepare_env.sh
+    . "$D_REPO"/tools/prepare_env.sh
 }
 module_name="file_systems/Devuan"
 
@@ -39,6 +39,6 @@ case "$opt_task" in
 esac
 
 # task overrides
-source_it "$DEPLOY_PATH"/configs/tasks/filesystem_devuan.sh
+source_it "$D_REPO"/configs/tasks/filesystem_devuan.sh
 
 task_prepare && task_execute

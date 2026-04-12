@@ -8,18 +8,18 @@
 
 skip_auto_process_config_hierarchy=yes
 
-DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare_env.sh
-. "$DEPLOY_PATH"/tools/prepare_env.sh
+. "$D_REPO"/tools/prepare_env.sh
 
 #
 # Test
 #
 
-. "$DEPLOY_PATH"/tools/process_config_file.sh
+. "$D_REPO"/tools/process_config_file.sh
 
-read_config_file "$DEPLOY_PATH"/configs/task_overrides/filesystem_alpine.yml
-read_config_file "$DEPLOY_PATH"/debug/dummy_config.yml
+read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
+read_config_file "$D_REPO"/debug/dummy_config.yml
 
 echo "Verify variables retrieved"
 # shellcheck disable=SC2154 # SPD_ vars read via config files

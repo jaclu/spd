@@ -3,14 +3,14 @@
 relative_path() { # Needed here due to: prepare_menu() - set_menu_env_variables()
     # remove D_TM_BASE_PATH prefix
     # log_it "relative_path($1) - removing prefix: $D_TM_BASE_PATH"
-    printf '%s\n' "${1#"$DEPLOY_PATH"/}"
+    printf '%s\n' "${1#"$D_REPO"/}"
 }
 
 populate_config() {
     # If config/ is empty populate it with config_templates as a default
-    _pc_d_conf="$DEPLOY_PATH"/configs
+    _pc_d_conf="$D_REPO"/configs
     [ -n "$(ls -A "$_pc_d_conf" 2>/dev/null)" ] || {
-        _pc_d_templates="$DEPLOY_PATH"/config_templates
+        _pc_d_templates="$D_REPO"/config_templates
         lbl_1 "No configs found, populating $_pc_d_conf from templates"
         mkdir -p "$_pc_d_conf"
         cp -a "$_pc_d_templates"/* "$_pc_d_conf" || {
@@ -101,7 +101,7 @@ check_for_abort() {
 }
 
 load_utils() {
-    _lu_f_utils="$DEPLOY_PATH"/tools/script-utils.sh
+    _lu_f_utils="$D_REPO"/tools/script-utils.sh
     [ -f "$_lu_f_utils" ] || {
         printf '\n%s[%s] ERROR: source file not found: %s\n' \
             "$0" "$$" "$_lu_f_utils" >&2
@@ -125,7 +125,7 @@ load_utils() {
 
 # echo "><> processing prepare_env"
 
-[ -n "$DEPLOY_PATH" ] || {
+[ -n "$D_REPO" ] || {
     printf '\n%s[%s] ERROR: This can not be run directly.\n' "$0" "$$" >&2
     exit 1
 }
@@ -137,6 +137,6 @@ populate_config
 [ -z "$skip_auto_process_config_hierarchy" ] && {
     msg_dbg "will process config_hierarchy" 1
     # log_it "prepare_env will process configs"
-    _fp="${DEPLOY_PATH}"/tools/process_config_hierarchy.sh
+    _fp="${D_REPO}"/tools/process_config_hierarchy.sh
     [ "${app_name_full_path:-0}" != "$_fp" ] && source_it "$_fp"
 }
