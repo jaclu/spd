@@ -2,3 +2,20 @@
 SPD_HOME_DIR_CONTENT: "custom/tars/home_{{ SPD_UNAME }}.tgz"
 SPD_UNAME: "{{ SPD_REAL_UNAME }}"
 SPD_REAL_UNAME: hepp
+
+SPD_NO_BLANKS:
+  - bash # The GNU Bourne Again shell
+  - bash-completion # Command-line tab-completion for bash
+
+#
+#  Support for man pages
+#
+SPD_APK_MAN: # will be installed if SPD_PKGS_MAN=1
+  - docs
+  - hepp
+
+SPD_WITH_BLANKS:
+  - bash # The GNU Bourne Again shell
+  - bash-completion # Command-line tab-completion for bash
+
+  - zsh
