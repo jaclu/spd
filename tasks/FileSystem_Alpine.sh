@@ -8,6 +8,12 @@ task_prepare() {
 
     check_for_abort 1 task_prepare
 
+    fs_is_alpine || {
+        lbl_2 "$module_name: Dependency issue - This is not running on an Alpine FS"
+        dependency_issue=1
+    }
+
+    ensure_spd_var_defined SPD_APK_DEVEL
     return "$dependency_issue"
 }
 
@@ -38,7 +44,19 @@ case "$opt_task" in
         ;;
 esac
 
-# task overrides
-source_it "$DEPLOY_PATH"/configs/tasks/filesystem_alpine.yml
+
+read_config_file "$DEPLOY_PATH"/configs/files_systems/alpine.yml
+
+# current_dbg_lvl=2
+# msg_dbg "before task_overrides"
+ensure_spd_var_defined SPD_APK_INSTALL
+
+# current_dbg_lvl=0
+# # task overrides
+read_config_file "$DEPLOY_PATH"/configs/task_overrides/filesystem_alpine.yml
+
+# current_dbg_lvl=2
+# msg_dbg "after task_overrides"
+ensure_spd_var_defined SPD_APK_INSTALL
 
 task_prepare && task_execute
