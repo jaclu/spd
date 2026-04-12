@@ -38,20 +38,18 @@ ensure_spd_var_defined() {
 }
 
 display_list_content() {
-    # Displays content of list variable, with each item on a new line, if current_dbg_lvl>=1
-    # otherwise print dependency warning and set dependency_issue=1
-    # to inicate dependency issue for caller
+    # Displays content of list variable, with each item on a new line
     _dlc_variable="$1"
 
     expand_config_var "$_dlc_variable"
     eval "_dlc_value=\"\${$_dlc_variable}\""
+    lbl_3 "$_dlc_variable:"
     if [ -n "$_dlc_value" ]; then
-        msg_dbg "$_dlc_variable:" 1
-        printf '%s\n' $'\t'"$_dlc_value" | sed 's/ /\n\t/g'
+        for _item in $_dlc_value; do
+            lbl_4 "  $_item"
+        done
     else
-        lbl_2 "${module_name:-}: Dependency issue - no content/undefined: $_dlc_variable"
-        # shellcheck disable=SC2034 # dependency_issue used by caller
-        dependency_issue=1
+        lbl_4 "  *empty*"
     fi
 }
 
