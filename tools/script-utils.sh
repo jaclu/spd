@@ -126,6 +126,15 @@ fs_is_ubuntu() {
     grep -qs '^ID=ubuntu$' /etc/os-release
 }
 
+yaml_true() {
+    _s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    [ -z "$_s" ] && err_msg "yaml_true() - no param"
+    case "$_s" in
+        1 | yes | true) return 0 ;;
+        *) ;;
+    esac
+    return 1
+}
 # ---  not currently used
 
 fs_is_gentoo() {
@@ -503,7 +512,7 @@ source_it() {
         echo
     }
 
-    # shellcheck source=/dev/null
+    # shellcheck source=/dev/null # filename is dynamic
     . "$_f"
     [ -n "$_si_inspect_variable" ] && {
         # if variable name provided verify that it has content
