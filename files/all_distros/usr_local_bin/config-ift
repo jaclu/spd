@@ -89,11 +89,12 @@ autologin_change() {
 
     if [ "$uname_autologin" = "disable" ]; then
         # echo "disabling auto-login"
+        # TODO: check this rm
         # shellcheck disable=SC2154 # f_login_default_user sourced at runtime
         rm -f "$f_login_default_user"
     else
         eval "_h=~$uname_autologin"
-        # shellcheck disable=SC2154
+        # shellcheck disable=SC2154 # _h uses eval to find use home
         [ -d "$_h" ] || {
             error_msg "$uname_autologin does not seem to be a valid user on this system"
         }

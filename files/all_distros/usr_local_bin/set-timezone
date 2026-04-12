@@ -47,7 +47,7 @@ check_tz_dependencies() {
             #  Prevent Debian's built in dialog,
             bash -c "DEBIAN_FRONTEND=noninteractive apt install -y ${apks[*]}"
         else
-            #  shellcheck disable=SC2068
+            #  shellcheck disable=SC2068 # apks should be expanded in this case
             apk add ${apks[@]}
         fi
     fi

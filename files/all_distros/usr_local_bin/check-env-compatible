@@ -62,7 +62,7 @@ At that point this issue will be self corrected again.
 load_utils() {
     _lu_f_utils=/usr/local/lib/ift-utils.sh
 
-    # shellcheck source=/dev/null disable=SC1091,SC2317
+    # shellcheck source=/dev/null # not available on deploy machines
     . "$_lu_f_utils" || {
         printf '\nERROR: Failed to source: %s\n' "$_lu_f_utils" >&2
         exit 1

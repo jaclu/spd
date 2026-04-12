@@ -11,7 +11,7 @@
 #  This process has no noticeable impact on battery life.
 #
 
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034 # variables used by openrc but not in this script
 {
     description="Reads GPS to ensure iSH continues to run when in the background"
 

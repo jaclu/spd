@@ -17,7 +17,6 @@ DESC="reverse ssh daemon"
 NAME=autossh
 PIDFILE="/run/autossh.pid"
 
-# shellcheck disable=SC2034 # used by autossh
 {
     export AUTOSSH_PIDFILE="$PIDFILE"
     export AUTOSSH_LOGFILE="/var/log/autossh.log"
@@ -90,7 +89,7 @@ case "$1" in
     start)
         # log_action_msg "DBG: autossh_opts [$autossh_opts]"
         log_daemon_msg "Starting $DESC" "$NAME"
-        # shellcheck disable=SC2086
+        # shellcheck disable=SC2086 # autossh_opts is meant to be word-split
         start-stop-daemon --start \
             --exec /usr/lib/autossh/autossh \
             --startas /usr/bin/autossh -- $autossh_opts "$jump_account"

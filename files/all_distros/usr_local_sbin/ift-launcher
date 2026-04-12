@@ -462,10 +462,9 @@ select_log_files_to_monitor() {
     log_files=""
     d_logs=/var/log
 
-    # shellcheck disable=SC2045
-    for log_file in $(ls -t "$d_logs"); do
+    for log_file in "$d_logs"/*; do
         #log_basename="$(basename "$logfile")"
-        f_log_file="$d_logs/$log_file"
+        f_log_file="$log_file"
         [ ! -f "$f_log_file" ] && continue               # not a file
         file -b "$f_log_file" | grep -q text || continue # not a text file
         log_files="$log_files $f_log_file"

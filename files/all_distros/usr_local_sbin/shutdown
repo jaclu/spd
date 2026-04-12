@@ -29,7 +29,7 @@ is_int() {
 }
 
 # Define a function to handle Ctrl+C
-# shellcheck disable=SC2329
+# shellcheck disable=SC2329 # This function is meant to be called by the trap, not directly
 interrupt_handler() {
     echo "Ctrl+C (SIGINT) received. Cancelling shutdown..."
     shutdown_cancelled

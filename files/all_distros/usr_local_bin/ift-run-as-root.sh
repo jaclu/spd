@@ -34,13 +34,14 @@ app="$0"
 }
 
 if [ "$(whoami)" != "root" ]; then
-    #  shellcheck disable=SC2154
+    #  shell check disable=SC2154
     if [ -z "$hide_run_as_root" ]; then
         echo "Executing $app as root"
         echo
     fi
 
     #  Providing some env variables that are needed to be kept in the sudo
+    # TODO: can this $@ be quoted?
     # shellcheck disable=SC2068 #  params should be expanded in this case
     sudo "$app" $@
     exit_code="$?"
