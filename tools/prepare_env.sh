@@ -29,11 +29,11 @@ ensure_spd_var_defined() {
     _vsv_variable="$1"
     expand_config_var "$_vsv_variable"
     eval "_vsv_value=\"\${$_vsv_variable}\""
-    if [ -n "$_vsv_value" ]; then
+    if [ -n "${_vsv_value+x}" ]; then
         msg_dbg "$_vsv_variable: $_vsv_value" 1
     else
         # shellcheck disable=SC2154
-        lbl_2 "$module_name: Dependency issue - $_vsv_variable not defined2"
+        lbl_2 "$module_name: Dependency issue - $_vsv_variable not defined"
         # shellcheck disable=SC2034
         dependency_issue=1
     fi
@@ -119,6 +119,9 @@ load_utils
 cmd_line_param_parse "$@"
 populate_config
 
-# log_it "prepare_env will process configs"
-_fp="${DEPLOY_PATH}"/tools/process_config_hierarchy.sh
-[ "$app_name_full_path" != "$_fp" ] && source_it "$_fp"
+[ -z "$skip_auto_process_config_hierarchy" ] && {
+    msg_dbg "will process config_hierarchy" 1
+    # log_it "prepare_env will process configs"
+    _fp="${DEPLOY_PATH}"/tools/process_config_hierarchy.sh
+    [ "$app_name_full_path" != "$_fp" ] && source_it "$_fp"
+}
