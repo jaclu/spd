@@ -254,7 +254,6 @@ expand_config_var() {
     done
 }
 
-# shellcheck disable=SC1073
 [ -n "$DEPLOY_PATH" ] || {
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
     . "$DEPLOY_PATH"/tools/prepare_env.sh

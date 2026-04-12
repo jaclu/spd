@@ -13,7 +13,7 @@ deploy_initd_script() {
         sed_cmd="sed -i"
     fi
 
-    # shellcheck disable=SC2154
+    # shellcheck disable=SC2154 # SPD_ vars via config files
     {
         loopback_cmd="$SPD_SVC_AUTOSSH_REVERSE_PORT:localhost:$SPD_SSHD_PORT"
         $sed_cmd "s|^LOOPBACK_DIRECIVE.*|loopback_directive=\"$loopback_cmd\"|" \
@@ -102,7 +102,7 @@ task_execute() {
 [ -n "$DEPLOY_PATH" ] || {
     #  Run this in stand-alone mode
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=/dev/null
+    # shellcheck source=tools/prepare_env.sh
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 module_name="service_auossh.sh"

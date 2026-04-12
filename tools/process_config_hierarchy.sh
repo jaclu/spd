@@ -10,6 +10,7 @@
 [ -n "$DEPLOY_PATH" ] || {
     #  Run this in stand-alone mode
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
+    # shellcheck source=tools/prepare_env.sh
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 

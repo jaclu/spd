@@ -2,7 +2,7 @@
 
 handle_initd_script() {
 
-    # shellcheck disable=SC2154
+    # shell check disable=SC2154
     case "$opt_task" in
         install)
             # shellcheck disable=SC2154 # _svc_init_scr_org defined in svc_handler_common.sh
@@ -88,7 +88,7 @@ task_execute() {
 [ -n "$DEPLOY_PATH" ] || {
     #  Run this in stand-alone mode
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=/dev/null
+    # shellcheck source=tools/prepare_env.sh
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 

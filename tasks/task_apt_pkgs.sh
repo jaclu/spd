@@ -34,13 +34,13 @@ task_execute() {
 
     [ -n "$SPD_APT_PURGE" ] && {
         lbl_2 "Will purge apt packages: $SPD_APT_PURGE"
-        # shellcheck disable=SC2086
+        # shellcheck disable=SC2086 # we want word splitting in this case
         apt -y purge "$SPD_APT_PURGE"
     }
 
     [ -n "$SPD_APT_INSTALL" ] && {
         lbl_2 "Will install apt packages: $SPD_APT_INSTALL"
-        # shellcheck disable=SC2086
+        # shellcheck disable=SC2086 # we want word splitting in this case
         apt -y install $SPD_APT_INSTALL
     }
 }
@@ -66,7 +66,7 @@ task_abort() {
 [ -n "$DEPLOY_PATH" ] || {
     #  Run this in stand-alone mode
     DEPLOY_PATH=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=/dev/null
+    # shellcheck source=tools/prepare_env.sh
     . "$DEPLOY_PATH"/tools/prepare_env.sh
 }
 module_name="task_apt_pkgs.sh"
