@@ -1,8 +1,5 @@
 ---
 SPD_APK_INSTALL:
-  #
-  #  Shells
-  #
   - bash # The GNU Bourne Again shell
   - bash-completion # Command-line tab-completion for bash
 
