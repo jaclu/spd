@@ -4,3 +4,30 @@
 # from other config files, to match personal preferences, wihout having to mess arround
 # if the base configs are changed/updated and manually apply user preferences again.
 #
+
+SPD_APK_INSTALL:
+  - bash # The GNU Bourne Again shell
+  - bash-completion # Command-line tab-completion for bash
+  - mg
+  - ripgrep
+  - openrc
+  - autossh
+
+SPD_DEBIAN_APT_INSTALL:
+  - bash # The GNU Bourne Again shell
+  - bash-completion # Command-line tab-completion for bash
+  - mg
+  - ripgrep
+  - autossh
+
+SPD_DEVUAN_APT_INSTALL:
+  #
+  #  Shells
+  #
+  # - bash # Always present
+  - bash-completion # Command-line tab-completion for bash
+  - zsh # Very advanced and programmable command interpreter (shell)
+
+SPD_PKGS_MAN: true # If set to 1 man pages will be deployed
+SPD_PKGS_DEVEL: false # If set to 1 development packages will be deployed
+SPD_PKGS_LINTING: false # If set to 1 linting packages will be deployed
