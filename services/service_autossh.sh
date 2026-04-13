@@ -28,7 +28,7 @@ task_execute() {
     lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
 
-    # shellcheck disable=SC2154 # SPD_SVC_RUNBG_RUNLVL defined via config
+    # shellcheck disable=SC2154 # SPD_SVC_AUTOSSH_RUNLVL defined via config
     process_service "$SPD_SVC_AUTOSSH_RUNLVL"
 }
 
@@ -58,17 +58,16 @@ case "$opt_task" in
         ;;
 esac
 
-source_it "$D_REPO"/tools/svc_handler_common.sh
-
 read_config_file "$D_REPO"/configs/task_overrides/service_autossh.yml
 read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 
-ensure_spd_var_defined SPD_SERVICE_HANDLER
-ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
-ensure_spd_var_defined SPD_SSHD_PORT
 ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
+ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
+
+# Expand all variables before initiating service handler
+source_it "$D_REPO"/tools/svc_handler_common.sh
 
 [ "$std_alone" = "$module_name" ] && {
     task_prepare

@@ -29,6 +29,7 @@ check_service_env() {
         err_msg "check_service_env() - service_name not defined"
     }
 
+    ensure_spd_var_defined SPD_SERVICE_HANDLER
     if [ -n "$SPD_SERVICE_HANDLER" ]; then
         # shellcheck disable=SC2154 # D_REPO & SPD_SERVICE_HANDLER defined by caller
         init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
@@ -41,7 +42,10 @@ check_service_env() {
                 source_it "$D_REPO"/tools/svc_handler_openrc.sh
                 openrc_dependency_check
                 ;;
-            # 'sysv-init') sysv_dependency_check ;;
+            'sysv-init')
+                source_it "$D_REPO"/tools/svc_handler_sysv_init.sh
+                sysv_dependency_check
+                ;;
             *)
                 m="check_service_env() - Unrecognized service-handler"
                 m="$m SPD_SERVICE_HANDLER: $SPD_SERVICE_HANDLER"
@@ -68,7 +72,7 @@ process_service() {
     # attach service to handler
     case "$SPD_SERVICE_HANDLER" in
         'openrc') handler_openrc "$_ps_runlvl" ;;
-        'sysv-init') handler_sysv "$_ps_runlvl" ;;
+        'sysv-init') handler_sysv_init "$_ps_runlvl" ;;
         *)
             m="process_service() - Unrecognized service-handler"
             m="$m SPD_SERVICE_HANDLER: $SPD_SERVICE_HANDLER"

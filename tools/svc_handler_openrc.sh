@@ -1,7 +1,8 @@
 #!/bin/sh
 
 openrc_dependency_check() {
-    ensure_spd_var_defined SPD_SVC_AUTOSSH_RUNLVL
+    ensure_spd_var_defined SPD_SVC_OPENRC_RUNLVL
+
     command -v openrc >/dev/null 2>&1 || {
         lbl_2 "Dependency issue - openrc not found"
         # shellcheck disable=SC2034 # dependency_issue used by caller

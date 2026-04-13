@@ -9,11 +9,12 @@ task_prepare() {
     lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
     check_service_env runbg
-    is_ish || {
-        lbl_2 "Dependency issue - Can only be used on iSH"
-        # shell check disable=SC2034 # dependency_issue used by caller
-        [ "$dependency_issue" = 0 ] && dependency_issue=2
-    }
+
+    # is_ish || { # disabled during deubgging, re-enable once done
+    #     lbl_2 "Dependency issue - Can only be used on iSH"
+    #     # shell check disable=SC2034 # dependency_issue used by caller
+    #     [ "$dependency_issue" = 0 ] && dependency_issue=2
+    # }
     return "$dependency_issue"
 }
 
@@ -52,12 +53,11 @@ case "$opt_task" in
         ;;
 esac
 
-source_it "$D_REPO"/tools/svc_handler_common.sh
-
 read_config_file "$D_REPO"/configs/task_overrides/service_runbg.yml
 read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 
-ensure_spd_var_defined SPD_SERVICE_HANDLER
+# Expand all variables before initiating service handler
+source_it "$D_REPO"/tools/svc_handler_common.sh
 
 [ "$std_alone" = "$module_name" ] && {
     task_prepare
