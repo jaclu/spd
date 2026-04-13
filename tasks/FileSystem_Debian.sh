@@ -79,7 +79,7 @@ module_name="FileSystem_Debian"
 }
 
 # Read related config files, before variables are expanded
-read_config_file "$D_REPO"/configs/files_systems/debian.yml
+read_config_file "$D_REPO"/configs/file_systems/debian.yml
 read_config_file "$D_REPO"/configs/task_overrides/filesystem_debian.yml
 read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 

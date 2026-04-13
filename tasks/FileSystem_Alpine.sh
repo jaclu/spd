@@ -68,7 +68,7 @@ module_name="FileSystem_Alpine"
 }
 
 # Read related config files, before variables are expanded
-read_config_file "$D_REPO"/configs/files_systems/alpine.yml
+read_config_file "$D_REPO"/configs/file_systems/alpine.yml
 read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
 read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 
