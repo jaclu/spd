@@ -7,7 +7,6 @@ openrc_dependency_check() {
         # shellcheck disable=SC2034 # dependency_issue used by caller
         dependency_issue=1
     }
-
 }
 
 handler_openrc() {
