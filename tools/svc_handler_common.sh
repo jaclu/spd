@@ -39,10 +39,12 @@ check_service_env() {
         }
         case "$SPD_SERVICE_HANDLER" in
             'openrc')
+                lbl_3 "Using service handler: openrc"
                 source_it "$D_REPO"/tools/svc_handler_openrc.sh
                 openrc_dependency_check
                 ;;
             'sysv-init')
+                lbl_3 "Using service handler: sysv-init"
                 source_it "$D_REPO"/tools/svc_handler_sysv_init.sh
                 sysv_dependency_check
                 ;;
