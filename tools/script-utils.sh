@@ -467,7 +467,7 @@ safe_remove() {
 
     _sr_item=$1
     _sr_err_ex_code="${2:-1}"
-    [ -z "$_sr_item" ] && err_msg "delete_item: missing path" "$_sr_err_ex_code"
+    [ -z "$_sr_item" ] && err_msg "safe_remove() - missing path" "$_sr_err_ex_code"
 
     $_sr_check_sys_path && was_sys_path "$_sr_item" && {
         err_msg "Refusing to remove a sys-path: $_sr_item" "$_sr_err_ex_code"
