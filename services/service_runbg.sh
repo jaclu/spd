@@ -37,6 +37,7 @@ module_name="service_runbg.sh"
 service_name=runbg
 
 [ -n "$D_REPO" ] || {
+    std_alone="$service_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
@@ -58,6 +59,8 @@ read_config_file "$D_REPO"/configs/task_overrides/service_runbg.yml
 read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 
 ensure_spd_var_defined SPD_SERVICE_HANDLER
-# expand_config_var SPD_ABORT
 
-task_prepare && task_execute
+[ "$std_alone" = "$service_name" ] && {
+    task_prepare
+    task_execute
+}
