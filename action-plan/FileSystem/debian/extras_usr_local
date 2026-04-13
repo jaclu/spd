@@ -1,0 +1,13 @@
+- name: "Install extras to /usr/local/bin  -- {{ remote_src_lbl }}"
+  copy:
+    remote_src: "{{ not b_old_ansible_detected }}"
+    src: "{{ d_repo_debian_role }}/files/usr_local_bin/"
+    dest: /usr/local/bin/
+    mode: preserve
+
+- name: "Install extras to /usr/local/sbin  -- {{ remote_src_lbl }}"
+  copy:
+    remote_src: "{{ not b_old_ansible_detected }}"
+    src: "{{ d_repo_debian_role }}/files/usr_local_sbin/"
+    dest: /usr/local/sbin/
+    mode: preserve

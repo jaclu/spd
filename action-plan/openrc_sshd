@@ -1,0 +1,44 @@
+#
+#  Configure sshd
+#
+- name: Ensure /var/lib/sshd exists
+  file:
+    path: /var/lib/sshd
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure sshd user exists
+  user:
+    name: sshd
+    comment: "OpenSSH Daemon User"
+    group: nogroup
+    home: /run/sshd
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: true
+
+- name: Install custom /etc/init.d/sshd, supporting iSH logging
+  copy:
+    remote_src: true
+    src: "{{ d_repo_openrc_role }}/files/etc/init.d/sshd"
+    dest: "{{ d_init_ift }}/sshd"
+    owner: root
+    group: root
+    mode: "0755"
+
+#
+# Service tasks
+#
+- name: " sshd - Create symbolic link in /etc/init.d"
+  file:
+    src: "{{ d_init_ift }}/sshd"
+    dest: "{{ d_init_d }}/sshd"
+    state: link
+
+- name: " sshd - Set runlevel"
+  include_tasks: tasks/service_runlevel_set.yml # should be include
+  vars:
+    srvc_name: "{{ d_init_d }}/sshd"
+    srvc_runlevel: "{{ ift_runlevel_sshd }}"

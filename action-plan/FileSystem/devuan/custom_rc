@@ -1,0 +1,9 @@
+- name: Install custom /etc/init.d/rc
+  copy:
+    remote_src: true
+    src: "{{ d_repo_debian_role }}/files/etc/init.d/rc"
+    dest: "{{ d_init_ift }}/rc"
+    owner: root
+    group: root
+    mode: "0755"
+

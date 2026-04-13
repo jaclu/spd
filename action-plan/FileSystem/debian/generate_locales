@@ -1,0 +1,5 @@
+- name: Generate required locales
+  locale_gen:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ ift_locales }}"

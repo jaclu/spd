@@ -1,0 +1,46 @@
+---
+#
+#  Part of https://github.com/jaclu/ish-fstools
+#
+#  Copyright (c) 2025-2026: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+#  Install selected Devuan apps
+#
+
+- name: Remove packages listed in ift_devuan_purges
+  apt:
+    state: absent
+    purge: true
+    autoremove: true
+    pkg: "{{ ift_devuan_purges | default([]) }}"
+
+- name: Install selected packages listed in ift_devuan_packages
+  apt:
+    state: present
+    pkg: "{{ ift_devuan_packages | default([]) }}"
+
+- name: Install abduco tarball in /usr/local
+  unarchive:
+    remote_src: true
+    src: "{{ ift_devuan_abduco_tgz }}"
+    dest: /
+
+#
+#  Reuse file assets from the debian role - they are identical for iSH
+#
+- name: "Install extras to /usr/local/bin  -- {{ remote_src_lbl }}"
+  copy:
+    remote_src: true
+    src: "{{ d_repo_debian_role }}/files/usr_local_bin/"
+    dest: /usr/local/bin/
+    mode: preserve
+
+- name: "Install extras to /usr/local/sbin  -- {{ remote_src_lbl }}"
+  copy:
+    remote_src: true
+    src: "{{ d_repo_debian_role }}/files/usr_local_sbin/"
+    dest: /usr/local/sbin/
+    mode: preserve
+

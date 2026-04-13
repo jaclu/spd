@@ -1,0 +1,7 @@
+- name: Deploy /etc/inittab
+  copy:
+    remote_src: true
+    src: "{{ d_repo_alpine_role }}/files/etc/inittab"
+    dest: /etc/
+    mode: preserve
+

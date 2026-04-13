@@ -1,0 +1,5 @@
+- name: Install abduco tarball in /usr/local
+  unarchive:
+    remote_src: true
+    src: "{{ ift_abduco_tgz }}"
+    dest: /

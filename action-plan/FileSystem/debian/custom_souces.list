@@ -1,0 +1,6 @@
+            our_apt_sources="$d_repo"/roles/debian/files/etc/apt/sources.list
+            apt_sources=/etc/apt/sources.list
+
+            if ! diff -q "$our_apt_sources" "$apt_sources" >/dev/null 2>&1; then
+                cp "$our_apt_sources" /etc/apt
+            fi
