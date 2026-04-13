@@ -1,0 +1,122 @@
+---
+SPD_DEBIAN_APT_INSTALL:
+  #
+  #  Shells
+  #
+  # - bash # Always present
+  - bash-completion # Command-line tab-completion for bash
+  - zsh # Very advanced and programmable command interpreter (shell)
+
+  #
+  #  Core utils
+  #
+  - gawk # GNU awk pattern-matching language
+  - git # Distributed version control system
+  - fzf # A command-line fuzzy finder
+  - iputils-ping
+  - jq # Lightweight and flexible command-line JSON processor
+  - mc # Filemanager/shell that emulates Norton Commander
+  - passwd # change and administer password and group data
+  - pigz # Parallel implementation of gzip
+  - ripgrep # Fast recursive searcher with regex, respects .gitignore, grep-like.
+  - rsync # A file transfer program to keep remote files in sync
+  - dialog
+  - whiptail
+
+  #
+  #  Access
+  #
+  - sudo # Give certain users the ability to run some commands as root
+  - locales # Locales support
+  - gettext # GNU locale utilities
+  - tzdata # Timezone data
+
+  #
+  #  Editors
+  #
+  - mg # microscopic EMACS style editor
+  - nano # Enhanced clone of the Pico text editor
+  - vim # advanced text editor, with GUI
+
+  #
+  # File managers
+  #
+  - ranger # File browser
+
+  #
+  #  Remote
+  #
+  - inetutils-telnet # telnet client
+  - mosh # Mobile shell surviving disconnects with local echo and line editing
+
+  #
+  #  Web Tools
+  #
+  - curl # URL retrieval utility and library
+  - wget # Network utility to retrieve files from the Web
+  - w3m # text-based web & gopher browser, as well as pager
+
+  #
+  #  System info
+  #
+  - htop # Interactive process viewer
+  - ncdu # Text-based disk usage viewer
+
+  #
+  #  Scripting
+  #
+  - python3
+  - sqlite3 # Popular minimal sql engine
+
+  #
+  #  Terminal / session management
+  #
+  - tmux # Tool to control multiple terminals from a single terminal
+  - dvtm # Dynamic virtual terminal manager
+
+  #
+  #  Service handling
+  #
+  # - openrc # OpenRC manages the services, startup and shutdown of a host
+
+  #
+  #  Trust
+  #
+  - ca-certificates # Common CA certificates PEM files from Mozilla
+
+SPD_DEBIAN_APT_DEVEL:
+  - build-essential # Meta package: gcc, g++, make, libc-dev
+  - automake # GNU tool for automatically creating Makefiles
+  - autoconf # GNU tool for automatically configuring source code
+  - bison # GNU parser generator
+  - cmake # Cross-platform build system
+  - libtool # Generic library support script
+  - libbz2-dev # bzip2 development headers
+  - libevent-dev # Event notification library
+  - libncurses-dev # ncurses development headers
+  - libssl-dev # OpenSSL development headers
+  - libreadline-dev # GNU readline development headers
+  - libsqlite3-dev # SQLite development headers
+  - liblzma-dev # XZ / LZMA development headers
+  - pkg-config # manage compile and link flags for libraries
+  - zlib1g-dev # zlib development headers
+
+SPD_DEBIAN_APT_LINTING:
+  # Package names below match Devuan Beowulf (= Debian Buster).
+  # For Devuan 5 Daedalus (= Bookworm) rename:
+  #   black     -> python3-black
+  #   pylint3   -> python3-pylint
+  #   pyflakes3 -> python3-pyflakes
+  - black
+  - codespell
+  - cppcheck
+  - flake8
+  - isort
+  - mypy # really slow on iSH
+  - pycodestyle
+  - pyflakes3
+  - pylint # really slow on iSH
+  - shellcheck
+  - yamllint
+
+SPD_DEBIAN_APT_PURGE:
