@@ -185,3 +185,5 @@ SPD_APK_LINTING: # will be installed if SPD_PKGS_LINTING=1
 #  Packages that should be actively removed
 #
 SPD_APK_REMOVE:
+
+SPD_SERVICE_HANDLER: openrc

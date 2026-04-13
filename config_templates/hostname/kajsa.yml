@@ -1,6 +1,3 @@
 ---
-# SPD_SERVICE_HANDLER: sysv-init
-# SPD_SVC_RUNBG_RUNLVL:
-# SPD_SVC_RUNBG_RUNLVL: sysinit
 
 # SPD_ABORT: 1
