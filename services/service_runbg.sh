@@ -33,6 +33,8 @@ task_execute() {
 #=====================================================================
 
 module_name="service_runbg.sh"
+# shellcheck disable=SC2034 # service_name used by caller
+service_name=runbg
 
 [ -n "$D_REPO" ] || {
     std_alone="$module_name"
@@ -52,7 +54,6 @@ esac
 
 source_it "$D_REPO"/tools/svc_handler_common.sh
 
-read_config_file "$D_REPO"/configs/services/runbg.yml
 read_config_file "$D_REPO"/configs/task_overrides/service_runbg.yml
 read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 
