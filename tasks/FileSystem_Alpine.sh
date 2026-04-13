@@ -14,20 +14,6 @@ task_prepare() {
         dependency_issue=1
     }
 
-    # Read related config files, before variables are expanded
-    read_config_file "$D_REPO"/configs/files_systems/alpine.yml
-    read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
-    read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
-
-    ensure_spd_var_defined SPD_APK_INSTALL
-    ensure_spd_var_defined SPD_APK_DEVEL
-    ensure_spd_var_defined SPD_APK_LINTING
-    expand_config_var SPD_APK_REMOVE # dont nag if it is empty
-
-    ensure_spd_var_defined SPD_PKGS_MAN
-    ensure_spd_var_defined SPD_PKGS_DEVEL
-    ensure_spd_var_defined SPD_PKGS_LINTING
-
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Will install man pages"
@@ -79,6 +65,20 @@ module_name="FileSystem_Alpine"
     # shellcheck source=tools/prepare_env.sh
     . "$D_REPO"/tools/prepare_env.sh
 }
+
+# Read related config files, before variables are expanded
+read_config_file "$D_REPO"/configs/files_systems/alpine.yml
+read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
+read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
+
+ensure_spd_var_defined SPD_APK_INSTALL
+ensure_spd_var_defined SPD_APK_DEVEL
+ensure_spd_var_defined SPD_APK_LINTING
+expand_config_var SPD_APK_REMOVE # dont nag if it is empty
+
+ensure_spd_var_defined SPD_PKGS_MAN
+ensure_spd_var_defined SPD_PKGS_DEVEL
+ensure_spd_var_defined SPD_PKGS_LINTING
 
 # Ensure opions are valid
 case "$opt_task" in

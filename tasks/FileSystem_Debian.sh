@@ -14,20 +14,6 @@ task_prepare() {
         dependency_issue=1
     }
 
-    # Read related config files, before variables are expanded
-    read_config_file "$D_REPO"/configs/files_systems/debian.yml
-    read_config_file "$D_REPO"/configs/task_overrides/filesystem_debian.yml
-    read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
-
-    ensure_spd_var_defined SPD_DEBIAN_APT_INSTALL
-    ensure_spd_var_defined SPD_DEBIAN_APT_DEVEL
-    ensure_spd_var_defined SPD_DEBIAN_APT_LINTING
-    expand_config_var SPD_DEBIAN_APT_PURGE # dont nag if it is empty
-
-    ensure_spd_var_defined SPD_PKGS_MAN
-    ensure_spd_var_defined SPD_PKGS_DEVEL
-    ensure_spd_var_defined SPD_PKGS_LINTING
-
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Will install man pages"
@@ -90,6 +76,20 @@ module_name="FileSystem_Debian"
     # shellcheck source=tools/prepare_env.sh
     . "$D_REPO"/tools/prepare_env.sh
 }
+
+# Read related config files, before variables are expanded
+read_config_file "$D_REPO"/configs/files_systems/debian.yml
+read_config_file "$D_REPO"/configs/task_overrides/filesystem_debian.yml
+read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
+
+ensure_spd_var_defined SPD_DEBIAN_APT_INSTALL
+ensure_spd_var_defined SPD_DEBIAN_APT_DEVEL
+ensure_spd_var_defined SPD_DEBIAN_APT_LINTING
+expand_config_var SPD_DEBIAN_APT_PURGE # dont nag if it is empty
+
+ensure_spd_var_defined SPD_PKGS_MAN
+ensure_spd_var_defined SPD_PKGS_DEVEL
+ensure_spd_var_defined SPD_PKGS_LINTING
 
 # Ensure opions are valid
 # shellcheck disable=SC2154 # opt_task defined in prepare_env.sh
