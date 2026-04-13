@@ -54,6 +54,13 @@ task_execute() {
     lbl_3 "Installing seleted Alpine packages"
     # shellcheck disable=SC2086 # SPD_APK_INSTALL should be expanded
     apk add $SPD_APK_INSTALL || err_msg "Failed to run apk add SPD_APK_INSTALL"
+
+    #  - name: Generate sshd host keys
+    #   command: ssh-keygen -A
+    # when:
+    #  - use_sshd | default(false)
+    #  - ift_alpine_generate_sshd_host_keys | default(false) | bool
+
 }
 
 #=====================================================================
