@@ -440,7 +440,7 @@ was_sys_path() {
 
 _do_safe_remove() {
     _sr_item=$1
-    msg_dbg "_do_safe_remove($_sr_item)"
+    msg_dbg "_do_safe_remove($_sr_item)" 1
 
     _sr_err_ex_code=1 # "${2:-1}"
     [ -z "$_sr_item" ] && err_msg "safe_remove() - missing path" "$_sr_err_ex_code"
@@ -508,9 +508,9 @@ safe_remove() {
     for f; do
         [ -e "$f" ] || {
             if [ -L "$f" ]; then
-                msg_dbg "safe_remove - Will process dead symlink: $f"
+                msg_dbg "safe_remove - Will process dead symlink: $f" 1
             else
-                msg_dbg "safe_remove - Warning ignored non file pattern [$f]"
+                msg_dbg "safe_remove - Warning ignored missing file [$f]" 1
                 continue
             fi
         }
