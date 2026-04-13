@@ -438,6 +438,46 @@ was_sys_path() {
     return 1
 }
 
+_do_safe_remove() {
+    _sr_item=$1
+    msg_dbg "_do_safe_remove($_sr_item)"
+
+    _sr_err_ex_code=1 # "${2:-1}"
+    [ -z "$_sr_item" ] && err_msg "safe_remove() - missing path" "$_sr_err_ex_code"
+
+    $_sr_check_sys_path && was_sys_path "$_sr_item" && {
+        err_msg "Refusing to remove a sys-path: $_sr_item" "$_sr_err_ex_code"
+    }
+
+    if [ -d "$_sr_item" ]; then
+        mount | grep "$_sr_item" && {
+            err_msg "safe_remove() - this is a mount point: $_sr_item" "$_sr_err_ex_code"
+        }
+        if $_sr_remove_dir; then
+            rm -rf -- "$_sr_item" || {
+                err_msg "Failed to remove directory: $_sr_item" "$_sr_err_ex_code"
+            }
+            $_sr_display_removal && lbl_3 "Removed directory: $_sr_item"
+        else
+            # shellcheck disable=SC2115 # _sr_item is already checked for being empty
+            rm -rf -- "$_sr_item"/* "$_sr_item"/.??* 2>/dev/null || {
+                err_msg "Failed to clear directory: $_sr_item" "$_sr_err_ex_code"
+            }
+            $_sr_display_removal && lbl_4 "Cleared directory: $_sr_item"
+        fi
+        return
+    fi
+
+    if [ -f "$_sr_item" ] || [ -L "$_sr_item" ]; then
+        rm -- "$_sr_item" || {
+            err_msg "Failed to remove file: $_sr_item" "$_sr_err_ex_code"
+        }
+        $_sr_display_removal && lbl_4 "Removed file: $_sr_item"
+    else
+        err_msg "Refusing to remove non-file: $_sr_item" "$_sr_err_ex_code"
+    fi
+}
+
 safe_remove() {
     #
     # if item is a folder it is just cleared, unless it is prefixed with --remove-dir
@@ -465,39 +505,17 @@ safe_remove() {
         shift
     done
 
-    _sr_item=$1
-    _sr_err_ex_code="${2:-1}"
-    [ -z "$_sr_item" ] && err_msg "safe_remove() - missing path" "$_sr_err_ex_code"
-
-    $_sr_check_sys_path && was_sys_path "$_sr_item" && {
-        err_msg "Refusing to remove a sys-path: $_sr_item" "$_sr_err_ex_code"
-    }
-
-    if [ -d "$_sr_item" ]; then
-        mount | grep "$_sr_item" && {
-            err_msg "safe_remove() - this is a mount point: $_sr_item" "$_sr_err_ex_code"
+    for f; do
+        [ -e "$f" ] || {
+            if [ -L "$f" ]; then
+                msg_dbg "safe_remove - Will process dead symlink: $f"
+            else
+                msg_dbg "safe_remove - Warning ignored non file pattern [$f]"
+                continue
+            fi
         }
-        if $_sr_remove_dir; then
-            rm -rf -- "$_sr_item" || {
-                err_msg "Failed to remove directory: $_sr_item" "$_sr_err_ex_code"
-            }
-            $_sr_display_removal && lbl_3 "Removed directory: $_sr_item"
-        else
-            # shellcheck disable=SC2115 # _sr_item is already checked for being empty
-            rm -rf -- "$_sr_item"/* "$_sr_item"/.??* 2>/dev/null || {
-                err_msg "Failed to clear directory: $_sr_item" "$_sr_err_ex_code"
-            }
-            $_sr_display_removal && lbl_4 "Cleared directory: $_sr_item"
-        fi
-        return
-    fi
-
-    if [ -f "$_sr_item" ]; then
-        rm -f -- "$_sr_item" || {
-            err_msg "Failed to remove file: $_sr_item" "$_sr_err_ex_code"
-        }
-        $_sr_display_removal && lbl_4 "Removed file: $_sr_item"
-    fi
+        _do_safe_remove "$f"
+    done
 }
 
 source_it() {
