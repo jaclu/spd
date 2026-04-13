@@ -1,96 +1,35 @@
 #!/bin/sh
 
-deploy_initd_script() {
-    # shellcheck disable=SC2154 # _svc_init_scr_org defined in svc_handler_common.sh
-    cp "$_svc_init_scr_org" "$svc_script" || {
-        err_msg "$module_name - Failed to copy $_svc_init_scr_org"
-    }
-
-    # tweak _svc_init_scr_org, with SPD_SVC_AUTOSSH_ settings
-    if is_macos; then
-        sed_cmd="sed -i ''"
-    else
-        sed_cmd="sed -i"
-    fi
-
-    # shellcheck disable=SC2154 # SPD_ vars via config files
-    {
-        loopback_cmd="$SPD_SVC_AUTOSSH_REVERSE_PORT:localhost:$SPD_SSHD_PORT"
-        $sed_cmd "s|^LOOPBACK_DIRECIVE.*|loopback_directive=\"$loopback_cmd\"|" \
-            "$svc_script" || {
-
-            err_msg "$module_name: Failed to replace LOOPBACK_DIRECIVE"
-        }
-
-        $sed_cmd "s|^KEY_FILE.*|key_file=\"$SPD_SVC_AUTOSSH_KEY_FILE\"|" \
-            "$svc_script" || {
-
-            err_msg "$module_name: Failed to replace KEY_FILE"
-        }
-        $sed_cmd "s|^JUMP_PORT.*|jump_port=\"$SPD_SVC_AUTOSSH_JUMP_PORT\"|" \
-            "$svc_script" || {
-
-            err_msg "$module_name: Failed to replace JUMP_PORT"
-        }
-        $sed_cmd \
-            "s|^JUMP_ACCOUNT.*|jump_account=\"$SPD_UNAME@$SPD_SVC_AUTOSSH_JUMP_HOST\"|" \
-            "$svc_script" || {
-
-            err_msg "$module_name: Failed to replace JUMP_ACCOUNT"
-        }
-    }
-}
-
-handler_openrc() {
-    # shellcheck disable=SC2154 # SPD_SVC_AUTOSSH_RUNLVL defined in openrc_dependency_check()
-    svc_runlevel_set "$(basename "$svc_script")" "$SPD_SVC_AUTOSSH_RUNLVL"
-}
-
-handler_sysv() {
-    ln -sf "$svc_script" /etc/rc0.d/K01autossh
-    ln -sf "$svc_script" /etc/rc1.d/K01auossh
-    ln -sf "$svc_script" /etc/rc6.d/K01auossh
-
-    ln -sf "$svc_script" /etc/rc2.d/S05auossh
-    ln -sf "$svc_script" /etc/rc3.d/S05auossh
-    ln -sf "$svc_script" /etc/rc4.d/S05auossh
-    ln -sf "$svc_script" /etc/rc5.d/S05auossh
-}
-
 task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
     dependency_issue=0
-    svc_script=/etc/init.d/autossh
 
+    lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
+    check_service_env autossh
+    command -v autossh >/dev/null 2>&1 || {
+        lbl_2 "Dependency issue - autossh not found"
+        # shell check disable=SC2034 # dependency_issue used by caller
+        dependency_issue=1
+    }
+    _cmd=/usr/local/bin/logger
+    [ -x "$_cmd" ] || {
+        lbl_2 "Dependency issue - $_cmd not found"
+        # shell check disable=SC2034 # dependency_issue used by caller
+        [ "$dependency_issue" = 0 ] && dependency_issue=2
+    }
 
-    ensure_spd_var_defined SPD_SERVICE_HANDLER
-    if [ -n "$SPD_SERVICE_HANDLER" ]; then
-        check_service_env
-        [ "$SPD_SERVICE_HANDLER" = openrc ] && openrc_dependency_check
-    fi
-
-    ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
-    ensure_spd_var_defined SPD_SSHD_PORT
-    ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
-    ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
-    ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
     return "$dependency_issue"
 }
 
 task_execute() {
+    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
 
-    deploy_initd_script
-
-    # perform the actual task
-    case "$SPD_SERVICE_HANDLER" in
-        'openrc') handler_openrc ;;
-        'sysv-init') handler_sysv ;;
-        *) err_msg "$module_name: Unrecognized service-handler: $SPD_SERVICE_HANDLER" ;;
-    esac
+    # shellcheck disable=SC2154 # SPD_SVC_RUNBG_RUNLVL defined via config
+    process_service "$SPD_SVC_AUTOSSH_RUNLVL"
 }
 
 #=====================================================================
@@ -99,14 +38,40 @@ task_execute() {
 #
 #=====================================================================
 
+module_name="service_auossh.sh"
+# shellcheck disable=SC2034 # service_name used by svc_handler_common.sh
+service_name=autossh
+
 [ -n "$D_REPO" ] || {
+    std_alone="$service_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
     . "$D_REPO"/tools/prepare_env.sh
 }
-module_name="service_auossh.sh"
-source_it "$D_REPO"/tools/svc_handler_common.sh
-source_it "$D_REPO"/tools/svc_handler_openrc.sh
 
-task_prepare && task_execute
+# Ensure opions are valid
+case "$opt_task" in
+    install | remove) ;;
+    *)
+        cmd_line_param_error "$module_name: opt_task must be install/remove"
+        ;;
+esac
+
+source_it "$D_REPO"/tools/svc_handler_common.sh
+
+read_config_file "$D_REPO"/configs/services/autossh.yml
+read_config_file "$D_REPO"/configs/task_overrides/service_autossh.yml
+read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
+
+ensure_spd_var_defined SPD_SERVICE_HANDLER
+ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
+ensure_spd_var_defined SPD_SSHD_PORT
+ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
+ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
+ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
+
+[ "$std_alone" = "$service_name" ] && {
+    task_prepare
+    task_execute
+}
