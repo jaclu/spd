@@ -17,6 +17,7 @@ task_prepare() {
     # Read related config files, before variables are expanded
     read_config_file "$D_REPO"/configs/files_systems/alpine.yml
     read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
+    read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 
     ensure_spd_var_defined SPD_APK_INSTALL
     ensure_spd_var_defined SPD_APK_DEVEL
@@ -35,12 +36,14 @@ task_prepare() {
     # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
     yaml_true "$SPD_PKGS_DEVEL" && {
         lbl_4 "Will install devel packages"
-        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_PKGS_DEVEL"
+        display_list_content SPD_APK_DEVEL no_label
+        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_DEVEL"
     }
     # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
     yaml_true "$SPD_PKGS_LINTING" && {
         lbl_4 "Will install linting packages"
-        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_PKGS_LINTING"
+        display_list_content SPD_APK_LINTING no_label
+        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_LINTING"
     }
     return "$dependency_issue"
 }
@@ -52,12 +55,12 @@ task_execute() {
     # current_dbg_lvl=2
     [ -n "$SPD_APK_REMOVE" ] && {
         lbl_3 "Will remove items in SPD_APK_REMOVE"
-        display_list_content SPD_APK_REMOVE
+        display_list_content SPD_APK_REMOVE no_label
         # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
         apk del $SPD_APK_REMOVE || err_msg "Failed to run apk del SPD_APK_REMOVE"
     }
     lbl_3 "Installing seleted Alpine packages"
-    display_list_content SPD_APK_INSTALL
+    display_list_content SPD_APK_INSTALL no_label
     # shellcheck disable=SC2086 # SPD_APK_INSTALL should be expanded
     apk add $SPD_APK_INSTALL || err_msg "Failed to run apk add SPD_APK_INSTALL"
 }
