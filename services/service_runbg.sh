@@ -67,6 +67,7 @@ task_prepare() {
 }
 
 task_execute() {
+    # current_dbg_lvl=2
     lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
 
