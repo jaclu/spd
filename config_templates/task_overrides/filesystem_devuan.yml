@@ -1,0 +1,33 @@
+---
+# Primary focus wouldn't be to override the package selection in SPD_APK_INSTALL etc
+# that can be done directly in the configs/files_systems/alpine.yml file,
+# but to potentially change other setings that should be altered for this specific task
+
+SPD_DEVUAN_APT_INSTALL:
+  #
+  #  Shells
+  #
+  # - bash # Always present
+  - bash-completion # Command-line tab-completion for bash
+  - zsh # Very advanced and programmable command interpreter (shell)
+
+SPD_DEVUAN_APT_DEVEL:
+  - build-essential # Meta package: gcc, g++, make, libc-dev
+  - automake # GNU tool for automatically creating Makefiles
+
+SPD_DEVUAN_APT_LINTING:
+  # Package names below match Devuan Beowulf (= Debian Buster).
+  # For Devuan 5 Daedalus (= Bookworm) rename:
+  #   black     -> python3-black
+  #   pylint3   -> python3-pylint
+  #   pyflakes3 -> python3-pyflakes
+  - black
+  - codespell
+
+SPD_DEVUAN_APT_PURGE:
+  - x11-common
+  - xfonts-utils
+
+SPD_PKGS_MAN: true # If set to 1 man pages will be deployed
+SPD_PKGS_DEVEL: false # If set to 1 development packages will be deployed
+SPD_PKGS_LINTING: true # If set to 1 linting packages will be deployed
