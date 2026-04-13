@@ -98,6 +98,17 @@ check_for_abort() {
             err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
         }
     }
+
+    case "$opt_task" in
+        install) [ "$dependency_issue" != 0 ] && {
+            err_msg "$module_name: Dependency issue - Aborting $opt_task"
+        } ;;
+
+        remove) [ "$dependency_issue" = 1 ] && {
+            err_msg "$module_name: Dependency issue - Aborting $opt_task"
+        } ;;
+        *) ;;
+    esac
 }
 
 load_utils() {
