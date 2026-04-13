@@ -32,6 +32,7 @@ task_execute() {
     copy_items "$d_files_base"/usr_local_bin /usr/local/bin
     copy_items "$d_files_base"/usr_local_sbin /usr/local/sbin
     copy_items "$d_files_base"/etc/sudoers.d/sudo_no_passwd /etc/sudoers.d
+    is_ish_aok && rm -f /usr/local/bin/uptime
 }
 
 #=====================================================================
