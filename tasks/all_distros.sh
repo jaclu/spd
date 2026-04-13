@@ -40,12 +40,18 @@ task_execute() {
 #
 #=====================================================================
 
+module_name="all_distros.sh"
+
 [ -n "$D_REPO" ] || {
+    # shell check disable=SC2154 # service_name used by svc_handler_common.sh
+    std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
     . "$D_REPO"/tools/prepare_env.sh
 }
-module_name="all_distros.sh"
 
-task_prepare && task_execute
+[ "$std_alone" = "$module_name" ] && {
+    task_prepare
+    task_execute
+}

@@ -71,6 +71,7 @@ task_execute() {
 module_name="FileSystem_Debian"
 
 [ -n "$D_REPO" ] || {
+    std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
@@ -100,4 +101,7 @@ case "$opt_task" in
         ;;
 esac
 
-task_prepare && task_execute
+[ "$std_alone" = "$module_name" ] && {
+    task_prepare
+    task_execute
+}

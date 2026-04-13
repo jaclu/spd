@@ -33,11 +33,9 @@ task_execute() {
 #=====================================================================
 
 module_name="service_runbg.sh"
-# shellcheck disable=SC2034 # service_name used by svc_handler_common.sh
-service_name=runbg
 
 [ -n "$D_REPO" ] || {
-    std_alone="$service_name"
+    std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
@@ -60,7 +58,7 @@ read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
 
 ensure_spd_var_defined SPD_SERVICE_HANDLER
 
-[ "$std_alone" = "$service_name" ] && {
+[ "$std_alone" = "$module_name" ] && {
     task_prepare
     task_execute
 }

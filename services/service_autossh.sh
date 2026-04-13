@@ -39,11 +39,9 @@ task_execute() {
 #=====================================================================
 
 module_name="service_auossh.sh"
-# shellcheck disable=SC2034 # service_name used by svc_handler_common.sh
-service_name=autossh
 
 [ -n "$D_REPO" ] || {
-    std_alone="$service_name"
+    std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
@@ -71,7 +69,7 @@ ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
 ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
 ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
 
-[ "$std_alone" = "$service_name" ] && {
+[ "$std_alone" = "$module_name" ] && {
     task_prepare
     task_execute
 }
