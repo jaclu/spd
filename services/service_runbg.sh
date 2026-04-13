@@ -53,11 +53,11 @@ task_prepare() {
     dependency_issue=0
     svc_script=/etc/init.d/runbg
 
+    lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
 
-    ensure_spd_var_defined SPD_SERVICE_HANDLER
     [ -n "$SPD_SERVICE_HANDLER" ] && {
-        check_service_env
+        check_service_env runbg
         [ "$SPD_SERVICE_HANDLER" = openrc ] && {
             source_it "$D_REPO"/tools/svc_handler_openrc.sh
             openrc_dependency_check
@@ -67,6 +67,7 @@ task_prepare() {
 }
 
 task_execute() {
+    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
 
     handle_initd_script "$opt_task"
@@ -85,14 +86,14 @@ task_execute() {
 #
 #=====================================================================
 
+module_name="service_runbg.sh"
+
 [ -n "$D_REPO" ] || {
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
     # shellcheck source=tools/prepare_env.sh
     . "$D_REPO"/tools/prepare_env.sh
 }
-
-module_name="service_runbg.sh"
 
 # Ensure opions are valid
 case "$opt_task" in
@@ -103,5 +104,12 @@ case "$opt_task" in
 esac
 
 source_it "$D_REPO"/tools/svc_handler_common.sh
+
+read_config_file "$D_REPO"/configs/services/unbg.yml
+read_config_file "$D_REPO"/configs/task_overrides/service_runbg.yml
+read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
+
+ensure_spd_var_defined SPD_SERVICE_HANDLER
+# expand_config_var SPD_ABORT
 
 task_prepare && task_execute
