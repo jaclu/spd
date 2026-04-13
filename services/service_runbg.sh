@@ -9,6 +9,11 @@ task_prepare() {
     lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
     check_service_env runbg
+    is_ish || {
+        lbl_2 "Dependency issue - Can only be used on iSH"
+        # shell check disable=SC2034 # dependency_issue used by caller
+        [ "$dependency_issue" = 0 ] && dependency_issue=2
+    }
     return "$dependency_issue"
 }
 
