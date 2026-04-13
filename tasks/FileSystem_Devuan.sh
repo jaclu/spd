@@ -14,6 +14,13 @@ task_prepare() {
         dependency_issue=1
     }
 
+    [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
+        lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE"
+        display_list_content SPD_DEVUAN_APT_PURGE no_label
+    }
+    lbl_3 "Installing seleted Devuan packages"
+    display_list_content SPD_DEVUAN_APT_INSTALL no_label
+
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Will install man pages"
@@ -41,14 +48,12 @@ task_execute() {
     # current_dbg_lvl=2
     [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
         lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE"
-        display_list_content SPD_DEVUAN_APT_PURGE no_label
         # shellcheck disable=SC2086 # SPD_DEVUAN_APT_PURGE should be expanded
         apt-get purge -y $SPD_DEVUAN_APT_PURGE || {
             err_msg "Failed to run apt-get purge SPD_DEVUAN_APT_PURGE"
         }
     }
     lbl_3 "Installing seleted Devuan packages"
-    display_list_content SPD_DEVUAN_APT_INSTALL no_label
     # shellcheck disable=SC2086 # SPD_DEVUAN_APT_INSTALL should be expanded
     apt-get install -y $SPD_DEVUAN_APT_INSTALL || {
         err_msg "Failed to run apt-get install SPD_DEVUAN_APT_INSTALL"

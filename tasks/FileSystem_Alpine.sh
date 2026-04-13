@@ -14,6 +14,13 @@ task_prepare() {
         dependency_issue=1
     }
 
+    [ -n "$SPD_APK_REMOVE" ] && {
+        lbl_3 "Will remove items in SPD_APK_REMOVE"
+        display_list_content SPD_APK_REMOVE no_label
+    }
+    lbl_3 "Installing seleted Alpine packages"
+    display_list_content SPD_APK_INSTALL no_label
+
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Will install man pages"
@@ -41,12 +48,10 @@ task_execute() {
     # current_dbg_lvl=2
     [ -n "$SPD_APK_REMOVE" ] && {
         lbl_3 "Will remove items in SPD_APK_REMOVE"
-        display_list_content SPD_APK_REMOVE no_label
         # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
         apk del $SPD_APK_REMOVE || err_msg "Failed to run apk del SPD_APK_REMOVE"
     }
     lbl_3 "Installing seleted Alpine packages"
-    display_list_content SPD_APK_INSTALL no_label
     # shellcheck disable=SC2086 # SPD_APK_INSTALL should be expanded
     apk add $SPD_APK_INSTALL || err_msg "Failed to run apk add SPD_APK_INSTALL"
 }
