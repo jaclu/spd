@@ -43,7 +43,7 @@ display_list_content() {
 
     expand_config_var "$_dlc_variable"
     eval "_dlc_value=\"\${$_dlc_variable}\""
-    lbl_3 "$_dlc_variable:"
+    [ "$2" = "no_label" ] || lbl_3 "$_dlc_variable:"
     if [ -n "$_dlc_value" ]; then
         for _item in $_dlc_value; do
             lbl_4 "  $_item"
