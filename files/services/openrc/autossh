@@ -14,7 +14,12 @@
 # log_file=/var/log/services.log
 
 log_it() {
-    /usr/local/bin/logger "$RC_SVCNAME" "$1"
+    cmd_logger=/usr/local/bin/logger
+    if [ -x "$cmd_logger" ]; then
+        $cmd_logger "$RC_SVCNAME" "$*"
+    else
+        echo "$RC_SVCNAME [$$] $*"
+    fi
 }
 
 depend() {
