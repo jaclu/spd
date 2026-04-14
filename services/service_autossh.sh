@@ -14,12 +14,12 @@ task_prepare() {
         # shell check disable=SC2034 # dependency_issue used by caller
         dependency_issue=1
     }
-    _cmd=/usr/local/bin/logger
-    [ -x "$_cmd" ] || {
-        lbl_2 "Dependency issue - $_cmd not found"
-        # shell check disable=SC2034 # dependency_issue used by caller
-        [ "$dependency_issue" = 0 ] && dependency_issue=2
-    }
+    # _cmd=/usr/local/bin/logger
+    # [ -x "$_cmd" ] || {
+    #     lbl_2 "Dependency issue - $_cmd not found"
+    #     # shell check disable=SC2034 # dependency_issue used by caller
+    #     [ "$dependency_issue" = 0 ] && dependency_issue=2
+    # }
 
     return "$dependency_issue"
 }
