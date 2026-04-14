@@ -77,7 +77,7 @@ SPD_DEVUAN_APT_INSTALL:
   #
   #  Service handling
   #
-  # - openrc # OpenRC manages the services, startup and shutdown of a host
+  # openrc - iSH-AOK normally uses sysv-init Don't install this
 
   #
   #  Trust
