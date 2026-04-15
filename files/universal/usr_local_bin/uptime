@@ -180,7 +180,10 @@ get_user_count() {
     seen=""
 
     $dbg && log_it "get_user_count()"
-    tmpfile=$(mktemp -t uptime-usercount.XXXXXX)
+    tmpfile=$(mktemp) || {
+        err_msg "Failed to create temporary file for get_user_count()"
+        exit 1
+    }
 
     [ "$(realpath /bin/ps)" = /bin/busybox ] && err_msg "this uptime needs procps"
     # -eo tty lists all TTYs (including '?', '', etc.)

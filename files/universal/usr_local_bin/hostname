@@ -42,6 +42,7 @@ error_msg() {
     echo "ERROR[$0]: $1"
     echo
 
+    [ -n "$f_tmp" ] && [ -f "$f_tmp" ] && rm "$f_tmp" # cleanup temp file if it exists
     exit 1
 }
 
@@ -74,14 +75,16 @@ set_hostname_from_file() {
     }
     root_check
 
-    f_tmp=$(mktemp -t etc_hostname-replacement.XXXXXX) || exit 1
+    f_tmp=$(mktemp) || {
+        echo "ERROR: Failed to create temporary file for set_hostname_from_file()" >&2
+        exit 1
+    }
     if head -n 1 "$f_new_hostname" >"$f_tmp" && mv "$f_tmp" /etc/hostname; then
         # success, tmp file already moved, now ensure new file is globally readable
         chmod 0644 "$f_etc_hostname" || {
             error_msg "Failed to make new $f_etc_hostname readable"
         }
     else
-        [ -f "$f_tmp" ] && rm "$f_tmp" # cleanup leftover temp file
         error_msg "Failed to use '$f_new_hostname' to update '$f_etc_hostname'!"
     fi
 
