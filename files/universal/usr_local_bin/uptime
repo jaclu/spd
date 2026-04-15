@@ -180,7 +180,7 @@ get_user_count() {
     seen=""
 
     $dbg && log_it "get_user_count()"
-    tmpfile=$(mktemp)
+    tmpfile=$(mktemp -t uptime-usercount)
 
     [ "$(realpath /bin/ps)" = /bin/busybox ] && err_msg "this uptime needs procps"
     # -eo tty lists all TTYs (including '?', '', etc.)

@@ -559,7 +559,7 @@ create_f_tmp() {
     # It will also be autoremoved once script exits, unless some of the signals
     # monitored are overridden
     #
-    f_tmp=$(mktemp "${TMPDIR:-/tmp}/${app_name}.XXXXXX") || {
+    f_tmp=$(mktemp "${app_name:-script-utils.sh}") || {
         err_msg "mktemp failed"
     }
     trap 'rm -f "$f_tmp"' EXIT HUP INT TERM

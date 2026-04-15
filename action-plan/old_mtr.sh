@@ -10,7 +10,7 @@ fi
 #
 #  Download and install specific older mtr
 #
-d_tmp="$(mktemp -d)" || exit 31
+d_tmp="$(mktemp -d -t mtr-retrieval)" || exit 31
 cd "$d_tmp" || exit 32
 url_prefix="https://dl-cdn.alpinelinux.org/alpine/v3.10/main/x86"
 wget "$url_prefix"/mtr-0.92-r0.apk || exit 33
