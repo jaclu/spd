@@ -559,10 +559,34 @@ create_f_tmp() {
     # It will also be autoremoved once script exits, unless some of the signals
     # monitored are overridden
     #
-    f_tmp=$(mktemp -t "${app_name:-script-utils.sh}"-f_tmp.XXXXXX) || {
+    _cft_local="${1:-$f_tmp}"
+
+    _cft_f_tmp=$(mktemp -t "${app_name:-script-utils.sh}"-f_tmp.XXXXXX) || {
         err_msg "mktemp failed"
     }
-    trap 'rm -f "$f_tmp"' EXIT HUP INT TERM
+
+    trap 'rm -f "$_cft_f_tmp"' EXIT HUP INT TERM
+
+    if [ -n "$_cft_local" ]; then
+        echo "$_cft_f_tmp"
+    else
+        f_tmp="$_cft_f_tmp"
+    fi
+
+}
+
+remove_f_tmp() {
+    _rf_tmp="${1:-$f_tmp}"
+
+    [ -z "$_rf_tmp" ] && {
+        msg_dbg "remove_f_tmp() called with no param" 1
+        return
+    }
+    case "$_rf_tmp" in
+        /dev/stdout | /dev/stderr) return ;;
+        *) ;;
+    esac
+    safe_remove -s "$_rf_tmp"
 }
 
 use_log_file() {
