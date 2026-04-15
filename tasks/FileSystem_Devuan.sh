@@ -54,10 +54,21 @@ task_execute() {
         }
     }
     lbl_3 "Installing seleted Devuan packages"
+    if [ "$current_dbg_lvl" -gt 0 ]; then
+        f_tmp=/dev/stdout
+    else
+        create_f_tmp
+    fi
+    # f_progess=$(mktemp -t devuan-apt-install..XXXXXX)
     # shellcheck disable=SC2086 # SPD_DEVUAN_APT_INSTALL should be expanded
-    apt-get install -y $SPD_DEVUAN_APT_INSTALL || {
+    apt-get install -y $SPD_DEVUAN_APT_INSTALL >"$f_tmp" 2>&1 || {
+        [ "$f_tmp" != /dev/stdout ] && {
+            cat "$f_tmp"
+            remove_f_mp "$f_tmp"
+        }
         err_msg "Failed to run apt-get install SPD_DEVUAN_APT_INSTALL"
     }
+    remove_f_tmp "$f_tmp"
 }
 
 #=====================================================================
