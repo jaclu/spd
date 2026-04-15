@@ -46,21 +46,41 @@ task_execute() {
     check_for_abort 0 task_execute
 
     # current_dbg_lvl=2
-    [ -n "$SPD_APK_REMOVE" ] && {
-        lbl_3 "Will remove items in SPD_APK_REMOVE"
-        # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
-        apk del $SPD_APK_REMOVE || err_msg "Failed to run apk del SPD_APK_REMOVE"
-    }
-    lbl_3 "Installing seleted Alpine packages"
-    # shellcheck disable=SC2086 # SPD_APK_INSTALL should be expanded
-    apk add $SPD_APK_INSTALL || err_msg "Failed to run apk add SPD_APK_INSTALL"
+    if [ "$current_dbg_lvl" -gt 0 ]; then
+        f_tmp=/dev/stdout
+    else
+        tmp_file_create
+    fi
 
+    [ -n "$SPD_APK_REMOVE" ] && {
+        lbl_3 "Will remove Alpine packages in SPD_APK_REMOVE"
+        # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
+        apk del $SPD_APK_REMOVE >"$f_tmp" 2>&1 || {
+            [ "$f_tmp" != /dev/stdout ] && {
+                cat "$f_tmp"
+                safe_remove "$f_tmp"
+            }
+            err_msg "Failed to run apk del SPD_APK_REMOVE"
+        }
+    }
+    [ -n "$SPD_APK_INSTALL" ] && {
+        lbl_3 "Installing Alpine packages from SPD_APK_INSTALL"
+        # shellcheck disable=SC2086 # SPD_APK_INSTALL should be expanded
+        apk add $SPD_APK_INSTALL >"$f_tmp" 2>&1 || {
+            [ "$f_tmp" != /dev/stdout ] && {
+                cat "$f_tmp"
+                safe_remove "$f_tmp"
+            }
+            err_msg "Failed to run apk add SPD_APK_INSTALL"
+        }
+    }
     #  - name: Generate sshd host keys
     #   command: ssh-keygen -A
     # when:
     #  - use_sshd | default(false)
     #  - ift_alpine_generate_sshd_host_keys | default(false) | bool
 
+    tmp_file_remove "$f_tmp"
 }
 
 #=====================================================================

@@ -15,10 +15,10 @@ task_prepare() {
     }
 
     [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
-        lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE"
+        lbl_3 "Will remove Devuan packages in SPD_DEVUAN_APT_PURGE"
         display_list_content SPD_DEVUAN_APT_PURGE no_label
     }
-    lbl_3 "Installing seleted Devuan packages"
+    lbl_3 "Installing selected Devuan packages"
     display_list_content SPD_DEVUAN_APT_INSTALL no_label
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
@@ -52,21 +52,27 @@ task_execute() {
         tmp_file_create
     fi
 
+    apt-get update >"$f_tmp" 2>&1 || {
+        [ "$f_tmp" != /dev/stdout ] && cat "$f_tmp"
+        err_msg "Failed to run apt-get update"
+    }
     [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
         lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE"
         # shellcheck disable=SC2086 # SPD_DEVUAN_APT_PURGE should be expanded
         apt-get purge -y $SPD_DEVUAN_APT_PURGE >"$f_tmp" 2>&1 || {
             [ "$f_tmp" != /dev/stdout ] && cat "$f_tmp"
-            err_msg "Failed to run apt-get purge SPD_DEVUAN_APT_PURGE"
+            err_msg "Failed to run apt-get purge -y SPD_DEVUAN_APT_PURGE"
         }
     }
-    lbl_3 "Installing seleted Devuan packages"
-    # shellcheck disable=SC2086 # SPD_DEVUAN_APT_INSTALL should be expanded
-    apt-get install -y $SPD_DEVUAN_APT_INSTALL >"$f_tmp" 2>&1 || {
-        [ "$f_tmp" != /dev/stdout ] && cat "$f_tmp"
-        err_msg "Failed to run apt-get install SPD_DEVUAN_APT_INSTALL"
+    [ -n "$SPD_DEVUAN_APT_INSTALL" ] && {
+        lbl_3 "Installing Devuan packages from SPD_DEVUAN_APT_INSTALL"
+        # shellcheck disable=SC2086 # SPD_DEVUAN_APT_INSTALL should be expanded
+        apt-get install -y $SPD_DEVUAN_APT_INSTALL >"$f_tmp" 2>&1 || {
+            [ "$f_tmp" != /dev/stdout ] && cat "$f_tmp"
+            err_msg "Failed to run apt-get install -y SPD_DEVUAN_APT_INSTALL"
+        }
     }
-    remove_f_tmp "$f_tmp"
+    tmp_file_remove "$f_tmp"
 }
 
 #=====================================================================
