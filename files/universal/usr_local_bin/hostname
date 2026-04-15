@@ -74,7 +74,7 @@ set_hostname_from_file() {
     }
     root_check
 
-    f_tmp=$(mktemp -t etc_hostname-replacement) || exit 1
+    f_tmp=$(mktemp -t etc_hostname-replacement.XXXXXX) || exit 1
     if head -n 1 "$f_new_hostname" >"$f_tmp" && mv "$f_tmp" /etc/hostname; then
         # success, tmp file already moved, now ensure new file is globally readable
         chmod 0644 "$f_etc_hostname" || {
