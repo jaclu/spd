@@ -46,19 +46,24 @@ task_execute() {
     check_for_abort 0 task_execute
 
     # current_dbg_lvl=2
-    [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
-        lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE"
-        # shellcheck disable=SC2086 # SPD_DEVUAN_APT_PURGE should be expanded
-        apt-get purge -y $SPD_DEVUAN_APT_PURGE || {
-            err_msg "Failed to run apt-get purge SPD_DEVUAN_APT_PURGE"
-        }
-    }
-    lbl_3 "Installing seleted Devuan packages"
     if [ "$current_dbg_lvl" -gt 0 ]; then
         f_tmp=/dev/stdout
     else
         create_f_tmp
     fi
+
+    [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
+        lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE"
+        # shellcheck disable=SC2086 # SPD_DEVUAN_APT_PURGE should be expanded
+        apt-get purge -y $SPD_DEVUAN_APT_PURGE >"$f_tmp" 2>&1 || {
+            [ "$f_tmp" != /dev/stdout ] && {
+                cat "$f_tmp"
+                remove_f_mp "$f_tmp"
+            }
+            err_msg "Failed to run apt-get purge SPD_DEVUAN_APT_PURGE"
+        }
+    }
+    lbl_3 "Installing seleted Devuan packages"
     # f_progess=$(mktemp -t devuan-apt-install..XXXXXX)
     # shellcheck disable=SC2086 # SPD_DEVUAN_APT_INSTALL should be expanded
     apt-get install -y $SPD_DEVUAN_APT_INSTALL >"$f_tmp" 2>&1 || {
