@@ -149,19 +149,33 @@ fs_is_gentoo() {
 
 script_utils_cleanup() {
     _sc_ex_code="$1"
+    _suc_no_custom="${2:-}" # if not empty, cleanup_custom() will not be called
 
-    [ -n "$f_tmp" ] && {
-        [ -s "$f_tmp" ] && {
+    # Remove all tmp files created by this script,
+    # and display content if any, before removing them
+    for _sc_f in $tmp_file_list; do
+        [ -s "$_sc_f" ] && {
             # Only display if file has content
-            printf '=====   [%s]-%s f_tmp file was used, displaying content   =====\n' \
-                "$(show_timestamp)" "$(hostname -s)" >&2
-            cat "$f_tmp" >&2
+            printf '\n=====   [%s]%s tmp-file %s still remains, displaying content   =====\n' \
+                "$$" "$app_name" "$_sc_f" >&2
+            cat "$_sc_f" >&2
             printf '\n-----   end of tmp file, will remove it now   -----\n' >&2
         }
-        [ -f "$f_tmp" ] && {
+        [ -f "$_sc_f" ] && {
+            was_sys_path "$_sc_f" && {
+                printf '\nWARNING: tmp file: is in a sys path, not removing: %s\n' \
+                    "$_sc_f" >&2
+                continue
+            }
             # Remove even if tmp file is empty
-            rm -f "$f_tmp" || printf '\nERROR: failed to remove: %s\n' "$f_tmp"
+            rm -f "$_sc_f" || printf '\nERROR: failed to remove: %s\n' "$_sc_f"
         }
+    done
+
+    [ -z "$_suc_no_custom" ] && {
+        if command -v cleanup_custom >/dev/null 2>&1; then
+            cleanup_custom "$_sc_ex_code"
+        fi
     }
     [ -n "$_sc_ex_code" ] && exit "$_sc_ex_code"
 }
@@ -552,41 +566,45 @@ always_use_time_stamp() {
 }
 
 create_f_tmp() {
+    # compatibility func name
+    tmp_file_create
+}
+
+tmp_file_create() {
     #
     # Generic tmp file that can be used by scripts.
+    #
+    # if param is provided, tmp file name will be assigned to the variable name $1
+    # otherwisse f_tmp will be used. This allows for multiple tmp files if needed,
+    # just call this func multiple times with different variable names.
     #
     # Any calls to err_msg() will display current content of and then remove it.
     # It will also be autoremoved once script exits, unless some of the signals
     # monitored are overridden
     #
-    _cft_local="${1:-$f_tmp}"
+    # To ensure a file is removed unless other exit handlers is used:
+    #   trap 'rm -f "$f_tmp"' EXIT HUP INT TERM
+    #
+    _tfc_tmp_file_variable="${1:-f_tmp}"
 
-    _cft_f_tmp=$(mktemp -t "${app_name:-script-utils.sh}"-f_tmp.XXXXXX) || {
-        err_msg "mktemp failed"
+    _tfc_f_tmp=$(mktemp "${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX") || {
+        err_msg "mktemp failed for: $_tfc_f_tmp"
     }
+    msg_dbg "Created tmp file: $_tfc_f_tmp" 1
+    tmp_file_list="$tmp_file_list $_tfc_f_tmp" # for tracking and cleanup in err_msg()
 
-    trap 'rm -f "$_cft_f_tmp"' EXIT HUP INT TERM
-
-    if [ -n "$_cft_local" ]; then
-        echo "$_cft_f_tmp"
-    else
-        f_tmp="$_cft_f_tmp"
-    fi
-
+    # assign tmpfile name to selected variable name
+    eval "$_tfc_tmp_file_variable=\$_tfc_f_tmp"
 }
 
-remove_f_tmp() {
-    _rf_tmp="${1:-$f_tmp}"
+tmp_file_remove() {
+    _tfr_tmp="${1:-$f_tmp}"
 
-    [ -z "$_rf_tmp" ] && {
-        msg_dbg "remove_f_tmp() called with no param" 1
-        return
-    }
-    case "$_rf_tmp" in
+    case "$_tfr_tmp" in
+        '') lbl_1 "WARNING: tmp_file_remove() called with no param" ;;
         /dev/stdout | /dev/stderr) return ;;
-        *) ;;
+        *) safe_remove -s "$_tfr_tmp" ;;
     esac
-    safe_remove -s "$_rf_tmp"
 }
 
 use_log_file() {
@@ -596,6 +614,12 @@ use_log_file() {
     #
     [ -z "$1" ] && err_msg "Call to use_log_file() - no param given"
     f_script_utils_log_file="$1"
+}
+
+cancel_log_file() {
+    [ -z "$f_script_utils_log_file" ] || return
+    safe_remove -s "$f_script_utils_log_file"
+    f_script_utils_log_file=""
 }
 
 #===============================================================
