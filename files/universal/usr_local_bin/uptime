@@ -180,15 +180,11 @@ get_user_count() {
     seen=""
 
     $dbg && log_it "get_user_count()"
-    tmpfile=$(mktemp) || {
-        err_msg "Failed to create temporary file for get_user_count()"
-        exit 1
-    }
-
     [ "$(realpath /bin/ps)" = /bin/busybox ] && err_msg "this uptime needs procps"
+    f_tmp=$(mktemp "${TMPDIR:-/tmp}"/uptime-user_count.XXXXXX)
     # -eo tty lists all TTYs (including '?', '', etc.)
     # strip header with a `read` call
-    ps -eo tty >"$tmpfile"
+    ps -eo tty >"$f_tmp"
     {
         read -r _ # skip header
         while read -r tty; do
@@ -205,8 +201,8 @@ get_user_count() {
                 *) ;;
             esac
         done
-    } <"$tmpfile"
-    rm -f "$tmpfile"
+    } <"$f_tmp"
+    rm -f "$f_tmp"
 }
 
 default_view() {
