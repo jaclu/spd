@@ -22,7 +22,7 @@ populate_config() {
 
 ensure_spd_var_defined() {
     # Expands variable, then displays it if current_dbg_lvl>=1
-    # oherwise print dependency warning and set dependency_issue=1
+    # otherwise print dependency warning and set dependency_issue=1
     # to inicate dependency issue for caller
     _esvd_variable="$1"
 

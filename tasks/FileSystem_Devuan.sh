@@ -105,7 +105,7 @@ ensure_spd_var_defined SPD_PKGS_MAN
 ensure_spd_var_defined SPD_PKGS_DEVEL
 ensure_spd_var_defined SPD_PKGS_LINTING
 
-# Ensure opions are valid
+# Ensure options are valid
 # shellcheck disable=SC2154 # opt_task defined in prepare_env.sh
 case "$opt_task" in
     install) ;;

@@ -18,7 +18,7 @@ task_prepare() {
         lbl_3 "Will remove items in SPD_APK_REMOVE"
         display_list_content SPD_APK_REMOVE no_label
     }
-    lbl_3 "Installing seleted Alpine packages"
+    lbl_3 "Installing selected Alpine packages"
     display_list_content SPD_APK_INSTALL no_label
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
@@ -113,7 +113,7 @@ ensure_spd_var_defined SPD_PKGS_MAN
 ensure_spd_var_defined SPD_PKGS_DEVEL
 ensure_spd_var_defined SPD_PKGS_LINTING
 
-# Ensure opions are valid
+# Ensure options are valid
 case "$opt_task" in
     install) ;;
     *)

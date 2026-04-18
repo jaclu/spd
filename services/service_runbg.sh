@@ -45,7 +45,7 @@ service_name=runbg
     . "$D_REPO"/tools/prepare_env.sh
 }
 
-# Ensure opions are valid
+# Ensure options are valid
 case "$opt_task" in
     install | remove) ;;
     *)

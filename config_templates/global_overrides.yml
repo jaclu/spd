@@ -1,7 +1,7 @@
 ---
 #
 # This should be the last config file read, so here we can override any settings
-# from other config files, to match personal preferences, wihout having to mess arround
+# from other config files, to match personal preferences, without having to mess around
 # if the base configs are changed/updated and manually apply user preferences again.
 #
 

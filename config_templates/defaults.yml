@@ -2,7 +2,7 @@
 #
 # Dont run on this platform. This is to ensure no operations are done
 # on your workstation if you are working on the scripts.
-# Should be overrulled in OS or host dependant startup scripts,
+# Should be overrulled in OS or host dependent startup scripts,
 # for platforms where this should be run.
 # 0 - can run task_prepare & task_execute
 # 1 - can run task_prepare
@@ -45,9 +45,9 @@ SPD_SVC_SYSV_LVL_KILL_TASK: 1 # What order to kill the task in, if it should
 
 #
 # Software preferences, each setting is a space separated string
-#   SPD_PKGS_ADD each of theese will be installed if absent
-#   SPD_APK_DEL  each of theese will be removed if present
-# If emtpy/undefined, no action will be taken for that sub-task
+#   SPD_PKGS_ADD each of these will be installed if absent
+#   SPD_APK_DEL  each of these will be removed if present
+# If empty/undefined, no action will be taken for that sub-task
 #
 
 # ====================================================================
@@ -180,7 +180,7 @@ SPD_EXTRA_TASK:
 
 #
 # If you want to deploy a custom /etc/hosts file, point to it here
-# Usefull if you have local nodes that are not defined in DNS
+# Useful if you have local nodes that are not defined in DNS
 # Leaving it empty/undefined prevents this action.
 #
 # SPD_FILE_HOSTS=$D_REPO/custom/etc_files/hosts
@@ -196,7 +196,7 @@ SPD_FILE_REPOSITORIES:
 #   this gives me a quick heads up if the current is AOK or not.
 #   Task will only be performed if SPD_HOSTNAME_SET=1
 #
-#   To see some explainations about this feature run
+#   To see some explanations about this feature run
 #   scripts/task_hostname -h
 #
 # ====================================================================
@@ -223,7 +223,7 @@ SPD_MON_SSHD: 0
 #
 # ====================================================================
 
-# Your prefered shell, if not given will not be changed.
+# Your preferred shell, if not given will not be changed.
 SPD_ROOT_SHELL: "/bin/bash"
 
 #
@@ -286,7 +286,7 @@ SPD_RUN_BG: 0 # -1 disables 0 no change 1 enables
 #
 # Handling of sshd service
 #
-#  1 = activate, dependant stuff will be installed and setup.
+#  1 = activate, dependent stuff will be installed and setup.
 #  0 = do not touch, this is the default if undefined
 # -1 = disabled, ensures sshd is neither running nor autostarted
 SPD_SSHD_SERVICE: 0
@@ -344,7 +344,7 @@ SPD_SSH_HOST_KEYS: "custom/device_specific/$(hostname)-ssh_host_keys.tgz"
 
 #
 # Content should be in tz database format, so typically
-# Continent/Major_City or a two/three letter acronymn like UTC
+# Continent/Major_City or a two/three letter acronym like UTC
 # if undefined/empty timezone will not be altered.
 # If time_zone not recgonized this will abort with an error.
 #

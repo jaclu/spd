@@ -1,7 +1,7 @@
 ---
 # Primary focus wouldn't be to override the package selection in SPD_APK_INSTALL etc
 # that can be done directly in the configs/file_Systems/alpine.yml file,
-# but to potentially change other setings that should be altered for this specific task
+# but to potentially change other settings that should be altered for this specific task
 
 # SPD_PKGS_MAN: true # If set to 1 man pages will be deployed
 # SPD_PKGS_DEVEL: true # If set to 1 development packages will be deployed

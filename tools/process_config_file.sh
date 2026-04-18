@@ -164,10 +164,10 @@ read_config_file() {
 }
 
 #
-# To handle nested referals, each script using config file derived variables
+# To handle nested referrals, each script using config file derived variables
 # should run this for each of the variables it indends to use, before using them.
-# Referals are not expanded until this is done, this aproach handles nested referals
-# and allows referals to be overriden in other config files.
+# Referrals are not expanded until this is done, this approach handles nested referrals
+# and allows referrals to be overridden in other config files.
 # Since expansion is recursive, until no more ${} constructs remaini,
 # it does not matter in what order variables are expanded
 #

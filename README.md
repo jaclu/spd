@@ -1,7 +1,11 @@
 # Simple Posix Deploy
 
-Deploy tool with minimal dependencies, to run it initially only needs posix any dependencies for spd itself is handled from within.
-Suitable for deployment of minimalistic environments, such as iSH/Termux etc. Primary purpose is to be used instead of Ansible etc, on limited environments where It can't run locally, or the task over head makes it unpractical to run from a deploy sever.
+Deploy tool with minimal dependencies, to run it initially only needs posix any
+dependencies for spd itself is handled from within.
+Suitable for deployment of minimalistic environments, such as iSH/Termux etc.
+Primary purpose is to be used instead of Ansible etc, on limited environments where
+it can't run locally, or the task over head makes it unpractical to run from a
+deploy sever.
 
 advanced tools are not practically usable. Typical reasons:
 
@@ -19,9 +23,10 @@ If this is deployed on a mountable file system, be it iCloud, USB-stick etc
 All that should be needed is to have this tool-set mounted on the target system
 and run `bin/deploy`
 
-### SPD modularity
+## SPD modularity
 
-Main workflow is to first set up the env, reading relevant configs and overrides, then gathering all tasks in the tasks list and executing them one by one
+Main workflow is to first set up the env, reading relevant configs and overrides,
+then gathering all tasks in the tasks list and executing them one by one
 
 - Gather defaults
 - Override with custom configs
@@ -31,11 +36,12 @@ Main workflow is to first set up the env, reading relevant configs and overrides
 
 Add a passive option, to just list what tasks would be done
 
-#### tasks
+### tasks
 
 - Simple to detect config params needed
 - public functions
-  - task_prepare - setting up any environmental dependencies in order for task_execute to be executed, such as installing dependencies if need be etc
+  - task_prepare - setting up any environmental dependencies in order for task_execute
+  to be executed, such as installing dependencies if need be etc
   - task_execute - perform the actual task
   - task_cleanup - cleanup of any temp files etc created by the task
   - task_abort - restoration of all files/changes a task did, if unable to complete
