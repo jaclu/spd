@@ -17,7 +17,7 @@ task_prepare() {
         lbl_3 "Will remove items in SPD_DEBIAN_APT_PURGE"
         display_list_content SPD_DEBIAN_APT_PURGE no_label
     }
-    lbl_3 "Installing selected Devuan packages"
+    lbl_3 "Will install items in SPD_DEBIAN_APT_INSTALL"
     display_list_content SPD_DEBIAN_APT_INSTALL no_label
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files

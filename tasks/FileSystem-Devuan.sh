@@ -14,10 +14,10 @@ task_prepare() {
     }
 
     [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
-        lbl_3 "Will remove Devuan packages in SPD_DEVUAN_APT_PURGE"
+        lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE"
         display_list_content SPD_DEVUAN_APT_PURGE no_label
     }
-    lbl_3 "Installing selected Devuan packages"
+    lbl_3 "Will install items in SPD_DEVUAN_APT_INSTALL"
     display_list_content SPD_DEVUAN_APT_INSTALL no_label
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
