@@ -16,7 +16,6 @@ populate_config() {
         cp -a "$_pc_d_templates"/* "$_pc_d_conf" || {
             error_msg "Failed to copy templates"
         }
-        echo
     }
 }
 
@@ -68,7 +67,7 @@ cmd_line_param_list() {
 
 cmd_line_param_error() {
     lbl_1 "Invalid command-line param"
-    cmd_line_param_list "Processed options"
+    # cmd_line_param_list "Processed options"
     err_msg "$1"
 }
 
@@ -122,6 +121,7 @@ get_config() {
             err_msg "Config file not found: $_gc_config_file"
         }
     }
+    # current_dbg_lvl=5
     read_config_file "$D_REPO"/configs/defaults.yml
 
     # file system related
@@ -133,15 +133,14 @@ get_config() {
     # platform related
     is_linux && read_config_file "$D_REPO"/configs/platform/linux.yml
     is_macos && read_config_file "$D_REPO"/configs/platform/macos.yml
-
-    # When testing/preparing an iSH FS chrooted
-    is_chrooted_ish && read_config_file "$D_REPO"/configs/platform/ish.yml
-
-    is_ish && {
+    if is_ish; then
         read_config_file "$D_REPO"/configs/platform/ish.yml
         # subcategory for iSH, to allow overrides for AOK vs non-AOK
         is_ish_aok && read_config_file "$D_REPO"/configs/platform/ish_aok.yml
-    }
+    elif is_chrooted_ish; then
+        # When testing/preparing an iSH FS chrooted
+        read_config_file "$D_REPO"/configs/platform/ish.yml
+    fi
 
     [ -n "$_gc_config_file" ] && {
         # task specific config file, comes after platform and fs specifics, to allow overrides
@@ -157,10 +156,9 @@ get_config() {
 
 load_utils() {
     _lu_f_utils="$D_REPO"/tools/script-utils.sh
-    echo "[$0] sourced prepae_env which sources script-utils"
     [ -f "$_lu_f_utils" ] || {
         printf '\n%s[%s] ERROR: source file not found: %s\n' \
-            "$0" "$$" "$_lu_f_utils" >&2
+            "$module_name" "$$" "$_lu_f_utils" >&2
         exit 1
     }
     # shellcheck source=tools/script-utils.sh
@@ -186,7 +184,13 @@ load_utils() {
     exit 1
 }
 
+module_name="${module_name:-$0}"
+
 load_utils
-cmd_line_param_parse "$@"
 populate_config
+
+lbl_1 "Module: $module_name"
+
+cmd_line_param_parse "$@"
 source_it "$D_REPO"/tools/process-config_file.sh
+get_config

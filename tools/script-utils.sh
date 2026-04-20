@@ -587,6 +587,11 @@ tmp_file_create() {
     #
     _tfc_tmp_file_variable="${1:-f_tmp}"
 
+    [ -n "$f_tmp" ] && [ -e "$f_tmp" ] && {
+        # err_msg "tmp_file_create() - variable f_tmp already assigned to existing file: $f_tmp"
+        safe_remove "$f_tmp"
+    }
+
     _tfc_f_tmp=$(mktemp "${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX") || {
         err_msg "mktemp failed for: $_tfc_f_tmp"
     }

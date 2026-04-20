@@ -154,7 +154,8 @@ pcf_parse_config_file() {
 #
 read_config_file() {
     _rcf_f_cfg="$1"
-    msg_dbg "Processing: $_rcf_f_cfg" 1
+    # shellcheck disable=SC2154 # module_name defined in caller
+    msg_dbg "$module_name - Processing: $_rcf_f_cfg" 1
     if [ -f "$_rcf_f_cfg" ]; then
         msg_dbg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 1
         pcf_parse_config_file "$_rcf_f_cfg"
