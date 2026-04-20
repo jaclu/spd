@@ -132,9 +132,9 @@ is_musl_lib() {
 }
 
 yaml_true() {
-    _s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
-    [ -z "$_s" ] && err_msg "yaml_true() - no param"
-    case "$_s" in
+    _yt_s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    [ -z "$_yt_s" ] && err_msg "yaml_true() - no param"
+    case "$_yt_s" in
         1 | yes | true) return 0 ;;
         *) ;;
     esac
@@ -153,7 +153,7 @@ fs_is_gentoo() {
 #---------------------------------------------------------------
 
 script_utils_cleanup() {
-    _sc_ex_code="$1"
+    _suc_ex_code="$1"
     _suc_no_custom="${2:-}" # if not empty, cleanup_custom() will not be called
 
     # Remove all tmp files created by this script,
@@ -179,10 +179,10 @@ script_utils_cleanup() {
 
     [ -z "$_suc_no_custom" ] && {
         if command -v cleanup_custom >/dev/null 2>&1; then
-            cleanup_custom "$_sc_ex_code"
+            cleanup_custom "$_suc_ex_code"
         fi
     }
-    [ -n "$_sc_ex_code" ] && exit "$_sc_ex_code"
+    [ -n "$_suc_ex_code" ] && exit "$_suc_ex_code"
 }
 
 show_timestamp() {
@@ -201,14 +201,14 @@ log_it() {
     #
 
     # option parsing
-    _sr_use_time_stamp=0
-    _sr_use_lf=1
+    _li_use_time_stamp=0
+    _li_use_lf=1
     while [ -n "$1" ]; do
         case "$1" in
             ---*) break ;; # dont parse any further opts
             -p | --pre-lf) printf '\n' ;;
-            -n | --no-lf) _sr_use_lf=0 ;;
-            -t | --timestamp) _sr_use_time_stamp=1 ;;
+            -n | --no-lf) _li_use_lf=0 ;;
+            -t | --timestamp) _li_use_time_stamp=1 ;;
             -*) err_msg "log_it() - Unknown option: [$1]" ;;
             *) break ;; # no more options
         esac
@@ -218,11 +218,11 @@ log_it() {
     _s="$1"
     _t=""
     [ -z "$_s" ] && err_msg "log_it() - no param"
-    if [ "$_sr_use_time_stamp" = 1 ] || [ "$script_utils_always_use_time_stamps" = 1 ]; then
+    if [ "$_li_use_time_stamp" = 1 ] || [ "$script_utils_always_use_time_stamps" = 1 ]; then
         _t="[$(show_timestamp)] $_s"
         _s="$_t"
     fi
-    if [ "$_sr_use_lf" = 1 ]; then
+    if [ "$_li_use_lf" = 1 ]; then
         printf -- '%s\n' "$_s" >&2
     else
         printf -- '%s' "$_s" >&2
@@ -305,39 +305,39 @@ msg_dbg() {
 
 lbl_1() {
     [ -z "$1" ] && err_msg "lbl_1() no param"
-    _s="$1"
+    _l1_s="$1"
     shift
     echo >&2
-    log_it "===  $_s  ===" "${@}"
+    log_it "===  $_l1_s  ===" "${@}"
     echo >&2
 }
 
 lbl_2() {
     [ -n "$1" ] || err_msg "lbl_2() no param"
-    _s="$1"
+    _l2_s="$1"
     shift
-    log_it "---  $_s" "${@}"
+    log_it "---  $_l2_s" "${@}"
 }
 
 lbl_3() {
     [ -n "$1" ] || err_msg "lbl_3() no param"
-    _s="$1"
+    _l3_s="$1"
     shift
-    log_it " --  $_s" "${@}"
+    log_it " --  $_l3_s" "${@}"
 }
 
 lbl_4() {
     [ -n "$1" ] || err_msg "lbl_4() no param"
-    _s="$1"
+    _l4_s="$1"
     shift
-    log_it "  -  $_s" "${@}"
+    log_it "  -  $_l4_s" "${@}"
 }
 
 lbl_5() {
     [ -n "$1" ] || err_msg "lbl_5() no param"
-    _s="$1"
+    _l5_s="$1"
     shift
-    log_it "  .  $_s" "${@}"
+    log_it "  .  $_l5_s" "${@}"
 }
 
 #---------------------------------------------------------------
@@ -421,26 +421,24 @@ time_span() { # display_menu() / check_speed_cutoff()
 }
 
 display_time_elapsed() {
-    dte_duration="$1"
-    # dte_t_start="$1"
-    # dte_duration=$(($(date +%s) - dte_t_start))
+    _dte_duration="$1"
 
-    if [ "$dte_duration" -gt 59 ]; then
-        dte_hours=$((dte_duration / 3600))
-        dte_minutes=$(((dte_duration % 3600) / 60))
-        dte_seconds=$((dte_duration - dte_hours * 3600 - dte_minutes * 60))
+    if [ "$_dte_duration" -gt 59 ]; then
+        dte_hours=$((_dte_duration / 3600))
+        dte_minutes=$(((_dte_duration % 3600) / 60))
+        dte_seconds=$((_dte_duration - dte_hours * 3600 - dte_minutes * 60))
         printf '%02d:%02d:%02d' "$dte_hours" "$dte_minutes" "$dte_seconds"
     else
-        printf '%ss' "$dte_duration"
+        printf '%ss' "$_dte_duration"
     fi
 }
 
 display_app_run_time() {
     # additional notices can be added in $1
-    _msg="${1:-}" # linting safe way to handle "optional" parameters...
-    app_run_time=$(($(date +%s) - t_start))
+    _dart_msg="${1:-}" # linting safe way to handle "optional" parameters...
+    _dart_app_run_time=$(($(date +%s) - t_start))
     echo
-    log_it "Time elapsed: $(display_time_elapsed "$app_run_time") - $app_name $_msg"
+    log_it "Time elapsed: $(display_time_elapsed "$_dart_app_run_time") - $app_name $_dart_msg"
 }
 
 #---------------------------------------------------------------
@@ -464,42 +462,42 @@ was_sys_path() {
 }
 
 _do_safe_remove() {
-    _sr_item=$1
-    msg_dbg "_do_safe_remove($_sr_item)" 1
+    _dsr_item=$1
+    dbg_msg "_do_safe_remove($_dsr_item)" 1
 
     _sr_err_ex_code=1 # "${2:-1}"
-    [ -z "$_sr_item" ] && err_msg "safe_remove() - missing path" "$_sr_err_ex_code"
+    [ -z "$_dsr_item" ] && err_msg "safe_remove() - missing path" "$_sr_err_ex_code"
 
-    $_sr_check_sys_path && was_sys_path "$_sr_item" && {
-        err_msg "Refusing to remove a sys-path: $_sr_item" "$_sr_err_ex_code"
+    $_sr_check_sys_path && was_sys_path "$_dsr_item" && {
+        err_msg "Refusing to remove a sys-path: $_dsr_item" "$_sr_err_ex_code"
     }
 
-    if [ -d "$_sr_item" ]; then
-        mount | grep "$_sr_item" && {
-            err_msg "safe_remove() - this is a mount point: $_sr_item" "$_sr_err_ex_code"
+    if [ -d "$_dsr_item" ]; then
+        mount | grep "$_dsr_item" && {
+            err_msg "safe_remove() - this is a mount point: $_dsr_item" "$_sr_err_ex_code"
         }
         if $_sr_remove_dir; then
-            rm -rf -- "$_sr_item" || {
-                err_msg "Failed to remove directory: $_sr_item" "$_sr_err_ex_code"
+            rm -rf -- "$_dsr_item" || {
+                err_msg "Failed to remove directory: $_dsr_item" "$_sr_err_ex_code"
             }
-            $_sr_display_removal && lbl_3 "Removed directory: $_sr_item"
+            $_sr_display_removal && lbl_3 "Removed directory: $_dsr_item"
         else
-            # shellcheck disable=SC2115 # _sr_item is already checked for being empty
-            rm -rf -- "$_sr_item"/* "$_sr_item"/.??* 2>/dev/null || {
-                err_msg "Failed to clear directory: $_sr_item" "$_sr_err_ex_code"
+            # shellcheck disable=SC2115 # _dsr_item is already checked for being empty
+            rm -rf -- "$_dsr_item"/* "$_dsr_item"/.??* 2>/dev/null || {
+                err_msg "Failed to clear directory: $_dsr_item" "$_sr_err_ex_code"
             }
-            $_sr_display_removal && lbl_4 "Cleared directory: $_sr_item"
+            $_sr_display_removal && lbl_4 "Cleared directory: $_dsr_item"
         fi
         return
     fi
 
-    if [ -f "$_sr_item" ] || [ -L "$_sr_item" ]; then
-        rm -- "$_sr_item" || {
-            err_msg "Failed to remove file: $_sr_item" "$_sr_err_ex_code"
+    if [ -f "$_dsr_item" ] || [ -L "$_dsr_item" ]; then
+        rm -- "$_dsr_item" || {
+            err_msg "Failed to remove file: $_dsr_item" "$_sr_err_ex_code"
         }
-        $_sr_display_removal && lbl_4 "Removed file: $_sr_item"
+        $_sr_display_removal && lbl_4 "Removed file: $_dsr_item"
     else
-        err_msg "Refusing to remove non-file: $_sr_item" "$_sr_err_ex_code"
+        err_msg "Refusing to remove non-file: $_dsr_item" "$_sr_err_ex_code"
     fi
 }
 
@@ -533,9 +531,9 @@ safe_remove() {
     for f; do
         [ -e "$f" ] || {
             if [ -L "$f" ]; then
-                msg_dbg "safe_remove - Will process dead symlink: $f" 1
+                dbg_msg "safe_remove - Will process dead symlink: $f" 1
             else
-                msg_dbg "safe_remove - Warning ignored missing file [$f]" 1
+                dbg_msg "safe_remove - Warning ignored missing file [$f]" 1
                 continue
             fi
         }
@@ -546,23 +544,23 @@ safe_remove() {
 
 source_it() {
     # Fails if $2 was provided and that variable was not defined as non-empty
-    _f="$1"
+    _si_f="$1"
     _si_inspect_variable="$2"
 
-    # msg_dbg "[$0] source_it($_f)"
-    [ "$app_name_full_path" = "$_f" ] && {
+    # dbg_msg "[$0] source_it($_si_f)"
+    [ "$app_name_full_path" = "$_si_f" ] && {
         echo
-        echo "WARNING: Attempt at self sourcing ignored: $_f"
+        echo "WARNING: Attempt at self sourcing ignored: $_si_f"
         echo
     }
 
     # shellcheck source=/dev/null # filename is dynamic
-    . "$_f"
+    . "$_si_f"
     [ -n "$_si_inspect_variable" ] && {
         # if variable name provided verify that it has content
         eval "_v2=\"\${$_si_inspect_variable}\""
         [ -n "$_v2" ] || {
-            err_msg "Sourcing $_f didn't define variable: $_si_inspect_variable"
+            err_msg "Sourcing $_si_f didn't define variable: $_si_inspect_variable"
         }
     }
 }
@@ -673,7 +671,7 @@ app_name_full_path=$(realpath "$0")
 t_start="$(date +%s)" # is used in display_app_run_time()
 
 [ -z "$current_dbg_lvl" ] && {
-    # 0 means only msg_dbg without dbg_lvl 2nd param will be displayed
+    # 0 means only dbg_msg without dbg_lvl 2nd param will be displayed
     current_dbg_lvl=0
 }
 
