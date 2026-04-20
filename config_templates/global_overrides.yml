@@ -12,6 +12,7 @@ SPD_APK_INSTALL:
   - ripgrep
   - openrc
   - autossh
+  - musl-locales # Locales support for musl
 
 SPD_DEBIAN_APT_INSTALL:
   - bash # The GNU Bourne Again shell

@@ -270,6 +270,9 @@ SPD_ROOT_REPLACE: 0
 
 SPD_RUN_BG: 0 # -1 disables 0 no change 1 enables
 
+# en_GB.UTF-8 is needed for displaying 24h time if export LC_TIME=en_GB.UTF-8  is used
+SPD_LOCALES: en_US.UTF-8 en_GB.UTF-8
+
 # ====================================================================
 #
 # task_sshd.sh
