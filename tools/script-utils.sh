@@ -600,21 +600,29 @@ tmp_file_create() {
     _tfc_f_tmp=$(mktemp "${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX") || {
         err_msg "mktemp failed for: $_tfc_f_tmp"
     }
-    msg_dbg "Created tmp file: $_tfc_f_tmp" 1
-    tmp_file_list="$tmp_file_list $_tfc_f_tmp" # for tracking and cleanup in err_msg()
+    dbg_msg "Created tmp file: $_tfc_f_tmp" 1
+
+    # for tracking and cleanup in err_msg()
+    tmp_file_list=$(printf '%s\n%s\n' "$tmp_file_list" "$_tfc_f_tmp")
 
     # assign tmpfile name to selected variable name
     eval "$_tfc_tmp_file_variable=\$_tfc_f_tmp"
 }
 
 tmp_file_remove() {
+    # If tmp_file is a folder, delete it and it's content
     _tfr_tmp="${1:-$f_tmp}"
 
     case "$_tfr_tmp" in
         '') lbl_1 "WARNING: tmp_file_remove() called with no param" ;;
         /dev/stdout | /dev/stderr) return ;;
-        *) safe_remove -s "$_tfr_tmp" ;;
+        *) safe_remove --silent --remove-dir "$_tfr_tmp" ;;
     esac
+    # update list of current tmp files, removing the one just removed
+    tmp_file_list=$(
+        printf '%s\n' "$tmp_file_list" \
+            | grep -F -x -v -- "$_tfr_tmp"
+    )
 }
 
 use_log_file() {
