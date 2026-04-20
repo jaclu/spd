@@ -16,10 +16,10 @@ task_prepare() {
 
     # is_ish || { # disabled during deubgging, re-enable once done
     #     lbl_2 "Dependency issue - Can only be used on iSH"
-    #     # shell check disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
-    #     [ "$SPD_DEPENDENCY_ISSUE" = 0 ] && SPD_DEPENDENCY_ISSUE=2
+    #     # shell check disable=SC2034 # spd_dependency_issue used by caller
+    #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
     # }
-    return "$SPD_DEPENDENCY_ISSUE"
+    return "$spd_dependency_issue"
 }
 
 task_execute() {

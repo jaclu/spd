@@ -28,7 +28,7 @@ task_prepare() {
 
     fs_is_alpine || {
         lbl_3 "$module_name: Dependency issue - This is not running on an Alpine FS"
-        SPD_DEPENDENCY_ISSUE=1
+        spd_dependency_issue=1
     }
 
     [ -n "$SPD_APK_REMOVE" ] && {
@@ -55,7 +55,7 @@ task_prepare() {
         display_list_content SPD_APK_LINTING no_label
         SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_LINTING"
     }
-    return "$SPD_DEPENDENCY_ISSUE"
+    return "$spd_dependency_issue"
 }
 
 task_execute() {

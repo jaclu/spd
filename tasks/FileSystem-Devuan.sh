@@ -10,7 +10,7 @@ task_prepare() {
 
     fs_is_devuan || {
         lbl_3 "$module_name: Dependency issue - This is not running on an Devuan FS"
-        SPD_DEPENDENCY_ISSUE=1
+        spd_dependency_issue=1
     }
 
     [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
@@ -37,7 +37,7 @@ task_prepare() {
         display_list_content SPD_DEVUAN_APT_LINTING no_label
         SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL $SPD_DEVUAN_APT_LINTING"
     }
-    return "$SPD_DEPENDENCY_ISSUE"
+    return "$spd_dependency_issue"
 }
 
 task_execute() {

@@ -23,7 +23,7 @@ task_prepare() {
     check_for_abort 1 task_prepare
 
     d_files_base="$D_REPO"/files/all_distros
-    return "$SPD_DEPENDENCY_ISSUE"
+    return "$spd_dependency_issue"
 }
 
 task_execute() {

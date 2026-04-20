@@ -8,8 +8,8 @@ openrc_dependency_check() {
 
     command -v openrc >/dev/null 2>&1 || {
         lbl_2 "Dependency issue - openrc not found"
-        # shellcheck disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
-        SPD_DEPENDENCY_ISSUE=1
+        # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+        spd_dependency_issue=1
     }
 }
 
@@ -46,8 +46,8 @@ sysv_dependency_check() {
 
     [ -d /etc/rc2.d ] || {
         lbl_2 "Dependency issue - /etc/rc2.d/ not found"
-        # shellcheck disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
-        SPD_DEPENDENCY_ISSUE=1
+        # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+        spd_dependency_issue=1
     }
 }
 
@@ -122,7 +122,7 @@ check_service_env() {
         init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
         [ -f "$init_scr_org" ] || {
             lbl_2 "check_service_env() - Service script not found: [$init_scr_org]"
-            SPD_DEPENDENCY_ISSUE=1
+            spd_dependency_issue=1
         }
         case "$SPD_SERVICE_HANDLER" in
             'openrc')
@@ -141,13 +141,13 @@ check_service_env() {
         esac
     else
         lbl_2 "check_service_env() - SPD_SERVICE_HANDLER undefined"
-        SPD_DEPENDENCY_ISSUE=1
+        spd_dependency_issue=1
     fi
 
     [ -d /etc/init.d ] || {
         lbl_2 "check_service_env() - Dependency issue - /etc/init.d not found"
-        # shellcheck disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
-        SPD_DEPENDENCY_ISSUE=1
+        # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+        spd_dependency_issue=1
     }
 }
 

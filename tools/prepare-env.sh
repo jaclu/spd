@@ -28,7 +28,7 @@ relative_path() { # Needed here due to: prepare_menu() - set_menu_env_variables(
 }
 
 populate_config() {
-    SPD_DEPENDENCY_ISSUE=0 # set default to no issue
+    spd_dependency_issue=0 # set default to no issue
     # If config/ is empty populate it with config_templates as a default
     _pc_d_conf="$D_REPO"/configs
     [ -n "$(ls -A "$_pc_d_conf" 2>/dev/null)" ] || {
@@ -43,7 +43,7 @@ populate_config() {
 
 ensure_spd_var_defined() {
     # Expands variable, then displays it if current_dbg_lvl>=1
-    # otherwise print dependency warning and set SPD_DEPENDENCY_ISSUE=1
+    # otherwise print dependency warning and set spd_dependency_issue=1
     # to inicate dependency issue for caller
     _esvd_variable="$1"
 
@@ -53,8 +53,8 @@ ensure_spd_var_defined() {
         dbg_msg "$_esvd_variable: $_esvd_value" 1
     else
         lbl_2 "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable"
-        # shellcheck disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
-        SPD_DEPENDENCY_ISSUE=1
+        # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+        spd_dependency_issue=1
     fi
 }
 
@@ -124,11 +124,11 @@ check_for_abort() {
     }
 
     case "$opt_task" in
-        install) [ "$SPD_DEPENDENCY_ISSUE" != 0 ] && {
+        install) [ "$spd_dependency_issue" != 0 ] && {
             err_msg "$module_name: Dependency issue - Aborting $opt_task"
         } ;;
 
-        remove) [ "$SPD_DEPENDENCY_ISSUE" = 1 ] && {
+        remove) [ "$spd_dependency_issue" = 1 ] && {
             err_msg "$module_name: Dependency issue - Aborting $opt_task"
         } ;;
         *) ;;

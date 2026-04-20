@@ -11,7 +11,7 @@ alpine_use_old_mtr() {
     fi
 
     lbl_3 "Alpine >= 3.20 detected, installing older mtr, able to run with IP# in iSH"
-    creat_cmd_output_file
+    create_cmd_output_file
 
     [ "$_auom_mtr_found" -eq 1 ] && {
         lbl_4 "Removing current mtr version: $(mtr -v)"
@@ -93,7 +93,7 @@ task_prepare() {
     lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
 
-    return "$SPD_DEPENDENCY_ISSUE"
+    return "$spd_dependency_issue"
 }
 
 task_execute() {
