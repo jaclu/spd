@@ -13,8 +13,8 @@ task_prepare() {
 }
 
 task_execute() {
-    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
+    lbl_2 "$module_name: Executing task"
 
     # copy files/platform/ish/usr_local_bin/* to /usr/local/bin
     # Generate required locales
@@ -53,27 +53,13 @@ task_execute() {
 #
 module_name="platform-iSH"
 
-[ -n "$D_REPO" ] || {
-    std_alone="$module_name"
-    #  Run this in stand-alone mode
-    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare-env.sh
-    . "$D_REPO"/tools/prepare-env.sh
-}
+D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+# shellcheck source=tools/prepare-env.sh
+. "$D_REPO"/tools/prepare-env.sh
 
 if ! is_ish && ! is_ish_aok && ! is_chrooted_ish; then
     err_msg "$module_name: Rejected, not running on iSH related platform"
 fi
-
-# by know we now this runs on some kind of iSH platform
-get_config "$D_REPO"/configs/platform/ish.yml
-is_ish_aok && get_config "$D_REPO"/configs/platform/ish_aok.yml
-
-#
-# Ensure required options have been set, and expand any variables that need to be expanded
-#
-
-# ensure_spd_var_defined SPD_APK_INSTALL
 
 # Ensure options are valid
 case "$opt_task" in
@@ -83,8 +69,19 @@ case "$opt_task" in
         ;;
 esac
 
-[ "$std_alone" = "$module_name" ] && {
-    # In stand-alone mode, we want to run the entire task
-    task_prepare
-    task_execute
-}
+if fs_is_alpine; then
+    "$D_REPO"/tasks/FileSystem-Alpine.sh "$opt_task"
+elif fs_is_devuan; then
+    "$D_REPO"/tasks/FileSystem-Devuan.sh "$opt_task"
+elif fs_is_debian; then
+    "$D_REPO"/tasks/FileSystem-Debian.sh "$opt_task"
+else
+    err_msg "$module_name: Unsupported filesystem, cannot continue"
+fi
+
+"$D_REPO"/tasks/service-runbg.sh "$opt_task"
+"$D_REPO"/tasks/service-autossh.sh "$opt_task"
+
+echo # Spacer before this task begins
+task_prepare
+task_execute

@@ -19,6 +19,7 @@ task_prepare() {
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
     dependency_issue=0
+    lbl_2 "$module_name: Preparing task"
 
     check_for_abort 1 task_prepare
 
@@ -28,6 +29,7 @@ task_prepare() {
 
 task_execute() {
     check_for_abort 0 task_execute
+    lbl_2 "$module_name: Executing task"
 
     copy_items "$d_files_base"/usr_local_bin /usr/local/bin
     copy_items "$d_files_base"/usr_local_sbin /usr/local/sbin
@@ -41,19 +43,19 @@ task_execute() {
 #
 #=====================================================================
 
-module_name="all_distros.sh"
+module_name="All Distros"
 
-[ -n "$D_REPO" ] || {
-    std_alone="$module_name"
-    #  Run this in stand-alone mode
-    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare-env.sh
-    . "$D_REPO"/tools/prepare-env.sh
-}
+D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+# shellcheck source=tools/prepare-env.sh
+. "$D_REPO"/tools/prepare-env.sh
 
-get_config
+# Ensure options are valid
+case "$opt_task" in
+    install) ;;
+    *)
+        cmd_line_param_error "$module_name: opt_task must be install"
+        ;;
+esac
 
-[ "$std_alone" = "$module_name" ] && {
-    task_prepare
-    task_execute
-}
+task_prepare
+task_execute

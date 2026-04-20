@@ -24,9 +24,8 @@ task_prepare() {
 }
 
 task_execute() {
-    # current_dbg_lvl=2
-    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
+    lbl_2 "$module_name: Executing task"
     process_service
 }
 
@@ -40,13 +39,9 @@ module_name="service_runbg.sh"
 # shellcheck disable=SC2034 # service_name used by caller
 service_name=runbg
 
-[ -n "$D_REPO" ] || {
-    std_alone="$module_name"
-    #  Run this in stand-alone mode
-    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare-env.sh
-    . "$D_REPO"/tools/prepare-env.sh
-}
+D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+# shell check source=tools/prepare-env.sh
+. "$D_REPO"/tools/prepare-env.sh
 
 # Ensure options are valid
 case "$opt_task" in
@@ -58,7 +53,5 @@ esac
 
 get_config "$D_REPO"/configs/task/service_runbg.yml
 
-[ "$std_alone" = "$module_name" ] && {
-    task_prepare
-    task_execute
-}
+task_prepare
+task_execute

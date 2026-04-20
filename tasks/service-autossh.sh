@@ -30,8 +30,8 @@ task_prepare() {
 }
 
 task_execute() {
-    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
+    lbl_2 "$module_name: Executing task"
 
     # shellcheck disable=SC2154 # SPD_SVC_AUTOSSH_RUNLVL defined via config
     process_service
@@ -47,13 +47,9 @@ module_name="service_auossh.sh"
 # shellcheck disable=SC2034 # service_name used by caller
 service_name=autossh
 
-[ -n "$D_REPO" ] || {
-    std_alone="$module_name"
-    #  Run this in stand-alone mode
-    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare-env.sh
-    . "$D_REPO"/tools/prepare-env.sh
-}
+D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+# shellcheck source=tools/prepare-env.sh
+. "$D_REPO"/tools/prepare-env.sh
 
 # Ensure options are valid
 case "$opt_task" in
@@ -70,7 +66,5 @@ ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
 ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
 
-[ "$std_alone" = "$module_name" ] && {
-    task_prepare
-    task_execute
-}
+task_prepare
+task_execute

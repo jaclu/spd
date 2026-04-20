@@ -18,13 +18,13 @@ task_prepare() {
         lbl_3 "Will remove items in SPD_APK_REMOVE"
         display_list_content SPD_APK_REMOVE no_label
     }
-    lbl_3 "Installing selected Alpine packages"
+    lbl_3 "Will install items in SPD_APK_INSTALL"
     display_list_content SPD_APK_INSTALL no_label
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Will install man pages"
-        SPD_APK_INSTALL="$SPD_APK_INSTALL docs"
+        SPD_APK_INSTALL="$SPD_APK_INSTALL docs apk-tools-doc"
     }
     # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
     yaml_true "$SPD_PKGS_DEVEL" && {
@@ -42,10 +42,9 @@ task_prepare() {
 }
 
 task_execute() {
-    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
+    lbl_2 "$module_name: Executing task"
 
-    # current_dbg_lvl=2
     if [ "$current_dbg_lvl" -gt 0 ]; then
         f_tmp=/dev/stdout
     else
@@ -54,8 +53,16 @@ task_execute() {
 
     [ -n "$SPD_APK_REMOVE" ] && {
         lbl_3 "Will remove Alpine packages in SPD_APK_REMOVE"
+        # apk add automatically runs update, but apk del does not
+        apk update >"$f_tmp" 2>&1 || {
+            [ "$f_tmp" != /dev/stdout ] && {
+                cat "$f_tmp"
+                safe_remove "$f_tmp"
+            }
+            err_msg "Failed to run apk update"
+        }
         # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
-        apk del $SPD_APK_REMOVE >"$f_tmp" 2>&1 || {
+        apk del "$SPD_APK_REMOVE" >"$f_tmp" 2>&1 || {
             [ "$f_tmp" != /dev/stdout ] && {
                 cat "$f_tmp"
                 safe_remove "$f_tmp"
@@ -91,15 +98,19 @@ task_execute() {
 
 module_name="FileSystem-Alpine"
 
-[ -n "$D_REPO" ] || {
-    std_alone="$module_name"
-    #  Run this in stand-alone mode
-    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare-env.sh
-    . "$D_REPO"/tools/prepare-env.sh
-}
+D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+# shellcheck source=tools/prepare-env.sh
+. "$D_REPO"/tools/prepare-env.sh
 
-get_config "$D_REPO"/configs/file_systems/alpine.yml
+fs_is_alpine || err_msg "$module_name: Rejected, not running on a Alpine FS"
+
+# Ensure options are valid
+case "$opt_task" in
+    install) ;;
+    *)
+        cmd_line_param_error "$module_name: opt_task must be install"
+        ;;
+esac
 
 #
 # Ensure required options have been set, and expand any variables that need to be expanded
@@ -113,16 +124,5 @@ ensure_spd_var_defined SPD_PKGS_MAN
 ensure_spd_var_defined SPD_PKGS_DEVEL
 ensure_spd_var_defined SPD_PKGS_LINTING
 
-# Ensure options are valid
-case "$opt_task" in
-    install) ;;
-    *)
-        cmd_line_param_error "$module_name: opt_task must be install"
-        ;;
-esac
-
-[ "$std_alone" = "$module_name" ] && {
-    # In stand-alone mode, we want to run the entire task
-    task_prepare
-    task_execute
-}
+task_prepare
+task_execute

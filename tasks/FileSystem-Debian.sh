@@ -42,8 +42,8 @@ task_prepare() {
 }
 
 task_execute() {
-    lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
+    lbl_2 "$module_name: Executing task"
 
     fs_is_ubuntu && err_msg "$module_name: Rejected, not allowed to run on Ubuntu"
 
@@ -97,15 +97,19 @@ task_execute() {
 
 module_name="FileSystem-Debian"
 
-[ -n "$D_REPO" ] || {
-    std_alone="$module_name"
-    #  Run this in stand-alone mode
-    D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare-env.sh
-    . "$D_REPO"/tools/prepare-env.sh
-}
+D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+# shellcheck source=tools/prepare-env.sh
+. "$D_REPO"/tools/prepare-env.sh
 
-get_config "$D_REPO"/configs/file_systems/debian.yml
+fs_is_debian || err_msg "$module_name: Rejected, not running on a Debian FS"
+
+# Ensure options are valid
+case "$opt_task" in
+    install) ;;
+    *)
+        cmd_line_param_error "$module_name: opt_task must be install"
+        ;;
+esac
 
 #
 # Ensure required options have been set, and expand any variables that need to be expanded
@@ -119,16 +123,5 @@ ensure_spd_var_defined SPD_PKGS_MAN
 ensure_spd_var_defined SPD_PKGS_DEVEL
 ensure_spd_var_defined SPD_PKGS_LINTING
 
-# Ensure options are valid
-# shellcheck disable=SC2154 # opt_task defined in prepare-env.sh
-case "$opt_task" in
-    install) ;;
-    *)
-        cmd_line_param_error "$module_name: opt_task must be install"
-        ;;
-esac
-
-[ "$std_alone" = "$module_name" ] && {
-    task_prepare
-    task_execute
-}
+task_prepare
+task_execute
