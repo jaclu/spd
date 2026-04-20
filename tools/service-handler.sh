@@ -8,8 +8,8 @@ openrc_dependency_check() {
 
     command -v openrc >/dev/null 2>&1 || {
         lbl_2 "Dependency issue - openrc not found"
-        # shellcheck disable=SC2034 # dependency_issue used by caller
-        dependency_issue=1
+        # shellcheck disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
+        SPD_DEPENDENCY_ISSUE=1
     }
 }
 
@@ -46,8 +46,8 @@ sysv_dependency_check() {
 
     [ -d /etc/rc2.d ] || {
         lbl_2 "Dependency issue - /etc/rc2.d/ not found"
-        # shellcheck disable=SC2034 # dependency_issue used by caller
-        dependency_issue=1
+        # shellcheck disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
+        SPD_DEPENDENCY_ISSUE=1
     }
 }
 
@@ -64,12 +64,12 @@ handler_sysv_init() {
             lbl_3 "Adding service to runlevels"
             for lvl in $SPD_SVC_SYSV_LVL_STOP; do
                 _f="/etc/rc${lvl}.d/K${SPD_SVC_SYSV_LVL_KILL_TASK}${service_name}"
-                msg_dbg "linking $service_script to $_f" 1
+                dbg_msg "linking $service_script to $_f" 1
                 ln -sf "$service_script" "$_f"
             done
             for lvl in $SPD_SVC_SYSV_LVL_START; do
                 _f="/etc/rc${lvl}.d/S${SPD_SVC_SYSV_LVL_RUN_TASK}${service_name}"
-                msg_dbg "linking $service_script to $_f" 1
+                dbg_msg "linking $service_script to $_f" 1
                 ln -sf "$service_script" "$_f"
             done
             ;;
@@ -77,7 +77,7 @@ handler_sysv_init() {
             lbl_3 "Removing service from runlevels"
             # Since we can't be sure of previous S/K numbers, remove all links for the service from runlevels
             safe_remove --silent --ignore-sys-path /etc/rc?.d/*"${service_name}"
-            msg_dbg "Removed links for $service_name from runlevels" 1
+            dbg_msg "Removed links for $service_name from runlevels" 1
             ;;
         *) err_msg "handler_sysv() unrecognized option: [$opt_task]" ;;
     esac
@@ -122,7 +122,7 @@ check_service_env() {
         init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
         [ -f "$init_scr_org" ] || {
             lbl_2 "check_service_env() - Service script not found: [$init_scr_org]"
-            dependency_issue=1
+            SPD_DEPENDENCY_ISSUE=1
         }
         case "$SPD_SERVICE_HANDLER" in
             'openrc')
@@ -141,13 +141,13 @@ check_service_env() {
         esac
     else
         lbl_2 "check_service_env() - SPD_SERVICE_HANDLER undefined"
-        dependency_issue=1
+        SPD_DEPENDENCY_ISSUE=1
     fi
 
     [ -d /etc/init.d ] || {
         lbl_2 "check_service_env() - Dependency issue - /etc/init.d not found"
-        # shellcheck disable=SC2034 # dependency_issue used by caller
-        dependency_issue=1
+        # shellcheck disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
+        SPD_DEPENDENCY_ISSUE=1
     }
 }
 
