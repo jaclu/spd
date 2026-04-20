@@ -6,6 +6,11 @@ task_prepare() {
     # is_linux || err_msg "Will not run apt on non-Linux"
     dependency_issue=0
 
+    # Handling of service tasks
+    [ -z "$SPD_SOURCED_SERVICE_HANDLER" ] && {
+        source_it "$D_REPO"/tools/service-handler.sh
+    }
+
     lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
     check_service_env autossh
@@ -58,18 +63,12 @@ case "$opt_task" in
         ;;
 esac
 
-# Handling of service tasks
-[ -z "$SPD_SOURCED_SVC_HANDLER_COMMON" ] && source_it "$D_REPO"/tools/svc_handler-common.sh
-
 get_config "$D_REPO"/configs/task/service_autossh.yml
 
 ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
 ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
-
-# Expand all variables before initiating service handler
-source_it "$D_REPO"/tools/svc_handler-common.sh
 
 [ "$std_alone" = "$module_name" ] && {
     task_prepare

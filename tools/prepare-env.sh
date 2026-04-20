@@ -190,6 +190,3 @@ load_utils
 cmd_line_param_parse "$@"
 populate_config
 source_it "$D_REPO"/tools/process-config_file.sh
-
-# Handling of service tasks
-[ -z "$SPD_SOURCED_SVC_HANDLER_COMMON" ] && source_it "$D_REPO"/tools/svc_handler-common.sh

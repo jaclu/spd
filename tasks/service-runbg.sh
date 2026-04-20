@@ -6,6 +6,11 @@ task_prepare() {
     # is_linux || err_msg "Will not run apt on non-Linux"
     dependency_issue=0
 
+    # Handling of service tasks
+    [ -z "$SPD_SOURCED_SERVICE_HANDLER" ] && {
+        source_it "$D_REPO"/tools/service-handler.sh
+    }
+
     lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
     check_service_env runbg
