@@ -91,6 +91,7 @@ is_ish() {
 
 is_ish_aok() {
     is_ish && grep -qi ish-AOK /proc/version
+    # return 0 # for devel fake aok
 }
 
 is_chrooted() {
@@ -124,6 +125,10 @@ fs_is_devuan() {
 
 fs_is_ubuntu() {
     grep -qs '^ID=ubuntu$' /etc/os-release
+}
+
+is_musl_lib() {
+    ldd /bin/sh 2>&1 | grep -qi musl
 }
 
 yaml_true() {
