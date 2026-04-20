@@ -98,7 +98,10 @@ cmd_line_param_parse() {
         case "$1" in
             install) opt_task=install ;;
             remove) opt_task=remove ;;
-            *) err_msg "Unrecognized major option: $1" ;;
+            *)
+                cmd_line_param_list
+                err_msg "Unrecognized major option: $1"
+                ;;
         esac
         shift
     done
