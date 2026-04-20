@@ -196,6 +196,26 @@ load_utils() {
     }
 }
 
+creat_cmd_output_file() {
+    if [ "$current_dbg_lvl" -gt 0 ]; then
+        f_cmd_output=/dev/stdout
+    else
+        tmp_file_create f_cmd_output
+    fi
+}
+
+purge_cmd_output_file() {
+    tmp_file_remove "$f_cmd_output"
+}
+
+err_cmd() {
+    _ec_msg="${1:-Command failed}"
+    [ "$f_cmd_output" != /dev/stdout ] && {
+        cat "$f_cmd_output"
+    }
+    err_msg "$_ec_msg"
+}
+
 #=====================================================================
 #
 #   Main
