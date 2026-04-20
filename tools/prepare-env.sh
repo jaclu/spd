@@ -1,5 +1,26 @@
 #!/bin/sh
 
+# usage: alpine_release_ge MAIN.MIN   (e.g., alpine_release_ge 3.20)
+# returns: 0 (true) if running Alpine >= MAIN.MIN, else 1
+alpine_release_ge() {
+    req=$1
+
+    # parse running version
+    ver=$(cat /etc/alpine-release 2>/dev/null) || return 1
+    curM=${ver%%.*}
+    rest=${ver#*.}
+    curm=${rest%%.*}
+
+    # parse required version
+    reqM=${req%%.*}
+    rest=${req#*.}
+    reqm=${rest%%.*}
+
+    # numeric compare
+    [ "$curM" -gt "$reqM" ] \
+        || { [ "$curM" -eq "$reqM" ] && [ "$curm" -ge "$reqm" ]; }
+}
+
 relative_path() { # Needed here due to: prepare_menu() - set_menu_env_variables()
     # remove D_TM_BASE_PATH prefix
     # log_it "relative_path($1) - removing prefix: $D_TM_BASE_PATH"
