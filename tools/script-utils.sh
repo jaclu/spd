@@ -512,7 +512,9 @@ safe_remove() {
     #   $2  exit code on error (default: 1)
     #
 
-    # Option Parsing
+    #
+    # Option parsing
+    #
     _sr_check_sys_path=true
     _sr_display_removal=true
     _sr_remove_dir=false
@@ -580,6 +582,7 @@ create_f_tmp() {
     tmp_file_create
 }
 
+# shellcheck disable=SC2120 # param is optional, if not given f_tmp will be used
 tmp_file_create() {
     #
     # Generic tmp file that can be used by scripts.
@@ -595,6 +598,21 @@ tmp_file_create() {
     # To ensure a file is removed unless other exit handlers is used:
     #   trap 'rm -f "$f_tmp"' EXIT HUP INT TERM
     #
+
+    #
+    # Option parsing
+    #
+    _tfc_is_dir=false
+
+    while [ -n "$1" ]; do
+        case "$1" in
+            -d | --directory) _tfc_is_dir=true ;;
+            -*) err_msg "Unknown option: $1" ;;
+            *) break ;;
+        esac
+        shift
+    done
+
     _tfc_tmp_file_variable="${1:-f_tmp}"
 
     [ -n "$f_tmp" ] && [ -e "$f_tmp" ] && {
@@ -602,9 +620,17 @@ tmp_file_create() {
         safe_remove "$f_tmp"
     }
 
-    _tfc_f_tmp=$(mktemp "${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX") || {
-        err_msg "mktemp failed for: $_tfc_f_tmp"
-    }
+    _tfc_template="${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX"
+    if $_tfc_is_dir; then
+        _tfc_f_tmp=$(mktemp -d "$_tfc_template") || {
+            err_msg "mktemp failed for: $_tfc_f_tmp"
+        }
+        dbg_msg "Created tmp directory: $_tfc_f_tmp" 1
+    else
+        _tfc_f_tmp=$(mktemp "$_tfc_template") || {
+            err_msg "mktemp failed for: $_tfc_f_tmp"
+        }
+    fi
     dbg_msg "Created tmp file: $_tfc_f_tmp" 1
 
     # for tracking and cleanup in err_msg()
