@@ -43,6 +43,7 @@ task_prepare() {
 task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task"
+    create_cmd_output_file
 
     fs_is_ubuntu && err_msg "$module_name: Rejected, not allowed to run on Ubuntu"
 

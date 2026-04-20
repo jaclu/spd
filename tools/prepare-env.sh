@@ -196,7 +196,12 @@ load_utils() {
     }
 }
 
-creat_cmd_output_file() {
+#---------------------------------------------------------------------
+#
+#   Handling commad output file f_cmd_output
+#
+#---------------------------------------------------------------------
+create_cmd_output_file() {
     if [ "$current_dbg_lvl" -gt 0 ]; then
         f_cmd_output=/dev/stdout
     else
