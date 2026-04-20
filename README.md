@@ -46,7 +46,7 @@ Add a passive option, to just list what tasks would be done
   - task_cleanup - cleanup of any temp files etc created by the task
   - task_abort - restoration of all files/changes a task did, if unable to complete
 
-## SPD_DEPENDENCY_ISSUE
+## spd_dependency_issue
 
 1 - neither install or remove can be done
 2 - remove but not install can be done
