@@ -40,12 +40,16 @@ check_service_env() {
         case "$SPD_SERVICE_HANDLER" in
             'openrc')
                 lbl_3 "Using service handler: openrc"
-                source_it "$D_REPO"/tools/svc_handler_openrc.sh
+                [ -z "$SPD_SOURCED_SVC_HANDLER_OPENRC" ] && {
+                    source_it "$D_REPO"/tools/svc_handler-openrc.sh
+                }
                 openrc_dependency_check
                 ;;
             'sysv-init')
                 lbl_3 "Using service handler: sysv-init"
-                source_it "$D_REPO"/tools/svc_handler_sysv_init.sh
+                [ -z "$SPD_SOURCED_SVC_HANDLER_SYSV_INIT" ] && {
+                    source_it "$D_REPO"/tools/svc_handler-sysv_init.sh
+                }
                 sysv_dependency_check
                 ;;
             *)
@@ -67,14 +71,12 @@ check_service_env() {
 }
 
 process_service() {
-    _ps_runlvl="$1"
-    [ -z "$_ps_runlvl" ] && err_msg "process_service() called with no param"
     handle_initd_script
 
     # attach service to handler
     case "$SPD_SERVICE_HANDLER" in
-        'openrc') handler_openrc "$_ps_runlvl" ;;
-        'sysv-init') handler_sysv_init "$_ps_runlvl" ;;
+        'openrc') handler_openrc ;;
+        'sysv-init') handler_sysv_init ;;
         *)
             m="process_service() - Unrecognized service-handler"
             m="$m SPD_SERVICE_HANDLER: $SPD_SERVICE_HANDLER"
@@ -90,9 +92,12 @@ process_service() {
 #=====================================================================
 
 [ -z "$D_REPO" ] && {
-    echo "svc_handler_common.sh - D_REPO undefined, this should be sourced"
+    echo "svc_handler-common.sh - D_REPO undefined, this should be sourced"
 }
 
 [ -z "$service_name" ] && {
-    err_msg "svc_handler_common.sh: service_name must be defined before sourcing this"
+    err_msg "svc_handler-common.sh: service_name must be defined before sourcing this"
 }
+
+# shellcheck disable=SC2034 # indicates this has been sourced, used by caller
+SPD_SOURCED_SVC_HANDLER_COMMON=1

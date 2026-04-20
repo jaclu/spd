@@ -6,17 +6,17 @@
 #
 #=====================================================================
 
-skip_auto_process_config_hierarchy=yes
+# skip_auto_process_config_hierarchy=yes
 
 D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-# shellcheck source=tools/prepare_env.sh
-. "$D_REPO"/tools/prepare_env.sh
+# shellcheck source=tools/prepare-env.sh
+. "$D_REPO"/tools/prepare-env.sh
 
 #
 # Test
 #
 
-. "$D_REPO"/tools/process_config_file.sh
+. "$D_REPO"/tools/process-config_file.sh
 
 read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
 read_config_file "$D_REPO"/debug/dummy_config.yml

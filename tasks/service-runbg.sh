@@ -22,9 +22,7 @@ task_execute() {
     # current_dbg_lvl=2
     lbl_2 "$module_name: Executing task"
     check_for_abort 0 task_execute
-
-    # shellcheck disable=SC2154 # SPD_SVC_RUNBG_RUNLVL defined via config
-    process_service "$SPD_SVC_RUNBG_RUNLVL"
+    process_service
 }
 
 #=====================================================================
@@ -41,8 +39,8 @@ service_name=runbg
     std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare_env.sh
-    . "$D_REPO"/tools/prepare_env.sh
+    # shellcheck source=tools/prepare-env.sh
+    . "$D_REPO"/tools/prepare-env.sh
 }
 
 # Ensure options are valid
@@ -53,11 +51,7 @@ case "$opt_task" in
         ;;
 esac
 
-read_config_file "$D_REPO"/configs/task_overrides/service_runbg.yml
-read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
-
-# Expand all variables before initiating service handler
-source_it "$D_REPO"/tools/svc_handler_common.sh
+get_config "$D_REPO"/configs/task/service_runbg.yml
 
 [ "$std_alone" = "$module_name" ] && {
     task_prepare

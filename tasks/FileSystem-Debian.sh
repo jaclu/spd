@@ -95,21 +95,21 @@ task_execute() {
 #
 #=====================================================================
 
-module_name="FileSystem_Debian"
+module_name="FileSystem-Debian"
 
 [ -n "$D_REPO" ] || {
     std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare_env.sh
-    . "$D_REPO"/tools/prepare_env.sh
+    # shellcheck source=tools/prepare-env.sh
+    . "$D_REPO"/tools/prepare-env.sh
 }
 
-# Read related config files, before variables are expanded
-read_config_file "$D_REPO"/configs/file_systems/debian.yml
-read_config_file "$D_REPO"/configs/task_overrides/filesystem_debian.yml
-read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
+get_config "$D_REPO"/configs/file_systems/debian.yml
 
+#
+# Ensure required options have been set, and expand any variables that need to be expanded
+#
 ensure_spd_var_defined SPD_DEBIAN_APT_INSTALL
 ensure_spd_var_defined SPD_DEBIAN_APT_DEVEL
 ensure_spd_var_defined SPD_DEBIAN_APT_LINTING
@@ -120,7 +120,7 @@ ensure_spd_var_defined SPD_PKGS_DEVEL
 ensure_spd_var_defined SPD_PKGS_LINTING
 
 # Ensure options are valid
-# shellcheck disable=SC2154 # opt_task defined in prepare_env.sh
+# shellcheck disable=SC2154 # opt_task defined in prepare-env.sh
 case "$opt_task" in
     install) ;;
     *)

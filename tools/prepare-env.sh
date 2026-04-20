@@ -111,8 +111,53 @@ check_for_abort() {
     esac
 }
 
+get_config() {
+    #
+    # To ensure no previous task's config spills over, we process the entire config
+    # hierarchy for each task
+    #
+    _gc_config_file="${1:-}"
+    [ -n "$_gc_config_file" ] && {
+        [ -f "$_gc_config_file" ] || {
+            err_msg "Config file not found: $_gc_config_file"
+        }
+    }
+    read_config_file "$D_REPO"/configs/defaults.yml
+
+    # file system related
+    fs_is_alpine && read_config_file "$D_REPO"/configs/file_systems/alpine.yml
+    fs_is_debian && read_config_file "$D_REPO"/configs/file_systems/debian.yml
+    fs_is_devuan && read_config_file "$D_REPO"/configs/file_systems/devuan.yml
+    fs_is_ubuntu && read_config_file "$D_REPO"/configs/file_systems/ubuntu.yml
+
+    # platform related
+    is_linux && read_config_file "$D_REPO"/configs/platform/linux.yml
+    is_macos && read_config_file "$D_REPO"/configs/platform/macos.yml
+
+    # When testing/preparing an iSH FS chrooted
+    is_chrooted_ish && read_config_file "$D_REPO"/configs/platform/ish.yml
+
+    is_ish && {
+        read_config_file "$D_REPO"/configs/platform/ish.yml
+        # subcategory for iSH, to allow overrides for AOK vs non-AOK
+        is_ish_aok && read_config_file "$D_REPO"/configs/platform/ish_aok.yml
+    }
+
+    [ -n "$_gc_config_file" ] && {
+        # task specific config file, comes after platform and fs specifics, to allow overrides
+        read_config_file "$_gc_config_file"
+    }
+
+    # user overrides
+    read_config_file "$D_REPO"/configs/global_overrides.yml
+
+    # hostname specific overrides comes last, to allow per device overrides
+    read_config_file "$D_REPO/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
+}
+
 load_utils() {
     _lu_f_utils="$D_REPO"/tools/script-utils.sh
+    echo "[$0] sourced prepae_env which sources script-utils"
     [ -f "$_lu_f_utils" ] || {
         printf '\n%s[%s] ERROR: source file not found: %s\n' \
             "$0" "$$" "$_lu_f_utils" >&2
@@ -144,10 +189,7 @@ load_utils() {
 load_utils
 cmd_line_param_parse "$@"
 populate_config
+source_it "$D_REPO"/tools/process-config_file.sh
 
-[ -z "$skip_auto_process_config_hierarchy" ] && {
-    msg_dbg "will process config_hierarchy" 1
-    # log_it "prepare_env will process configs"
-    _fp="${D_REPO}"/tools/process_config_hierarchy.sh
-    [ "${app_name_full_path:-0}" != "$_fp" ] && source_it "$_fp"
-}
+# Handling of service tasks
+[ -z "$SPD_SOURCED_SVC_HANDLER_COMMON" ] && source_it "$D_REPO"/tools/svc_handler-common.sh

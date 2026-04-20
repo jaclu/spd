@@ -189,7 +189,7 @@ expand_config_var() {
 }
 
 # D_REPO is set by $0 to give the path to the repository
-[ -n "$D_REPO" ] || {
-    echo "ERROR: This can not be run directly"
+[ -z "$D_REPO" ] && {
+    printf '\n\nERROR: tools/process-config_file.sh must be sourced.\n' >&2
     exit 1
 }

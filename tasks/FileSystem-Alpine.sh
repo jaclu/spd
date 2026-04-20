@@ -89,21 +89,21 @@ task_execute() {
 #
 #=====================================================================
 
-module_name="FileSystem_Alpine"
+module_name="FileSystem-Alpine"
 
 [ -n "$D_REPO" ] || {
     std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare_env.sh
-    . "$D_REPO"/tools/prepare_env.sh
+    # shellcheck source=tools/prepare-env.sh
+    . "$D_REPO"/tools/prepare-env.sh
 }
 
-# Read related config files, before variables are expanded
-read_config_file "$D_REPO"/configs/file_systems/alpine.yml
-read_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
-read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
+get_config "$D_REPO"/configs/file_systems/alpine.yml
 
+#
+# Ensure required options have been set, and expand any variables that need to be expanded
+#
 ensure_spd_var_defined SPD_APK_INSTALL
 ensure_spd_var_defined SPD_APK_DEVEL
 ensure_spd_var_defined SPD_APK_LINTING
@@ -122,6 +122,7 @@ case "$opt_task" in
 esac
 
 [ "$std_alone" = "$module_name" ] && {
+    # In stand-alone mode, we want to run the entire task
     task_prepare
     task_execute
 }

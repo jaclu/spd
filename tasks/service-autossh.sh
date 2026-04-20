@@ -29,7 +29,7 @@ task_execute() {
     check_for_abort 0 task_execute
 
     # shellcheck disable=SC2154 # SPD_SVC_AUTOSSH_RUNLVL defined via config
-    process_service "$SPD_SVC_AUTOSSH_RUNLVL"
+    process_service
 }
 
 #=====================================================================
@@ -46,8 +46,8 @@ service_name=autossh
     std_alone="$module_name"
     #  Run this in stand-alone mode
     D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-    # shellcheck source=tools/prepare_env.sh
-    . "$D_REPO"/tools/prepare_env.sh
+    # shellcheck source=tools/prepare-env.sh
+    . "$D_REPO"/tools/prepare-env.sh
 }
 
 # Ensure options are valid
@@ -58,8 +58,10 @@ case "$opt_task" in
         ;;
 esac
 
-read_config_file "$D_REPO"/configs/task_overrides/service_autossh.yml
-read_config_file "$D_REPO"/configs/global_overrides.yml # local user overrides
+# Handling of service tasks
+[ -z "$SPD_SOURCED_SVC_HANDLER_COMMON" ] && source_it "$D_REPO"/tools/svc_handler-common.sh
+
+get_config "$D_REPO"/configs/task/service_autossh.yml
 
 ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
@@ -67,7 +69,7 @@ ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
 ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
 
 # Expand all variables before initiating service handler
-source_it "$D_REPO"/tools/svc_handler_common.sh
+source_it "$D_REPO"/tools/svc_handler-common.sh
 
 [ "$std_alone" = "$module_name" ] && {
     task_prepare
