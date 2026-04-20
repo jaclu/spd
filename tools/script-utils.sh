@@ -535,6 +535,7 @@ safe_remove() {
         }
         _do_safe_remove "$f"
     done
+    return 0
 }
 
 source_it() {
