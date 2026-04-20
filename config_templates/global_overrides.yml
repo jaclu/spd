@@ -20,6 +20,7 @@ SPD_DEBIAN_APT_INSTALL:
   - mg
   - ripgrep
   - autossh
+  - locales # Locales support
 
 SPD_DEVUAN_APT_INSTALL:
   - bash-completion # Command-line tab-completion for bash
