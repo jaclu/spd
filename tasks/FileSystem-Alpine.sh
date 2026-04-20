@@ -43,50 +43,37 @@ task_prepare() {
 task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task"
-
-    if [ "$current_dbg_lvl" -gt 0 ]; then
-        f_tmp=/dev/stdout
-    else
-        tmp_file_create
-    fi
+    creat_cmd_output_file
 
     [ -n "$SPD_APK_REMOVE" ] && {
         lbl_3 "Will remove Alpine packages in SPD_APK_REMOVE"
         # apk add automatically runs update, but apk del does not
-        apk update >"$f_tmp" 2>&1 || {
-            [ "$f_tmp" != /dev/stdout ] && {
-                cat "$f_tmp"
-                safe_remove "$f_tmp"
-            }
-            err_msg "Failed to run apk update"
+        apk update >"$f_cmd_output" 2>&1 || {
+            err_cmd "Failed to run apk update"
         }
         # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
-        apk del "$SPD_APK_REMOVE" >"$f_tmp" 2>&1 || {
-            [ "$f_tmp" != /dev/stdout ] && {
-                cat "$f_tmp"
-                safe_remove "$f_tmp"
-            }
-            err_msg "Failed to run apk del SPD_APK_REMOVE"
+        apk del "$SPD_APK_REMOVE" >"$f_cmd_output" 2>&1 || {
+            err_cmd "Failed to run apk del SPD_APK_REMOVE"
         }
     }
     [ -n "$SPD_APK_INSTALL" ] && {
         lbl_3 "Installing Alpine packages from SPD_APK_INSTALL"
         # shellcheck disable=SC2086 # SPD_APK_INSTALL should be expanded
-        apk add $SPD_APK_INSTALL >"$f_tmp" 2>&1 || {
-            [ "$f_tmp" != /dev/stdout ] && {
-                cat "$f_tmp"
-                safe_remove "$f_tmp"
-            }
-            err_msg "Failed to run apk add SPD_APK_INSTALL"
+        apk add $SPD_APK_INSTALL >"$f_cmd_output" 2>&1 || {
+            err_cmd "Failed to run apk add SPD_APK_INSTALL"
         }
     }
+
+    # musl doesn't need locale-gen, and it doesn't even have it, so skip this step if musl is used
+    is_musl_lib || locale_gen
+
     #  - name: Generate sshd host keys
     #   command: ssh-keygen -A
     # when:
     #  - use_sshd | default(false)
     #  - ift_alpine_generate_sshd_host_keys | default(false) | bool
 
-    tmp_file_remove "$f_tmp"
+    purge_cmd_output_file
 }
 
 #=====================================================================
