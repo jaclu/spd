@@ -1,5 +1,23 @@
 #!/bin/sh
 
+locale_gen() {
+    # Generate required locales
+    command -v locale-gen >/dev/null 2>&1 || {
+        lbl_3 "locale-gen command not found, skipping locale generation"
+        return 0
+    }
+    [ -z "$SPD_LOCALES" ] && {
+        lbl_3 "No locales specified in SPD_LOCALES, skipping locale generation"
+        return 0
+    }
+    # shellcheck disable=SC2154 # defined in config
+    lbl_3 "Generating required locales: $SPD_LOCALES"
+    # shellcheck disable=SC2086 # should be expanded
+    locale-gen $SPD_LOCALES >"$f_cmd_output" 2>&1 || {
+        err_cmd "$module_name: Failed to generate required locales"
+    }
+}
+
 task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
@@ -51,6 +69,7 @@ task_execute() {
         apk update >"$f_cmd_output" 2>&1 || {
             err_cmd "Failed to run apk update"
         }
+
         # shellcheck disable=SC2086 # SPD_APK_REMOVE should be expanded
         apk del "$SPD_APK_REMOVE" >"$f_cmd_output" 2>&1 || {
             err_cmd "Failed to run apk del SPD_APK_REMOVE"
@@ -109,6 +128,8 @@ expand_config_var SPD_APK_REMOVE # dont nag if it is empty
 ensure_spd_var_defined SPD_PKGS_MAN
 ensure_spd_var_defined SPD_PKGS_DEVEL
 ensure_spd_var_defined SPD_PKGS_LINTING
+
+is_musl_lib || ensure_spd_var_defined SPD_LOCALES
 
 task_prepare
 task_execute
