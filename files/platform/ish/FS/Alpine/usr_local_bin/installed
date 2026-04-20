@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstool
+#
+#  License: MIT
+#
+
+apk -vv info | sort

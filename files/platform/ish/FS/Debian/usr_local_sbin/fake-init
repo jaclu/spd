@@ -1,0 +1,65 @@
+#!/bin/sh
+#
+# Copyright (c) 2026: Jacob.Lundqvist@gmail.com
+#
+# Part of https://github.com/jaclu/helpful-scripts
+#
+# License: MIT
+#
+# Replaces a proper /sbin/init, suitable for iSH
+#
+
+log_it() {
+    echo "$(date +"%Y-%m-%d %H:%M:%S") $1" >>"$f_recovery_log_file"
+}
+
+check_recovery_mode() {
+    [ -f "$f_recovery_mode" ] && {
+        log_it "R-check detected recovery mode - skipped: ${*}"
+    }
+    "${@}"
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+f_recovery_mode=/etc/opt/ift/recovery-mode
+f_recovery_log_file=/var/log/recovery-mode.log
+
+# Indicate boot up time in syslog
+check_recovery_mode /usr/local/bin/logger fake_init "===  System startup  ==="
+
+# Allow for console to be setup and ready to log boot up.
+# Returns immeditally if console mode is not used
+/usr/local/sbin/inittab_waiting_for_console
+
+# Clear /run/ since iSH doesn't mount it as tempfs
+check_recovery_mode /usr/local/sbin/reset-run-dir
+
+#  rotates logfiles > 20k
+check_recovery_mode /usr/local/sbin/rotate-logs.sh
+
+#
+#  Update motd (in case iSH has been updated)
+#  On iSH we get console before this is executed despite the fact that
+#  sysinit actions are supposed to happen before conssole is activated
+#  This means first boot after new iSH will show outdated version
+#  on boot up
+#
+check_recovery_mode /usr/local/sbin/update-motd
+
+#
+#  set openrc default runlevel - since /run was cleared we don't need to toggle between
+#  runlevels
+#
+check_recovery_mode /sbin/openrc default
+
+#
+#  Loop forever...
+#
+while true; do
+    sleep 3601
+done

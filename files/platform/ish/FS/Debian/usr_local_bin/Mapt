@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Copyright (c) 2021-2024: Jacob.Lundqvist@gmail.com
+# License: MIT
+#
+# Part of https://github.com/jaclu/helpful-scripts
+#
+#  Updates apt status of a Debian based box
+#
+
+display_time_elapsed() {
+    dte_duration=$(($(date +%s) - mapt_time_start))
+
+    if [ "$dte_duration" -gt 59 ]; then
+        dte_hours=$((dte_duration / 3600))
+        dte_minutes=$(((dte_duration % 3600) / 60))
+        dte_seconds=$((dte_duration - dte_hours * 3600 - dte_minutes * 60))
+        dte_elapsed=$(printf '%02d:%02d:%02d' "$dte_hours" "$dte_minutes" "$dte_seconds")
+    else
+        dte_elapsed=$(printf '%ss' "$dte_duration")
+    fi
+    echo
+    printf 'Time elapsed: %s - %s\n' "$dte_elapsed" "$prog_name"
+    echo
+}
+
+#===============================================================
+#
+#   Main
+#
+#===============================================================
+
+prog_name=$(basename "$0")
+
+# but ofcourse you do sysadmin as a regular user in Termux
+if [ "$(uname -o)" != "Android" ] && [ "$(whoami)" != "root" ]; then
+    echo "Executing $prog_name as root"
+
+    sudo "$0" "$@"
+    #  terminate the user initiated instance of the script
+    exit "$?"
+fi
+
+mapt_time_start="$(date +%s)"
+[ "$1" = "no_timing" ] && mapt_no_timing=1
+
+echo "===  Mapt - apt maintenance  ==="
+
+apt --fix-broken install && apt update && apt autoremove -y --purge \
+    && apt autoclean && apt -y upgrade
+
+#
+#  Check if reboot is required
+#
+
+if [ -f /var/run/reboot-required ]; then
+    echo
+    cat /var/run/reboot-required
+    exit 1
+fi
+
+purge_candidates="$(dpkg -l | grep '^rc' | awk '{print $2}')"
+if [ -n "$purge_candidates" ]; then
+    echo
+    echo "---  In need of purging  ---"
+    echo "$purge_candidates"
+    exit 1
+else
+    echo "---  No  purges needed  ---"
+fi
+
+[ -z "$mapt_no_timing" ] && display_time_elapsed
+return 0

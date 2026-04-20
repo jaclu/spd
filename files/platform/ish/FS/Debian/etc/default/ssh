@@ -1,0 +1,10 @@
+#!/bin/sh
+# always sourced - fake bangpath for linting
+# shellcheck disable=SC2034 # skip warnings for unused variables
+
+# Default settings for openssh-server. This file is sourced by /bin/sh from
+# /etc/init.d/ssh.
+
+# Options to pass to sshd
+SSHD_OPTS=
+SSHD_BINARY=/opt/openssh/sbin/sshd

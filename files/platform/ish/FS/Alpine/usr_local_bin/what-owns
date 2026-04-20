@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+#  Part of https://github.com/jaclu/ish-fstools
+#
+#  Copyright (c) 2021,2025: Jacob.Lundqvist@gmail.com
+#
+#  License: MIT
+#
+
+[ -z "$1" ] && {
+    echo "Usage: $0 <full path to file>"
+    exit 1
+}
+
+apk info --who-owns "$1"
