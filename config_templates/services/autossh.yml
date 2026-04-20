@@ -1,7 +1,0 @@
----
-SPD_SVC_AUTOSSH_RUNLVL: default # only relevant for openrc
-
-SPD_SVC_AUTOSSH_KEY_FILE: "/home/{{ SPD_UNAME }}/.ssh/id_jumpy"
-SPD_SVC_AUTOSSH_JUMP_HOST: jumpy
-SPD_SVC_AUTOSSH_JUMP_PORT: 2942
-SPD_SVC_AUTOSSH_REVERSE_PORT: 2077

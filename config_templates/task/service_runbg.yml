@@ -1,8 +1,8 @@
 ---
-# # openrc settings
-SPD_SVC_OPENRC_RUNLVL: default # what runlevels it should be started in
+# openrc settings
+SPD_SVC_OPENRC_RUNLVLS: sysinit nonetwork default # what runlevels it should be started in
 
-# # sysv-init settings
+# sysv-init settings
 SPD_SVC_SYSV_LVL_START: 2 3 4 5 # what runlevels it should be started in
 SPD_SVC_SYSV_LVL_STOP: 0 1 6 # what runlevels it should be stopped in
 SPD_SVC_SYSV_LVL_RUN_TASK: 1 # What order to run the task in, if it should

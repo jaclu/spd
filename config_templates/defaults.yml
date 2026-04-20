@@ -35,7 +35,7 @@ SPD_PKGS_LINTING: 0 # If set to 1 linting packages will be deployed
 # ====================================================================
 
 # openrc settings
-SPD_SVC_OPENRC_RUNLVL: default # what runlevels service it should be started in
+SPD_SVC_OPENRC_RUNLVLS: default # what runlevels service it should be started in
 
 # sysv-init settings
 SPD_SVC_SYSV_LVL_START: 2 3 4 5 # what runlevels it should be started in
