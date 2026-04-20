@@ -280,21 +280,27 @@ err_msg() {
     unset _em_in_progress # in case exit code was < 0
 }
 
-msg_dbg() {
+dbg_msg() {
     #
     # set debug lvl with param 2, if not given, will always be displayed,
     # otherwise displayed if debug lvl <= current_dbg_lvl
-    # msg_dbg() does not support the log_it options --no-lf
+    # dbg_msg() does not support the log_it options --no-lf
     # timestamp will be printed if param 3 is -t or always_use_time_stamp() has
     # been called
     #
-    [ -n "$1" ] || err_msg "msg_dbg() no param"
+    [ -n "$1" ] || err_msg "dbg_msg() no param"
     if [ -n "$2" ]; then
-        _md_this_dbg_lvl="$2"
+        _dm_this_dbg_lvl="$2"
     else
-        _md_this_dbg_lvl=0
+        _dm_this_dbg_lvl=0
     fi
-    [ "$_md_this_dbg_lvl" -le "$current_dbg_lvl" ] && log_it "DBG  $1" "$3"
+    [ "$_dm_this_dbg_lvl" -le "$current_dbg_lvl" ] && log_it "DBG  $1" "$3"
+
+}
+
+msg_dbg() {
+    # Deprecated, use dbg_msg instead
+    dbg_msg "$@"
 }
 
 lbl_1() {
