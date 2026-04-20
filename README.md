@@ -41,12 +41,12 @@ Add a passive option, to just list what tasks would be done
 - Simple to detect config params needed
 - public functions
   - task_prepare - setting up any environmental dependencies in order for task_execute
-  to be executed, such as installing dependencies if need be etc
+    to be executed, such as installing dependencies if need be etc
   - task_execute - perform the actual task
   - task_cleanup - cleanup of any temp files etc created by the task
   - task_abort - restoration of all files/changes a task did, if unable to complete
 
-## dependency_issue
+## SPD_DEPENDENCY_ISSUE
 
 1 - neither install or remove can be done
 2 - remove but not install can be done
