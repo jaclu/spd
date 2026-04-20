@@ -4,14 +4,13 @@ task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
-    dependency_issue=0
 
     lbl_2 "$module_name: Preparing task"
     check_for_abort 1 task_prepare
 
     fs_is_alpine || {
         lbl_3 "$module_name: Dependency issue - This is not running on an Alpine FS"
-        dependency_issue=1
+        SPD_DEPENDENCY_ISSUE=1
     }
 
     [ -n "$SPD_APK_REMOVE" ] && {
@@ -38,7 +37,7 @@ task_prepare() {
         display_list_content SPD_APK_LINTING no_label
         SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_LINTING"
     }
-    return "$dependency_issue"
+    return "$SPD_DEPENDENCY_ISSUE"
 }
 
 task_execute() {

@@ -18,13 +18,12 @@ task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
-    dependency_issue=0
     lbl_2 "$module_name: Preparing task"
 
     check_for_abort 1 task_prepare
 
     d_files_base="$D_REPO"/files/all_distros
-    return "$dependency_issue"
+    return "$SPD_DEPENDENCY_ISSUE"
 }
 
 task_execute() {

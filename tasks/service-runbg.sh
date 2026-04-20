@@ -4,7 +4,6 @@ task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
-    dependency_issue=0
 
     # Handling of service tasks
     [ -z "$SPD_SOURCED_SERVICE_HANDLER" ] && {
@@ -17,10 +16,10 @@ task_prepare() {
 
     # is_ish || { # disabled during deubgging, re-enable once done
     #     lbl_2 "Dependency issue - Can only be used on iSH"
-    #     # shell check disable=SC2034 # dependency_issue used by caller
-    #     [ "$dependency_issue" = 0 ] && dependency_issue=2
+    #     # shell check disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
+    #     [ "$SPD_DEPENDENCY_ISSUE" = 0 ] && SPD_DEPENDENCY_ISSUE=2
     # }
-    return "$dependency_issue"
+    return "$SPD_DEPENDENCY_ISSUE"
 }
 
 task_execute() {

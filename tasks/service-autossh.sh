@@ -4,7 +4,6 @@ task_prepare() {
     # setting up any environmental dependencies in order for task_execute to be executed,
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
-    dependency_issue=0
 
     # Handling of service tasks
     [ -z "$SPD_SOURCED_SERVICE_HANDLER" ] && {
@@ -16,17 +15,17 @@ task_prepare() {
     check_service_env autossh
     command -v autossh >/dev/null 2>&1 || {
         lbl_2 "Dependency issue - autossh not found"
-        # shell check disable=SC2034 # dependency_issue used by caller
-        dependency_issue=1
+        # shell check disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
+        SPD_DEPENDENCY_ISSUE=1
     }
     # _cmd=/usr/local/bin/logger
     # [ -x "$_cmd" ] || {
     #     lbl_2 "Dependency issue - $_cmd not found"
-    #     # shell check disable=SC2034 # dependency_issue used by caller
-    #     [ "$dependency_issue" = 0 ] && dependency_issue=2
+    #     # shell check disable=SC2034 # SPD_DEPENDENCY_ISSUE used by caller
+    #     [ "$SPD_DEPENDENCY_ISSUE" = 0 ] && SPD_DEPENDENCY_ISSUE=2
     # }
 
-    return "$dependency_issue"
+    return "$SPD_DEPENDENCY_ISSUE"
 }
 
 task_execute() {
