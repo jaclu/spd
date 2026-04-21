@@ -1,21 +1,35 @@
 #!/bin/sh
 
 #
-#  Part of https://github.com/jaclu/spd
+# Part of https://github.com/jaclu/spd
 #
-#  Copyright (c) 2026: Jacob.Lundqvist@gmail.com
+# Copyright (c) 2026 Jacob Lundqvist <jacob.lndqvist@gmail.com>
+# License: MIT
 #
-#  License: MIT
+# iSH-specific startup workaround for occasional missing or broken core
+# /dev I/O devices.
 #
-#  Some systems like iSH for example, occasionally boots up with broken/missing
-#  core IO. This validates and attempts to fix any issues found.
+# Validates and repairs standard I/O device nodes when required:
+#   /dev/null, /dev/stdin, /dev/stdout, /dev/stderr
 #
-#  If this does not exit 0, assume a broken environment.
+# No effect on other platforms. Minimal overhead when devices are healthy.
+# Uses generic POSIX mechanisms where possible.
 #
 
-err_msg() {
-    printf '\n\n%s[%s] ERROR: %s\n' "$0" "$$" "$1" >&2
-    exit 99
+failed_to_fix_dev_err_msg() {
+    dev_name=${1:-[missing stdio device argument]}
+
+    printf '\n\n%s\n%s%s\n\n' \
+        "$0[$$] ERROR: $dev_name check failed and could not be repaired." \
+        "This affects basic I/O redirection and " \
+        "may break standard shell operations." \
+        >&2
+
+    exit 1
+}
+
+dev_fixed_notification() {
+    printf '\n\n%s: %s has been repaired\n\n' "$0" "$1"
 }
 
 validate_dev_null() {
@@ -23,8 +37,9 @@ validate_dev_null() {
     [ -c /dev/null ] && return 0
 
     rm -f /dev/null
-    mknod /dev/null c 1 3 || err_msg "/dev/null broken - failed to fix it."
+    mknod /dev/null c 1 3 || failed_to_fix_dev_err_msg /dev/null
     chmod 666 /dev/null
+    dev_fixed_notification /dev/null
 }
 
 validate_dev_fd() {
@@ -38,7 +53,7 @@ validate_dev_fd() {
 
     if ! ln -s "$target" "$tmp" 2>/dev/null; then
         rm -f "$tmp"
-        err_msg "$path broken - failed to fix it."
+        failed_to_fix_dev_err_msg "$path"
     fi
 
     # Re-check if fixed by something else during this (short) operation
@@ -47,7 +62,7 @@ validate_dev_fd() {
         return 0
     }
     mv -f "$tmp" "$path"
-    printf '\n\n%s: %s has been repaired\n\n' "$0" "$path"
+    dev_fixed_notification "$path"
 }
 
 verify_fd() {
@@ -57,7 +72,11 @@ verify_fd() {
         stdin) : <"$_vf_path" 2>/dev/null && return 0 ;;
         stdout) : >"$_vf_path" 2>/dev/null && return 0 ;;
         stderr) : 2>"$_vf_path" : && return 0 ;;
-        *) err_msg "verify_fd() called with invalid $_vf_name" ;;
+        *)
+            printf 'ERROR: verify_fd() called with invalid parameter: %s\n' \
+                "$_vf_name"
+            exit 1
+            ;;
     esac
     return 1
 }
@@ -73,5 +92,3 @@ validate_dev_null
 validate_dev_fd stdin /proc/self/fd/0
 validate_dev_fd stdout /proc/self/fd/1
 validate_dev_fd stderr /proc/self/fd/2
-
-# exit 0
