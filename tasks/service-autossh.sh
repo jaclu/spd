@@ -58,7 +58,7 @@ case "$opt_task" in
         ;;
 esac
 
-parse_config_file "$D_REPO"/configs/task/service_autossh.yml
+parse_yaml_config_file "$D_REPO"/configs/task/service_autossh.yml
 
 ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST

@@ -152,7 +152,7 @@ pcf_parse_config_file() {
 #
 # Processes a yaml-style config file and assigns the corresponding posix variable
 #
-parse_config_file() {
+parse_yaml_config_file() {
     _rcf_f_cfg="$1"
     # shellcheck disable=SC2154 # module_name defined in caller
     dbg_msg "$module_name - Processing: $_rcf_f_cfg" 1
@@ -191,6 +191,6 @@ expand_config_var() {
 
 # D_REPO is set by $0 to give the path to the repository
 [ -z "$D_REPO" ] && {
-    printf '\n\nERROR: tools/process-config_file.sh must be sourced.\n' >&2
+    printf '\n\nERROR: tools/process-yaml-config_file.sh must be sourced.\n' >&2
     exit 1
 }

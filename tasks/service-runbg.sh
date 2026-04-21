@@ -50,7 +50,7 @@ case "$opt_task" in
         ;;
 esac
 
-parse_config_file "$D_REPO"/configs/task/service_runbg.yml
+parse_yaml_config_file "$D_REPO"/configs/task/service_runbg.yml
 
 task_prepare
 task_execute
