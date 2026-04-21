@@ -2,6 +2,122 @@
 
 #---------------------------------------------------------------------
 #
+#   Internals / only used here
+#
+#---------------------------------------------------------------------
+
+source_script_utils() {
+    #
+    #  Manually sourcing script-utils.sh
+    #  Once loaded it offers tons of convenience functions
+    #
+    _lu_f_utils="$D_REPO"/tools/script-utils.sh
+    [ -f "$_lu_f_utils" ] || {
+        printf '\n%s[%s] ERROR: source file not found: %s\n' \
+            "$module_name" "$$" "$_lu_f_utils" >&2
+        exit 1
+    }
+    # shellcheck source=tools/script-utils.sh
+    . "$_lu_f_utils"
+    [ -n "$t_start" ] || {
+        # guaranteed variable undefined, sourcing must have failed
+        printf '\n%s[%s] ERROR: Sourcing %s failed to define: t_start\n' \
+            "$0" "$$" "$_lu_f_utils" >&2
+        exit 1
+    }
+}
+
+get_basic_config() {
+    #
+    # To ensure no previous task's config spills over, we process the entire config
+    # hierarchy for each task
+    #
+    # _gc_config_file="${1:-}"
+    # [ -n "$_gc_config_file" ] && {
+    #     [ -f "$_gc_config_file" ] || {
+    #         err_msg "Config file not found: $_gc_config_file"
+    #     }
+    # }
+
+    # current_dbg_lvl=5
+    parse_yaml_config_file "$D_REPO"/configs/defaults.yml
+
+    # file system related
+    fs_is_alpine && parse_yaml_config_file "$D_REPO"/configs/file_systems/alpine.yml
+    fs_is_debian && parse_yaml_config_file "$D_REPO"/configs/file_systems/debian.yml
+    fs_is_devuan && parse_yaml_config_file "$D_REPO"/configs/file_systems/devuan.yml
+    fs_is_ubuntu && parse_yaml_config_file "$D_REPO"/configs/file_systems/ubuntu.yml
+
+    # platform related
+    is_linux && parse_yaml_config_file "$D_REPO"/configs/platform/linux.yml
+    is_macos && parse_yaml_config_file "$D_REPO"/configs/platform/macos.yml
+    if is_ish; then
+        parse_yaml_config_file "$D_REPO"/configs/platform/ish.yml
+        # subcategory for iSH, to allow overrides for AOK vs non-AOK
+        is_ish_aok && parse_yaml_config_file "$D_REPO"/configs/platform/ish_aok.yml
+    elif is_chrooted_ish; then
+        # When testing/preparing an iSH FS chrooted
+        parse_yaml_config_file "$D_REPO"/configs/platform/ish.yml
+    fi
+
+    # [ -n "$_gc_config_file" ] && {
+    #     # task specific config file, comes after platform and fs specifics, to allow overrides
+    #     parse_yaml_config_file "$_gc_config_file"
+    # }
+
+    # user overrides
+    parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
+
+    # hostname specific overrides comes last, to allow per device overrides
+    parse_yaml_config_file "$D_REPO/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
+}
+
+populate_config() {
+    # if configs is empty copy from config_templates
+    spd_dependency_issue=0 # set default to no issue
+    # If config/ is empty populate it with config_templates as a default
+    _pc_d_conf="$D_REPO"/configs
+    [ -n "$(ls -A "$_pc_d_conf" 2>/dev/null)" ] || {
+        _pc_d_templates="$D_REPO"/config_templates
+        lbl_1 "No configs found, populating $_pc_d_conf from templates"
+        mkdir -p "$_pc_d_conf"
+        cp -a "$_pc_d_templates"/* "$_pc_d_conf" || {
+            error_msg "Failed to copy templates"
+        }
+    }
+}
+
+indicate_unset() {
+    case "$1" in
+        '') echo "*unset*" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+cmd_line_param_list() {
+    _lbl="${1:-Listing of cmd line options}"
+    lbl_2 "$_lbl"
+    lbl_4 "  opt_task    $(indicate_unset "$opt_task")"
+}
+
+cmd_line_param_parse() {
+    while [ -n "$1" ]; do
+        case "$1" in
+            install) opt_task=install ;;
+            remove) opt_task=remove ;;
+            *)
+                cmd_line_param_list
+                err_msg "Unrecognized major option: $1"
+                ;;
+        esac
+        shift
+    done
+
+    cmd_line_param_list
+}
+
+#---------------------------------------------------------------------
+#
 #   Dependency handling
 #
 #---------------------------------------------------------------------
@@ -37,66 +153,6 @@ check_for_abort() {
 #   Handling Config files
 #
 #---------------------------------------------------------------------
-
-populate_config() {
-    # if configs is empty copy from config_templates
-    spd_dependency_issue=0 # set default to no issue
-    # If config/ is empty populate it with config_templates as a default
-    _pc_d_conf="$D_REPO"/configs
-    [ -n "$(ls -A "$_pc_d_conf" 2>/dev/null)" ] || {
-        _pc_d_templates="$D_REPO"/config_templates
-        lbl_1 "No configs found, populating $_pc_d_conf from templates"
-        mkdir -p "$_pc_d_conf"
-        cp -a "$_pc_d_templates"/* "$_pc_d_conf" || {
-            error_msg "Failed to copy templates"
-        }
-    }
-}
-
-get_basic_config() {
-    #
-    # To ensure no previous task's config spills over, we process the entire config
-    # hierarchy for each task
-    #
-    # _gc_config_file="${1:-}"
-    # [ -n "$_gc_config_file" ] && {
-    #     [ -f "$_gc_config_file" ] || {
-    #         err_msg "Config file not found: $_gc_config_file"
-    #     }
-    # }
-
-    # current_dbg_lvl=5
-    parse_config_file "$D_REPO"/configs/defaults.yml
-
-    # file system related
-    fs_is_alpine && parse_config_file "$D_REPO"/configs/file_systems/alpine.yml
-    fs_is_debian && parse_config_file "$D_REPO"/configs/file_systems/debian.yml
-    fs_is_devuan && parse_config_file "$D_REPO"/configs/file_systems/devuan.yml
-    fs_is_ubuntu && parse_config_file "$D_REPO"/configs/file_systems/ubuntu.yml
-
-    # platform related
-    is_linux && parse_config_file "$D_REPO"/configs/platform/linux.yml
-    is_macos && parse_config_file "$D_REPO"/configs/platform/macos.yml
-    if is_ish; then
-        parse_config_file "$D_REPO"/configs/platform/ish.yml
-        # subcategory for iSH, to allow overrides for AOK vs non-AOK
-        is_ish_aok && parse_config_file "$D_REPO"/configs/platform/ish_aok.yml
-    elif is_chrooted_ish; then
-        # When testing/preparing an iSH FS chrooted
-        parse_config_file "$D_REPO"/configs/platform/ish.yml
-    fi
-
-    # [ -n "$_gc_config_file" ] && {
-    #     # task specific config file, comes after platform and fs specifics, to allow overrides
-    #     parse_config_file "$_gc_config_file"
-    # }
-
-    # user overrides
-    parse_config_file "$D_REPO"/configs/global_overrides.yml
-
-    # hostname specific overrides comes last, to allow per device overrides
-    parse_config_file "$D_REPO/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
-}
 
 ensure_spd_var_defined() {
     # Expands variable, then displays it if current_dbg_lvl>=1
@@ -142,27 +198,6 @@ display_list_content() {
     fi
 }
 
-source_script_utils() {
-    #
-    #  Manually sourcing script-utils.sh
-    #  Once loaded it offers tons of convenience functions
-    #
-    _lu_f_utils="$D_REPO"/tools/script-utils.sh
-    [ -f "$_lu_f_utils" ] || {
-        printf '\n%s[%s] ERROR: source file not found: %s\n' \
-            "$module_name" "$$" "$_lu_f_utils" >&2
-        exit 1
-    }
-    # shellcheck source=tools/script-utils.sh
-    . "$_lu_f_utils"
-    [ -n "$t_start" ] || {
-        # guaranteed variable undefined, sourcing must have failed
-        printf '\n%s[%s] ERROR: Sourcing %s failed to define: t_start\n' \
-            "$0" "$$" "$_lu_f_utils" >&2
-        exit 1
-    }
-}
-
 #---------------------------------------------------------------------
 #
 #   FS Specific
@@ -196,39 +231,10 @@ alpine_release_ge() {
 #
 #---------------------------------------------------------------------
 
-indicate_unset() {
-    case "$1" in
-        '') echo "*unset*" ;;
-        *) echo "$1" ;;
-    esac
-}
-
-cmd_line_param_list() {
-    _lbl="${1:-Listing of cmd line options}"
-    lbl_2 "$_lbl"
-    lbl_4 "  opt_task    $(indicate_unset "$opt_task")"
-}
-
 cmd_line_param_error() {
     lbl_1 "Invalid command-line param"
     # cmd_line_param_list "Processed options"
     err_msg "$1"
-}
-
-cmd_line_param_parse() {
-    while [ -n "$1" ]; do
-        case "$1" in
-            install) opt_task=install ;;
-            remove) opt_task=remove ;;
-            *)
-                cmd_line_param_list
-                err_msg "Unrecognized major option: $1"
-                ;;
-        esac
-        shift
-    done
-
-    cmd_line_param_list
 }
 
 #---------------------------------------------------------------------
@@ -287,7 +293,7 @@ lbl_1 "Module: $module_name"
 
 cmd_line_param_parse "$@"
 
-# Provides parse_config_file & expand_config_var
-source_it "$D_REPO"/tools/process-config_file.sh
+# Provides parse_yaml_config_file & expand_config_var
+source_it "$D_REPO"/tools/process-yaml-config_file.sh
 
 get_basic_config
