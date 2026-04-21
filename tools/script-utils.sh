@@ -492,7 +492,7 @@ was_sys_path() {
 
 _do_safe_remove() {
     _dsr_item=$1
-    dbg_msg "_do_safe_remove($_dsr_item)" 1
+    dbg_msg "_do_safe_remove($_dsr_item)" 3
 
     _sr_err_ex_code=1 # "${2:-1}"
     [ -z "$_dsr_item" ] && err_msg "safe_remove() - missing path" "$_sr_err_ex_code"
@@ -654,13 +654,14 @@ tmp_file_create() {
         _tfc_f_tmp=$(mktemp -d "$_tfc_template") || {
             err_msg "mktemp failed for: $_tfc_f_tmp"
         }
-        dbg_msg "Created tmp directory: $_tfc_f_tmp" 1
+        dbg_msg "Created tmp directory: $_tfc_f_tmp" 3
     else
         _tfc_f_tmp=$(mktemp "$_tfc_template") || {
             err_msg "mktemp failed for: $_tfc_f_tmp"
         }
+        dbg_msg "Created tmp file: $_tfc_f_tmp" 3
     fi
-    dbg_msg "Created tmp file: $_tfc_f_tmp" 1
+
 
     # for tracking and cleanup in err_msg()
     tmp_file_list=$(printf '%s\n%s\n' "$tmp_file_list" "$_tfc_f_tmp")
@@ -673,10 +674,16 @@ tmp_file_remove() {
     # If tmp_file is a folder, delete it and it's content
     _tfr_tmp="${1:-$f_tmp}"
 
+    [ -z "$_tfr_tmp" ] && err_msg "tmp_file_remove() called with no param"
+
     case "$_tfr_tmp" in
-        '') lbl_1 "WARNING: tmp_file_remove() called with no param" ;;
-        /dev/stdout | /dev/stderr) return ;;
-        *) safe_remove --silent --remove-dir "$_tfr_tmp" ;;
+        /dev/stdout | /dev/stderr)
+            err_msg "tmp_file_remove() called with invalid param: $_tfr_tmp"
+            ;;
+        *)
+            dbg_msg "Will remove tmp file/directory: $_tfc_f_tmp" 3
+            safe_remove --silent --remove-dir "$_tfr_tmp"
+            ;;
     esac
     # update list of current tmp files, removing the one just removed
     tmp_file_list=$(

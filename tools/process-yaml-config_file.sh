@@ -155,12 +155,11 @@ pcf_parse_config_file() {
 parse_yaml_config_file() {
     _rcf_f_cfg="$1"
     # shellcheck disable=SC2154 # module_name defined in caller
-    dbg_msg "$module_name - Processing: $_rcf_f_cfg" 1
     if [ -f "$_rcf_f_cfg" ]; then
-        dbg_msg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 1
+        dbg_msg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 5
         pcf_parse_config_file "$_rcf_f_cfg"
     else
-        dbg_msg "Config file not found: $_rcf_f_cfg" 2
+        dbg_msg "Config file not found: $_rcf_f_cfg" 3
     fi
 }
 

@@ -130,6 +130,16 @@ cmd_line_param_parse() {
 #
 #   Dependency handling
 #
+# SPD_ABORT is a global typically set per host config that limits what tasks can be done
+# on a host
+#
+# SPD_ABORT=0 host can be investigated and things can be deployed
+#
+# SPD_ABORT=1 pending task can be investigated to check for dependency issues, nothing
+#             can be installed/configured etc, essentially no changes, inspect at will
+#
+# SPD_ABORT>1 spd should not run on this host in any capacity
+#
 #---------------------------------------------------------------------
 
 check_for_abort() {
@@ -139,7 +149,7 @@ check_for_abort() {
     expand_config_var SPD_ABORT
     [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
     {
-        dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 3
+        dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 9
         # log_it "SPD_ABORT: $SPD_ABORT"
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
             err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
@@ -173,7 +183,7 @@ ensure_spd_var_defined() {
     expand_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
-        dbg_msg "$_esvd_variable: $_esvd_value" 3
+        dbg_msg "$_esvd_variable: $_esvd_value" 2
     else
         lbl_2 "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable"
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
@@ -292,11 +302,13 @@ cmd_create_output_file() {
     else
         tmp_file_create f_cmd_output
     fi
-    dbg_msg "cmd_create_output_file() filtered commd output is now: $f_cmd_output" 2
+    dbg_msg "cmd_create_output_file() filtered commd output is now: $f_cmd_output" 5
 }
 
 cmd_purge_output_file() {
-    [ -n "$f_cmd_output" ] && tmp_file_remove "$f_cmd_output"
+    [ -n "$f_cmd_output" ] && {
+        [ "$f_cmd_output" != /dev/stdout ] && tmp_file_remove "$f_cmd_output"
+    }
     f_cmd_output="" # indicate inactive
 }
 
@@ -321,21 +333,20 @@ cmd_filtered() {
 
     _cf_cmd="$1"
     _cf_err_msg="${2:-Command failed: $_cf_cmd}"
-    # err_msg "cmd is:[$_cf_cmd] msg is [$_cf_err_msg]"
 
-    # Shows what filterec command will run at dbg lvl>=4
-    _cf_m="cmd_filtered() cmd[$_cf_cmd] err_msg[$_cf_err_msg]"
-    _cf_m="$_cf_m _cf_silent=$_cf_silent _cf_continue=$_cf_continue"
-    dbg_msg "$_cf_m" 4
+    dbg_msg "cmd_filtered: $_cf_cmd" 1
 
     [ -z "$f_cmd_output" ] && {
         cmd_create_output_file
         _cf_self_created_output_file=1
     }
-    $_cf_cmd >"$f_cmd_output" 2>&1 || {
+    if $_cf_cmd >"$f_cmd_output" 2>&1; then
+        [ "$f_cmd_output" = "/dev/stdout" ] && echo # spacer after cmd
+    else
         cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
         _cf_ex_code=1 # in case continue has been requested
-    }
+    fi
+
     # only purge if the cmd output file was created here
     [ "$_cf_self_created_output_file" -eq 1 ] && cmd_purge_output_file
     return "$_cf_ex_code"
