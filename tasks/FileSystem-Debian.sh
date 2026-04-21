@@ -43,29 +43,25 @@ task_prepare() {
 task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task"
-    create_cmd_output_file
+    cmd_create_output_file
 
     fs_is_ubuntu && err_msg "$module_name: Rejected, not allowed to run on Ubuntu"
 
     lbl_3 "Doing: apt-get update"
-    apt-get update >"$f_cmd_output" 2>&1 || err_cmd "Failed to run apt-get update"
+    cmd_filtered "apt-get update"
 
     [ -n "$SPD_DEBIAN_APT_PURGE" ] && {
         lbl_3 "Will remove Debian packages in SPD_DEBIAN_APT_PURGE"
         # shellcheck disable=SC2086 # SPD_DEBIAN_APT_PURGE should be expanded
-        apt-get purge -y $SPD_DEBIAN_APT_PURGE >"$f_cmd_output" 2>&1 || {
-            err_cmd "Failed to run apt-get purge -y SPD_DEBIAN_APT_PURGE"
-        }
+        cmd_filtered "apt-get purge -y $SPD_DEBIAN_APT_PURGE"
     }
 
     [ -n "$SPD_DEBIAN_APT_INSTALL" ] && {
         lbl_3 "Installing Debian packages from SPD_DEBIAN_APT_INSTALL"
         # shellcheck disable=SC2086 # SPD_DEBIAN_APT_INSTALL should be expanded
-        apt-get install -y $SPD_DEBIAN_APT_INSTALL >"$f_cmd_output" 2>&1 || {
-            err_cmd "Failed to run apt-get install -y SPD_DEBIAN_APT_INSTALL"
-        }
+        cmd_filtered "apt-get install -y $SPD_DEBIAN_APT_INSTALL"
     }
-    purge_cmd_output_file
+    cmd_purge_output_file
 }
 
 #=====================================================================
