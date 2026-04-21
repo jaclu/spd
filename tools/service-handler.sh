@@ -64,12 +64,12 @@ handler_sysv_init() {
             lbl_3 "Adding service to runlevels"
             for lvl in $SPD_SVC_SYSV_LVL_STOP; do
                 _f="/etc/rc${lvl}.d/K${SPD_SVC_SYSV_LVL_KILL_TASK}${service_name}"
-                dbg_msg "linking $service_script to $_f" 1
+                dbg_msg "linking $service_script to $_f" 3
                 ln -sf "$service_script" "$_f"
             done
             for lvl in $SPD_SVC_SYSV_LVL_START; do
                 _f="/etc/rc${lvl}.d/S${SPD_SVC_SYSV_LVL_RUN_TASK}${service_name}"
-                dbg_msg "linking $service_script to $_f" 1
+                dbg_msg "linking $service_script to $_f" 3
                 ln -sf "$service_script" "$_f"
             done
             ;;
@@ -77,7 +77,7 @@ handler_sysv_init() {
             lbl_3 "Removing service from runlevels"
             # Since we can't be sure of previous S/K numbers, remove all links for the service from runlevels
             safe_remove --silent --ignore-sys-path /etc/rc?.d/*"${service_name}"
-            dbg_msg "Removed links for $service_name from runlevels" 1
+            dbg_msg "Removed links for $service_name from runlevels" 2
             ;;
         *) err_msg "handler_sysv() unrecognized option: [$opt_task]" ;;
     esac

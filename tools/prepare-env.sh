@@ -129,7 +129,7 @@ check_for_abort() {
     expand_config_var SPD_ABORT
     [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
     {
-        dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 1
+        dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 3
         # log_it "SPD_ABORT: $SPD_ABORT"
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
             err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
@@ -163,7 +163,7 @@ ensure_spd_var_defined() {
     expand_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
-        dbg_msg "$_esvd_variable: $_esvd_value" 1
+        dbg_msg "$_esvd_variable: $_esvd_value" 3
     else
         lbl_2 "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable"
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
