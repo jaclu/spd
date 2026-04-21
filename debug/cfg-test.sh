@@ -24,6 +24,7 @@ parse_yaml_config_file "$D_REPO"/debug/dummy_config.yml
 echo "Verify variables retrieved"
 # shellcheck disable=SC2154 # SPD_ vars read via config files
 {
+    # expand references to other variables recursively
     expand_config_var SPD_HOME_DIR_CONTENT
     expand_config_var SPD_UNAME
 
