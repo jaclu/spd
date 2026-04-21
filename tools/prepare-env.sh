@@ -289,7 +289,10 @@ module_name="${module_name:-$0}"
 # Only relevant on iSH; has no effect on other platforms.
 #
 [ -d /proc/ish ] && {
-    "$D_REPO"/tools/validate-core-io.sh || exit 1
+    "$D_REPO"/tools/validate-core-io.sh || {
+        printf '%s\n' "validate-core-io failed (iSH environment)" >&2
+        exit 1
+    }
 }
 
 source_script_utils
