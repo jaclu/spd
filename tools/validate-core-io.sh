@@ -29,7 +29,7 @@ failed_to_fix_dev_err_msg() {
 }
 
 dev_fixed_notification() {
-    printf '\n\n%s: %s has been repaired\n\n' "$0" "$1"
+    printf '%s: Device has been repaired: %s\n' "$0" "$1"
 }
 
 validate_dev_null() {
