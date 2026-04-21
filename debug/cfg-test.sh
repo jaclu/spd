@@ -16,10 +16,10 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # Test
 #
 
-. "$D_REPO"/tools/process-config_file.sh
+. "$D_REPO"/tools/process-yaml-config_file.sh
 
-parse_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
-parse_config_file "$D_REPO"/debug/dummy_config.yml
+parse_yaml_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
+parse_yaml_config_file "$D_REPO"/debug/dummy_config.yml
 
 echo "Verify variables retrieved"
 # shellcheck disable=SC2154 # SPD_ vars read via config files
