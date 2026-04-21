@@ -1,5 +1,15 @@
 #!/bin/sh
 
+#
+# Variable naming strategy
+#
+# All config related variables are all upper case starting with SPD_
+#
+# All local per function variables are _ prefixed, typically followed by an
+# acronym based on the function name
+# global variables are lower case without _ prefix
+#
+
 #---------------------------------------------------------------------
 #
 #   Internals / only used here
@@ -239,36 +249,125 @@ cmd_line_param_error() {
 
 #---------------------------------------------------------------------
 #
-#   Handling commmad output via tmp file f_cmd_output or /dev/stdout in case
-#   current_dbg_lvl > 0
+#  Command wrapping, filtering out command output unless debugging is active
+#  or command failed.
 #
-# Typical workflow:
-#   create_cmd_output_file
-#   apk update >"$f_cmd_output" 2>&1 || {
-#       err_cmd "Failed to run apk update"
-#  }
-#   purge_cmd_output_file
+#  When current_dbg_lvl=0 cnd output is saved to tmpfile, only displayed if it failed
+#  If debugging is active cmd output is displayed
+#
+# Typical workflows:
+#
+#   Case 1 - Will exit showing failed cmd output and defined error msg if provided
+#            otherwise the error msg will just display the command used
+#
+#       cmd_filtered "apt update" "Error msg on failure"
+#
+#     By pre-creating the output file once, overhead is reduced for a sequence
+#     of commands, remember to purge it!
+#
+#       cmd_create_output_file
+#       cmd_filtered "apt update"
+#       cmd_filtered "apt upgrade"
+#       cmd_filtered "apt install vim"
+#       cmd_purge_output_file
+#
+#   Case 2 - will not display failed cmd or output, just exit the program with error
+#     cmd_filtered --silent "apt install vim"
+#
+#   Case 3 - will continue returning false if cmd fails after reporting error.
+#     cmd_filtered --continue "apt install vim" ||
+#       ... custom error handling
+#     }
+#
+#   Case 4 - will continue, not displaying failed cmd output or error msg
+#     cmd_filtered --silent --continue "apt install vim" ||
+#       ... custom error handling
+#     }
 #
 #---------------------------------------------------------------------
 
-create_cmd_output_file() {
+cmd_create_output_file() {
     if [ "$current_dbg_lvl" -gt 0 ]; then
         f_cmd_output=/dev/stdout
     else
         tmp_file_create f_cmd_output
     fi
+    dbg_msg "cmd_create_output_file() filtered commd output is now: $f_cmd_output" 2
 }
 
-purge_cmd_output_file() {
-    tmp_file_remove "$f_cmd_output"
+cmd_purge_output_file() {
+    [ -n "$f_cmd_output" ] && tmp_file_remove "$f_cmd_output"
+    f_cmd_output="" # indicate inactive
 }
 
-err_cmd() {
-    _ec_msg="${1:-Command failed}"
+cmd_filtered() {
+    _cf_ex_code=0
+    _cf_self_created_output_file=0
+
+    #
+    # Option parsing
+    #
+    _cf_silent=0
+    _cf_continue=0
+    while [ -n "$1" ]; do
+        case "$1" in
+            -s | --silent) _cf_silent=1 ;;     # dont report error
+            -c | --continue) _cf_continue=1 ;; # dont abort on error just return false
+            -*) err_msg "cmd_filtered() - Unknown option: [$1]" ;;
+            *) break ;; # no more options
+        esac
+        shift
+    done
+
+    _cf_cmd="$1"
+    _cf_err_msg="${2:-Command failed: $_cf_cmd}"
+    # err_msg "cmd is:[$_cf_cmd] msg is [$_cf_err_msg]"
+
+    # Shows what filterec command will run at dbg lvl>=4
+    _cf_m="cmd_filtered() cmd[$_cf_cmd] err_msg[$_cf_err_msg]"
+    _cf_m="$_cf_m _cf_silent=$_cf_silent _cf_continue=$_cf_continue"
+    dbg_msg "$_cf_m" 4
+
+    [ -z "$f_cmd_output" ] && {
+        cmd_create_output_file
+        _cf_self_created_output_file=1
+    }
+    $_cf_cmd >"$f_cmd_output" 2>&1 || {
+        cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
+        _cf_ex_code=1 # in case continue has been requested
+    }
+    # only purge if the cmd output file was created here
+    [ "$_cf_self_created_output_file" -eq 1 ] && cmd_purge_output_file
+    return "$_cf_ex_code"
+}
+
+cmd_err() {
+    _ce_msg="${1:-Command failed}"
+    _ce_silent="${2:-0}"
+    _ce_continue="${3:-0}"
+
+    if [ "$_cf_silent" -eq 1 ]; then
+        if [ "$_cf_continue" -eq 1 ]; then
+            return
+        else
+            cmd_purge_output_file
+            script_utils_cleanup 1
+        fi
+    fi
+
     [ "$f_cmd_output" != /dev/stdout ] && {
+        echo # spacer before command output
         cat "$f_cmd_output"
     }
-    err_msg "$_ec_msg"
+
+    if [ "$_ce_continue" -eq 1 ]; then
+        echo # spacer after command output
+        lbl_2 "ISSUE: $_ce_msg"
+        return
+    else
+        cmd_purge_output_file
+        err_msg "$_ce_msg"
+    fi
 }
 
 #=====================================================================
