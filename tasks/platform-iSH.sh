@@ -1,5 +1,23 @@
 #!/bin/sh
 
+early_start_runbg() {
+    # to allow for backgrounding on ish during deploy this is a manual
+    # runbg equivalent
+    is_ish || return 1
+    [ -c /dev/location ] || {
+        lbl_2 "Can't activate backgrounding feature - no valid /dev/location"
+        return 1
+    }
+    pgrep -f "cat /dev/location" >/dev/null && {
+        lbl_2 "Backgrounding feature already active"
+        return 1
+    }
+    ps ax
+    cat /dev/location >/dev/null &
+    lbl_2 "iSH can now run in the background"
+    return 0
+}
+
 alpine_use_old_mtr() {
     _auom_mtr_found=0
     if command -v mtr >/dev/null; then
@@ -11,12 +29,12 @@ alpine_use_old_mtr() {
     fi
 
     lbl_3 "Alpine >= 3.20 detected, installing older mtr, able to run with IP# in iSH"
-    create_cmd_output_file
+    cmd_create_output_file
 
     [ "$_auom_mtr_found" -eq 1 ] && {
         lbl_4 "Removing current mtr version: $(mtr -v)"
         # Remove incorrect version
-        apk del mtr >"$f_cmd_output" 2>&1 || err_cmd "Failed to remove current mtr"
+        apk del mtr >"$f_cmd_output" 2>&1 || cmd_err "Failed to remove current mtr"
     }
 
     #
@@ -25,28 +43,28 @@ alpine_use_old_mtr() {
     # Create temporary directory for downloaded mtr files
     tmp_file_create -d d_downloads
     # shellcheck disable=SC2154 # d_downloads created via tmp_file_create
-    cd "$d_downloads" || err_cmd "Failed to cd to temporary directory $d_downloads"
+    cd "$d_downloads" || cmd_err "Failed to cd to temporary directory $d_downloads"
     url_prefix="https://dl-cdn.alpinelinux.org/alpine/v3.10/main/x86"
 
     lbl_4 "Installing older mtr-0.92-r0.apk"
     wget "$url_prefix"/mtr-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-        err_cmd "Failed to download mtr-0.92-r0.apk"
+        cmd_err "Failed to download mtr-0.92-r0.apk"
     }
     apk add mtr-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-        err_cmd "Failed to install mtr-0.92-r0.apk"
+        cmd_err "Failed to install mtr-0.92-r0.apk"
     }
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Installing mtr-doc-0.92-r0.apk"
         wget "$url_prefix"/mtr-doc-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-            err_cmd "Failed to download mtr-doc-0.92-r0.apk"
+            cmd_err "Failed to download mtr-doc-0.92-r0.apk"
         }
         apk add mtr-doc-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-            err_cmd "Failed to install mtr-doc-0.92-r0.apk"
+            cmd_err "Failed to install mtr-doc-0.92-r0.apk"
         }
     }
     tmp_file_remove "$d_downloads"
-    purge_cmd_output_file
+    cmd_purge_output_file
     return 0
 }
 
@@ -160,17 +178,19 @@ case "$opt_task" in
         ;;
 esac
 
+early_start_runbg
+
 #
 # Ensure required options have been set, and expand any variables that need to be expanded
 #
 ensure_spd_var_defined SPD_PKGS_MAN
 
 if fs_is_alpine; then
-    "$D_REPO"/tasks/FileSystem-Alpine.sh "$opt_task"
+    "$D_REPO"/tasks/FileSystem-Alpine.sh "$opt_task" || script_utils_cleanup 1
 elif fs_is_devuan; then
-    "$D_REPO"/tasks/FileSystem-Devuan.sh "$opt_task"
+    "$D_REPO"/tasks/FileSystem-Devuan.sh "$opt_task" || script_utils_cleanup 1
 elif fs_is_debian; then
-    "$D_REPO"/tasks/FileSystem-Debian.sh "$opt_task"
+    "$D_REPO"/tasks/FileSystem-Debian.sh "$opt_task" || script_utils_cleanup 1
 else
     err_msg "$module_name: Unsupported filesystem, cannot continue"
 fi
