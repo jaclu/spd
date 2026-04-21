@@ -294,24 +294,6 @@ err_msg() {
     unset _em_in_progress # in case exit code was < 0
 }
 
-dbg_msg() {
-    #
-    # set debug lvl with param 2, if not given, will always be displayed,
-    # otherwise displayed if debug lvl <= current_dbg_lvl
-    # dbg_msg() does not support the log_it options --no-lf
-    # timestamp will be printed if param 3 is -t or always_use_time_stamp() has
-    # been called
-    #
-    [ -n "$1" ] || err_msg "dbg_msg() no param"
-    if [ -n "$2" ]; then
-        _dm_this_dbg_lvl="$2"
-    else
-        _dm_this_dbg_lvl=0
-    fi
-    [ "$_dm_this_dbg_lvl" -le "$current_dbg_lvl" ] && log_it "DBG  $1" "$3"
-
-}
-
 msg_dbg() {
     # Deprecated, use dbg_msg instead
     dbg_msg "$@"
@@ -352,6 +334,39 @@ lbl_5() {
     _l5_s="$1"
     shift
     log_it "  .  $_l5_s" "${@}"
+}
+
+#---------------------------------------------------------------
+#
+#   Debugging
+#
+#   current_dbg_lvl=0 means only dbg_msg without dbg_lvl 2nd param will be displayed
+#
+#---------------------------------------------------------------
+
+dbg_msg() {
+    #
+    # set debug lvl with param 2, if not given, will always be displayed,
+    # otherwise displayed if debug lvl <= current_dbg_lvl
+    # dbg_msg() does not support the log_it options --no-lf
+    # timestamp will be printed if param 3 is -t or always_use_time_stamp() has
+    # been called
+    #
+    [ -n "$1" ] || err_msg "dbg_msg() no param"
+    if [ -n "$2" ]; then
+        _dm_this_dbg_lvl="$2"
+    else
+        _dm_this_dbg_lvl=0
+    fi
+    [ "$_dm_this_dbg_lvl" -le "$current_dbg_lvl" ] && log_it "DBG[$_dm_this_dbg_lvl]  $1" "$3"
+
+}
+
+set_debug_lvl() {
+    _dl_new_lvl="$1"
+    is_int "$_dl_new_lvl" || err_msg "set_debug_lvl - non int param: $_dl_new_lvl"
+    # current_dbg_lvl="$_dl_new_lvl"
+    export current_dbg_lvl="$_dl_new_lvl" # propagate it to any subshells
 }
 
 #---------------------------------------------------------------
@@ -711,8 +726,8 @@ app_name_full_path=$(realpath "$0")
 t_start="$(date +%s)" # is used in display_app_run_time()
 
 [ -z "$current_dbg_lvl" ] && {
-    # 0 means only dbg_msg without dbg_lvl 2nd param will be displayed
-    current_dbg_lvl=0
+    # In case current_dbg_lvl has been exported to the env, do not override it
+    set_debug_lvl 0
 }
 
 return 0 # ensures the above doesn't indicate sourcing failed
