@@ -39,6 +39,11 @@ handler_openrc() {
                 err_msg "$m"
             }
         done
+        [ -e "/etc/runlevels/$(rc-status -r)/$service_name" ] && {
+            # should be running in this runlevl
+            lbl_3 "Manually starting service, since it should run"
+            /etc/init.d/"$service_name" start
+        }
     else
         lbl_3 "No longer used as service: $service_name"
     fi
