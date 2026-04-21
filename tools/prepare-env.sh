@@ -277,8 +277,6 @@ err_cmd() {
 #
 #=====================================================================
 
-# echo "><> processing prepare_env"
-
 [ -n "$D_REPO" ] || {
     printf '\n%s[%s] ERROR: This can not be run directly.\n' "$0" "$$" >&2
     exit 1
@@ -286,9 +284,13 @@ err_cmd() {
 
 module_name="${module_name:-$0}"
 
-# iSH sometime messes up stdio devs at boot-up, this fixes them if needed.
-# This isn't run on other platforms, so no performance penalty
-[ -d /proc/ish ] && "$D_REPO"/tools/validate-core-io.sh
+#
+# iSH-specific initialization guard for core /dev I/O stability.
+# Only relevant on iSH; has no effect on other platforms.
+#
+[ -d /proc/ish ] && {
+    "$D_REPO"/tools/validate-core-io.sh || exit 1
+}
 
 source_script_utils
 populate_config

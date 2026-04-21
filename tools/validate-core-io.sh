@@ -47,6 +47,7 @@ validate_dev_fd() {
         return 0
     }
     mv -f "$tmp" "$path"
+    printf '\n\n%s: %s has been repaired\n\n' "$0" "$path"
 }
 
 verify_fd() {
