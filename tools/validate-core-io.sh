@@ -68,6 +68,8 @@ validate_dev_fd() {
 verify_fd() {
     _vf_name=$1
     _vf_path=$2
+    [ -e "$_vf_path" ] || return 1 # device entirely missing
+
     case $_vf_name in
         stdin) : <"$_vf_path" 2>/dev/null && return 0 ;;
         stdout) : >"$_vf_path" 2>/dev/null && return 0 ;;
