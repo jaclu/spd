@@ -286,6 +286,10 @@ err_cmd() {
 
 module_name="${module_name:-$0}"
 
+# iSH sometime messes up stdio devs at boot-up, this fixes them if needed.
+# This isn't run on other platforms, so no performance penalty
+[ -d /proc/ish ] && "$D_REPO"/tools/validate-core-io.sh
+
 source_script_utils
 populate_config
 
