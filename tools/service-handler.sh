@@ -7,9 +7,18 @@ openrc_dependency_check() {
     ensure_spd_var_defined SPD_SVC_OPENRC_RUNLVLS
 
     command -v openrc >/dev/null 2>&1 || {
-        lbl_2 "Dependency issue - openrc not found"
-        # shellcheck disable=SC2034 # spd_dependency_issue used by caller
-        spd_dependency_issue=1
+        if fs_is_alpine; then
+            lbl_2 "NOTICE: openrc missing - attempting to install"
+            apk add openrc || err_msg "Failed to install openrc"
+        elif fs_is_debian; then
+            lbl_2 "NOTICE: openrc missing - attempting to install"
+            apt update
+            apt install openrc || err_msg "Failed to install openrc"
+        else
+            lbl_2 "Dependency issue - openrc not found"
+            # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+            spd_dependency_issue=1
+        fi
     }
 }
 
