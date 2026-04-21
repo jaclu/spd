@@ -56,6 +56,20 @@
 #
 #---------------------------------------------------------------
 
+is_int() {
+    case $1 in
+        '') return 1 ;;        # reject empty string
+        -) return 1 ;;         # reject lone '-'
+        -*) set -- "${1#-}" ;; # strip leading '-'
+        *) : ;;                # default no-op
+    esac
+
+    case $1 in
+        *[!0-9]*) return 1 ;; # reject any non-digit chars
+        *) return 0 ;;        # accept pure digits
+    esac
+}
+
 #
 # Platform type identifiers
 #
