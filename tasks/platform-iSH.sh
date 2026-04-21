@@ -12,7 +12,6 @@ early_start_runbg() {
         lbl_2 "Backgrounding feature already active"
         return 1
     }
-    ps ax
     cat /dev/location >/dev/null &
     lbl_2 "iSH can now run in the background"
     return 0
