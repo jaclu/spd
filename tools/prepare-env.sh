@@ -1,33 +1,45 @@
 #!/bin/sh
 
-# usage: alpine_release_ge MAIN.MIN   (e.g., alpine_release_ge 3.20)
-# returns: 0 (true) if running Alpine >= MAIN.MIN, else 1
-alpine_release_ge() {
-    req=$1
+#---------------------------------------------------------------------
+#
+#   Dependency handling
+#
+#---------------------------------------------------------------------
 
-    # parse running version
-    ver=$(cat /etc/alpine-release 2>/dev/null) || return 1
-    curM=${ver%%.*}
-    rest=${ver#*.}
-    curm=${rest%%.*}
+check_for_abort() {
+    _cfa_max="${1:-0}"
+    _cfa_lbl="${2:- current task}"
 
-    # parse required version
-    reqM=${req%%.*}
-    rest=${req#*.}
-    reqm=${rest%%.*}
+    expand_config_var SPD_ABORT
+    [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
+    {
+        dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 1
+        # log_it "SPD_ABORT: $SPD_ABORT"
+        [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
+            err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
+        }
+    }
 
-    # numeric compare
-    [ "$curM" -gt "$reqM" ] \
-        || { [ "$curM" -eq "$reqM" ] && [ "$curm" -ge "$reqm" ]; }
+    case "$opt_task" in
+        install) [ "$spd_dependency_issue" != 0 ] && {
+            err_msg "$module_name: Dependency issue - Aborting $opt_task"
+        } ;;
+
+        remove) [ "$spd_dependency_issue" = 1 ] && {
+            err_msg "$module_name: Dependency issue - Aborting $opt_task"
+        } ;;
+        *) ;;
+    esac
 }
 
-relative_path() { # Needed here due to: prepare_menu() - set_menu_env_variables()
-    # remove D_TM_BASE_PATH prefix
-    # log_it "relative_path($1) - removing prefix: $D_TM_BASE_PATH"
-    printf '%s\n' "${1#"$D_REPO"/}"
-}
+#---------------------------------------------------------------------
+#
+#   Handling Config files
+#
+#---------------------------------------------------------------------
 
 populate_config() {
+    # if configs is empty copy from config_templates
     spd_dependency_issue=0 # set default to no issue
     # If config/ is empty populate it with config_templates as a default
     _pc_d_conf="$D_REPO"/configs
@@ -39,6 +51,51 @@ populate_config() {
             error_msg "Failed to copy templates"
         }
     }
+}
+
+get_basic_config() {
+    #
+    # To ensure no previous task's config spills over, we process the entire config
+    # hierarchy for each task
+    #
+    # _gc_config_file="${1:-}"
+    # [ -n "$_gc_config_file" ] && {
+    #     [ -f "$_gc_config_file" ] || {
+    #         err_msg "Config file not found: $_gc_config_file"
+    #     }
+    # }
+
+    # current_dbg_lvl=5
+    parse_config_file "$D_REPO"/configs/defaults.yml
+
+    # file system related
+    fs_is_alpine && parse_config_file "$D_REPO"/configs/file_systems/alpine.yml
+    fs_is_debian && parse_config_file "$D_REPO"/configs/file_systems/debian.yml
+    fs_is_devuan && parse_config_file "$D_REPO"/configs/file_systems/devuan.yml
+    fs_is_ubuntu && parse_config_file "$D_REPO"/configs/file_systems/ubuntu.yml
+
+    # platform related
+    is_linux && parse_config_file "$D_REPO"/configs/platform/linux.yml
+    is_macos && parse_config_file "$D_REPO"/configs/platform/macos.yml
+    if is_ish; then
+        parse_config_file "$D_REPO"/configs/platform/ish.yml
+        # subcategory for iSH, to allow overrides for AOK vs non-AOK
+        is_ish_aok && parse_config_file "$D_REPO"/configs/platform/ish_aok.yml
+    elif is_chrooted_ish; then
+        # When testing/preparing an iSH FS chrooted
+        parse_config_file "$D_REPO"/configs/platform/ish.yml
+    fi
+
+    # [ -n "$_gc_config_file" ] && {
+    #     # task specific config file, comes after platform and fs specifics, to allow overrides
+    #     parse_config_file "$_gc_config_file"
+    # }
+
+    # user overrides
+    parse_config_file "$D_REPO"/configs/global_overrides.yml
+
+    # hostname specific overrides comes last, to allow per device overrides
+    parse_config_file "$D_REPO/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
 }
 
 ensure_spd_var_defined() {
@@ -58,6 +115,17 @@ ensure_spd_var_defined() {
     fi
 }
 
+#---------------------------------------------------------------------
+#
+#   General utils
+#
+#---------------------------------------------------------------------
+
+relative_path() {
+    # For files in this repo, returns path relative to D_REPO
+    printf '%s\n' "${1#"$D_REPO"/}"
+}
+
 display_list_content() {
     # Displays content of list variable, with each item on a new line
     _dlc_variable="$1"
@@ -73,6 +141,60 @@ display_list_content() {
         lbl_4 "  *empty*"
     fi
 }
+
+source_script_utils() {
+    #
+    #  Manually sourcing script-utils.sh
+    #  Once loaded it offers tons of convenience functions
+    #
+    _lu_f_utils="$D_REPO"/tools/script-utils.sh
+    [ -f "$_lu_f_utils" ] || {
+        printf '\n%s[%s] ERROR: source file not found: %s\n' \
+            "$module_name" "$$" "$_lu_f_utils" >&2
+        exit 1
+    }
+    # shellcheck source=tools/script-utils.sh
+    . "$_lu_f_utils"
+    [ -n "$t_start" ] || {
+        # guaranteed variable undefined, sourcing must have failed
+        printf '\n%s[%s] ERROR: Sourcing %s failed to define: t_start\n' \
+            "$0" "$$" "$_lu_f_utils" >&2
+        exit 1
+    }
+}
+
+#---------------------------------------------------------------------
+#
+#   FS Specific
+#
+#---------------------------------------------------------------------
+
+alpine_release_ge() {
+    # usage: alpine_release_ge MAIN.MIN   (e.g., alpine_release_ge 3.20)
+    # returns: 0 (true) if running Alpine >= MAIN.MIN, else 1
+    req=$1
+
+    # parse running version
+    ver=$(cat /etc/alpine-release 2>/dev/null) || return 1
+    curM=${ver%%.*}
+    rest=${ver#*.}
+    curm=${rest%%.*}
+
+    # parse required version
+    reqM=${req%%.*}
+    rest=${req#*.}
+    reqm=${rest%%.*}
+
+    # numeric compare
+    [ "$curM" -gt "$reqM" ] \
+        || { [ "$curM" -eq "$reqM" ] && [ "$curm" -ge "$reqm" ]; }
+}
+
+#---------------------------------------------------------------------
+#
+#   Option parsing
+#
+#---------------------------------------------------------------------
 
 indicate_unset() {
     case "$1" in
@@ -109,98 +231,20 @@ cmd_line_param_parse() {
     cmd_line_param_list
 }
 
-check_for_abort() {
-    _cfa_max="${1:-0}"
-    _cfa_lbl="${2:- current task}"
-
-    expand_config_var SPD_ABORT
-    [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
-    {
-        dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 1
-        # log_it "SPD_ABORT: $SPD_ABORT"
-        [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
-            err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
-        }
-    }
-
-    case "$opt_task" in
-        install) [ "$spd_dependency_issue" != 0 ] && {
-            err_msg "$module_name: Dependency issue - Aborting $opt_task"
-        } ;;
-
-        remove) [ "$spd_dependency_issue" = 1 ] && {
-            err_msg "$module_name: Dependency issue - Aborting $opt_task"
-        } ;;
-        *) ;;
-    esac
-}
-
-get_config() {
-    #
-    # To ensure no previous task's config spills over, we process the entire config
-    # hierarchy for each task
-    #
-    _gc_config_file="${1:-}"
-    [ -n "$_gc_config_file" ] && {
-        [ -f "$_gc_config_file" ] || {
-            err_msg "Config file not found: $_gc_config_file"
-        }
-    }
-    # current_dbg_lvl=5
-    read_config_file "$D_REPO"/configs/defaults.yml
-
-    # file system related
-    fs_is_alpine && read_config_file "$D_REPO"/configs/file_systems/alpine.yml
-    fs_is_debian && read_config_file "$D_REPO"/configs/file_systems/debian.yml
-    fs_is_devuan && read_config_file "$D_REPO"/configs/file_systems/devuan.yml
-    fs_is_ubuntu && read_config_file "$D_REPO"/configs/file_systems/ubuntu.yml
-
-    # platform related
-    is_linux && read_config_file "$D_REPO"/configs/platform/linux.yml
-    is_macos && read_config_file "$D_REPO"/configs/platform/macos.yml
-    if is_ish; then
-        read_config_file "$D_REPO"/configs/platform/ish.yml
-        # subcategory for iSH, to allow overrides for AOK vs non-AOK
-        is_ish_aok && read_config_file "$D_REPO"/configs/platform/ish_aok.yml
-    elif is_chrooted_ish; then
-        # When testing/preparing an iSH FS chrooted
-        read_config_file "$D_REPO"/configs/platform/ish.yml
-    fi
-
-    [ -n "$_gc_config_file" ] && {
-        # task specific config file, comes after platform and fs specifics, to allow overrides
-        read_config_file "$_gc_config_file"
-    }
-
-    # user overrides
-    read_config_file "$D_REPO"/configs/global_overrides.yml
-
-    # hostname specific overrides comes last, to allow per device overrides
-    read_config_file "$D_REPO/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
-}
-
-load_utils() {
-    _lu_f_utils="$D_REPO"/tools/script-utils.sh
-    [ -f "$_lu_f_utils" ] || {
-        printf '\n%s[%s] ERROR: source file not found: %s\n' \
-            "$module_name" "$$" "$_lu_f_utils" >&2
-        exit 1
-    }
-    # shellcheck source=tools/script-utils.sh
-    . "$_lu_f_utils"
-    [ -n "$t_start" ] || {
-        # guaranteed variable undefined, sourcing must have failed
-        printf '\n%s[%s] ERROR: Sourcing %s failed to define: t_start\n' \
-            "$0" "$$" "$_lu_f_utils" >&2
-        exit 1
-    }
-}
-
 #---------------------------------------------------------------------
 #
-#   Handling commad output file f_cmd_output
+#   Handling commmad output via tmp file f_cmd_output or /dev/stdout in case
+#   current_dbg_lvl > 0
+#
+# Typical workflow:
+#   create_cmd_output_file
+#   apk update >"$f_cmd_output" 2>&1 || {
+#       err_cmd "Failed to run apk update"
+#  }
+#   purge_cmd_output_file
 #
 #---------------------------------------------------------------------
+
 create_cmd_output_file() {
     if [ "$current_dbg_lvl" -gt 0 ]; then
         f_cmd_output=/dev/stdout
@@ -236,11 +280,14 @@ err_cmd() {
 
 module_name="${module_name:-$0}"
 
-load_utils
+source_script_utils
 populate_config
 
 lbl_1 "Module: $module_name"
 
 cmd_line_param_parse "$@"
+
+# Provides parse_config_file & expand_config_var
 source_it "$D_REPO"/tools/process-config_file.sh
-get_config
+
+get_basic_config
