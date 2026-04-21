@@ -10,3 +10,5 @@ Think this is better but remains to be seen
 ## Config features
 
 - Delete items needs to be implemented if a platform can not use a default package
+
+## link stdout/err if not present
