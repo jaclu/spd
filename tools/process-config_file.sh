@@ -152,7 +152,7 @@ pcf_parse_config_file() {
 #
 # Processes a yaml-style config file and assigns the corresponding posix variable
 #
-read_config_file() {
+parse_config_file() {
     _rcf_f_cfg="$1"
     # shellcheck disable=SC2154 # module_name defined in caller
     dbg_msg "$module_name - Processing: $_rcf_f_cfg" 1
