@@ -110,10 +110,11 @@ cmd_line_param_list() {
 }
 
 cmd_line_param_parse() {
+    opt_task=install # defaults to install
     while [ -n "$1" ]; do
         case "$1" in
-            install) opt_task=install ;;
             remove) opt_task=remove ;;
+            install) opt_task=install ;; # handling sub tasks sending it as a param
             *)
                 cmd_line_param_list
                 err_msg "Unrecognized major option: $1"
@@ -121,8 +122,22 @@ cmd_line_param_parse() {
         esac
         shift
     done
-
+    dbg_msg "cmd_line_param_parse - opt_task[$opt_task]"
     cmd_line_param_list
+}
+
+cleanup_custom() {
+    #
+    # Called at the very end of script_utils_cleanup, so all cleanup has been completed
+    #
+    # The exit code is mostly informational, if this returns to script_utils_cleanup
+    # it will exit with this code.
+    # It might still be good to know if this is a sucessfull or an error exit
+    #
+    #
+    _cc_ex_code="$1"
+
+    display_app_run_time
 }
 
 #---------------------------------------------------------------------
