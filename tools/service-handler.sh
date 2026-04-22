@@ -116,7 +116,7 @@ handle_initd_script() {
 
     # shellcheck disable=SC2154 # opt_task defined by caller
     case "$opt_task" in
-        install)
+        install | force | force-install)
             cp "$init_scr_org" "$service_script" || {
                 m="handle_initd_script() - Failed to copy"
                 m="$m $init_scr_org $service_script"
