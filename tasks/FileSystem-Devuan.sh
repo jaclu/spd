@@ -58,14 +58,12 @@ task_execute() {
 
     [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
         lbl_3 "Will purge items in SPD_DEVUAN_APT_PURGE"
-        # shellcheck disable=SC2086 # SPD_DEVUAN_APT_PURGE should be expanded
-        cmd_filtered apt-get -y purge $SPD_DEVUAN_APT_PURGE
+        cmd_filtered apt-get -y purge "$SPD_DEVUAN_APT_PURGE"
     }
 
     [ -n "$SPD_DEVUAN_APT_INSTALL" ] && {
         lbl_3 "Installing Devuan packages from SPD_DEVUAN_APT_INSTALL"
-        # shellcheck disable=SC2086 # SPD_DEVUAN_APT_INSTALL should be expanded
-        cmd_filtered apt-get -y install $SPD_DEVUAN_APT_INSTALL
+        cmd_filtered apt-get -y install "$SPD_DEVUAN_APT_INSTALL"
     }
     # cmd_purge_output_file
 }
