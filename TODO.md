@@ -12,3 +12,9 @@ Think this is better but remains to be seen
 - Delete items needs to be implemented if a platform can not use a default package
 
 ## link stdout/err if not present
+
+## Debug levels
+
+0 reduced progress state cmd_filtered shell commands progress will only be displayed on error
+1 normal state all cmd_filtered shell commands will display progress
+2 .. more and more
