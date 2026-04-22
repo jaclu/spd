@@ -30,25 +30,35 @@ handler_openrc() {
     rm -f /etc/runlevels/*/"$service_name" || echo "rm issue"
 
     # shellcheck disable=SC2154 # opt_task defined by caller
-    if [ "$opt_task" = install ]; then
-        for lvl in $SPD_SVC_OPENRC_RUNLVLS; do
-            rc-update add "$service_name" "$lvl" || {
-                m="svc_handler-openrc.sh: Failed cmd -"
-                m="$m rc-update add $service_name $lvl"
-                err_msg "$m"
-            }
-        done
-        if [ -f /run/openrc/softlevel ]; then
-            [ -e "/etc/runlevels/$(rc-status -r)/$service_name" ] && {
-                # should be running in this runlevl
-                lbl_3 "Manually starting service, since it should run in this runlevel"
-                /etc/init.d/"$service_name" start
-            }
-        else
-            lbl_3 "System didn't boot with openrc, so can't attempt to start service"
-        fi
+    case "$opt_task" in
+        install | force | force-install) ;;
+        remove)
+            lbl_3 "No longer used as service: $service_name"
+            handle_initd_script
+            return
+            ;;
+        *) err_msg "handler_openrc() unrecognized option: [$opt_task]" ;;
+    esac
+
+    # assume install
+
+    handle_initd_script
+    # shellcheck disable=SC2154 # defined by caller
+    for lvl in $SPD_SVC_OPENRC_RUNLVLS; do
+        rc-update add "$service_name" "$lvl" || {
+            m="svc_handler-openrc.sh: Failed cmd -"
+            m="$m rc-update add $service_name $lvl"
+            err_msg "$m"
+        }
+    done
+    if [ -f /run/openrc/softlevel ]; then
+        [ -e "/etc/runlevels/$(rc-status -r)/$service_name" ] && {
+            # should be running in this runlevl
+            lbl_3 "Manually starting service, since it should run in this runlevel"
+            /etc/init.d/"$service_name" start
+        }
     else
-        lbl_3 "No longer used as service: $service_name"
+        lbl_3 "System didn't boot with openrc, so can't attempt to start service"
     fi
 }
 
@@ -77,27 +87,36 @@ handler_sysv_init() {
 
     # shellcheck disable=SC2154 # opt_task defined by caller
     case "$opt_task" in
-        install)
-            lbl_3 "Adding service to runlevels"
-            for lvl in $SPD_SVC_SYSV_LVL_STOP; do
-                _f="/etc/rc${lvl}.d/K${SPD_SVC_SYSV_LVL_KILL_TASK}${service_name}"
-                dbg_msg "linking $service_script to $_f" 3
-                ln -sf "$service_script" "$_f"
-            done
-            for lvl in $SPD_SVC_SYSV_LVL_START; do
-                _f="/etc/rc${lvl}.d/S${SPD_SVC_SYSV_LVL_RUN_TASK}${service_name}"
-                dbg_msg "linking $service_script to $_f" 3
-                ln -sf "$service_script" "$_f"
-            done
-            ;;
+        install | force | force-install) ;;
         remove)
             lbl_3 "Removing service from runlevels"
             # Since we can't be sure of previous S/K numbers, remove all links for the service from runlevels
             safe_remove --silent --ignore-sys-path /etc/rc?.d/*"${service_name}"
             dbg_msg "Removed links for $service_name from runlevels" 2
+            handle_initd_script
+            return
             ;;
-        *) err_msg "handler_sysv() unrecognized option: [$opt_task]" ;;
+        *) err_msg "handler_sysv_init() unrecognized option: [$opt_task]" ;;
     esac
+
+    # assume install
+
+    handle_initd_script
+    lbl_3 "Adding service to runlevels"
+    # shellcheck disable=SC2154 # defined by caller
+    for lvl in $SPD_SVC_SYSV_LVL_STOP; do
+        _hs_zero_prefix=$(printf '%02d\n' "$SPD_SVC_SYSV_LVL_KILL_TASK")
+        _f="/etc/rc${lvl}.d/K${_hs_zero_prefix}${service_name}"
+        dbg_msg "linking $service_script to $_f" 3
+        ln -sf "$service_script" "$_f"
+    done
+    # shellcheck disable=SC2154 # defined by caller
+    for lvl in $SPD_SVC_SYSV_LVL_START; do
+        _hs_zero_prefix=$(printf '%02d\n' "$SPD_SVC_SYSV_LVL_RUN_TASK")
+        _f="/etc/rc${lvl}.d/S${_hs_zero_prefix}${service_name}"
+        dbg_msg "linking $service_script to $_f" 3
+        ln -sf "$service_script" "$_f"
+    done
 }
 
 #
@@ -142,11 +161,11 @@ check_service_env() {
             spd_dependency_issue=1
         }
         case "$SPD_SERVICE_HANDLER" in
-            'openrc')
+            openrc)
                 lbl_3 "Using service handler: openrc"
                 openrc_dependency_check
                 ;;
-            'sysv-init')
+            sysv-init)
                 lbl_3 "Using service handler: sysv-init"
                 sysv_dependency_check
                 ;;
@@ -169,8 +188,6 @@ check_service_env() {
 }
 
 process_service() {
-    handle_initd_script
-
     # attach service to handler
     case "$SPD_SERVICE_HANDLER" in
         'openrc') handler_openrc ;;
