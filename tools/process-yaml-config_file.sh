@@ -1,5 +1,20 @@
 #!/bin/sh
 
+#
+# Part of https://github.com/jaclu/spd
+#
+# Copyright (c) 2026 Jacob Lundqvist <jacob.lndqvist@gmail.com>
+# License: MIT
+#
+# iSH-specific startup workaround for occasional missing or broken core
+# /dev I/O devices.
+#
+# Validates and repairs standard I/O device nodes when required:
+#   /dev/null, /dev/stdin, /dev/stdout, /dev/stderr
+#
+# Parses yaml config files in pure posix, no external dependencies
+#
+
 # Strip inline comment and surrounding whitespace from a value
 # e.g.  "bar" # comment  ->  bar
 pcf_strip_inline_comment() {
