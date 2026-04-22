@@ -96,35 +96,6 @@ populate_config() {
     }
 }
 
-indicate_unset() {
-    case "$1" in
-        '') echo "*unset*" ;;
-        *) echo "$1" ;;
-    esac
-}
-
-cmd_line_param_list() {
-    _lbl="${1:-Listing of cmd line options}"
-    lbl_2 "$_lbl"
-    lbl_4 "  opt_task    $(indicate_unset "$opt_task")"
-}
-
-cmd_line_param_parse() {
-    opt_task=install # defaults to install
-    while [ -n "$1" ]; do
-        case "$1" in
-            remove) opt_task=remove ;;
-            install) opt_task=install ;; # handling sub tasks sending it as a param
-            *)
-                cmd_line_param_list
-                err_msg "Unrecognized major option: $1"
-                ;;
-        esac
-        shift
-    done
-    cmd_line_param_list
-}
-
 cleanup_custom() {
     #
     # Called at the very end of script_utils_cleanup, so all cleanup has been completed
@@ -263,6 +234,41 @@ alpine_release_ge() {
 #   Option parsing
 #
 #---------------------------------------------------------------------
+
+indicate_unset() {
+    case "$1" in
+        '') echo "*unset*" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+cmd_line_param_list() {
+    _lbl="${1:-Listing of cmd line options}"
+    lbl_2 "$_lbl"
+    lbl_4 "  opt_task    $(indicate_unset "$opt_task")"
+}
+
+cmd_line_param_parse() {
+    opt_task=install # defaults to install
+    while [ -n "$1" ]; do
+        case "$1" in
+            install) opt_task=install ;; # handling tasks sending it as a param
+            remove) opt_task=remove ;;   # Remove service etc, not accepted by all tasks
+            force | force-install)
+                # Used to force an install in cases where the task displays a warning
+                # and aborts on install, example a service not properly working on
+                # the used platform
+                opt_task=force-install
+                ;;
+            *)
+                cmd_line_param_list
+                err_msg "Unrecognized major option: $1"
+                ;;
+        esac
+        shift
+    done
+    cmd_line_param_list
+}
 
 cmd_line_param_error() {
     lbl_1 "Invalid command-line param"
