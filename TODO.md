@@ -19,6 +19,9 @@ Think this is better but remains to be seen
 1 normal state all cmd_filtered shell commands will display progress
 2 .. more and more
 
+
+should dbg lvl condition be added to log it via second param
+
 ## config varible defaults
 
 verify defults work as intended
