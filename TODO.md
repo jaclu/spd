@@ -18,3 +18,7 @@ Think this is better but remains to be seen
 0 reduced progress state cmd_filtered shell commands progress will only be displayed on error
 1 normal state all cmd_filtered shell commands will display progress
 2 .. more and more
+
+## config varible defaults
+
+verify defults work as intended
