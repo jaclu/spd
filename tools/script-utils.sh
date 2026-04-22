@@ -105,7 +105,7 @@ is_ish() {
 
 is_ish_aok() {
     is_ish && grep -qi ish-AOK /proc/version
-    # return 0 # for devel fake aok
+    # return 0 # for devel and testing - fake this is aok
 }
 
 is_chrooted() {
