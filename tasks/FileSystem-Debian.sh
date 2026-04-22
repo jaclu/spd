@@ -60,13 +60,14 @@ task_execute() {
 
     [ -n "$SPD_DEBIAN_APT_PURGE" ] && {
         lbl_3 "Will purge Debian packages in SPD_DEBIAN_APT_PURGE"
-        cmd_filtered apt-get purge -y SPD_DEBIAN_APT_PURGE
+        # shellcheck disable=SC2086 # expansion intended here
+        cmd_filtered apt-get purge -y $SPD_DEBIAN_APT_PURGE
     }
 
     [ -n "$SPD_DEBIAN_APT_INSTALL" ] && {
         lbl_3 "Installing Debian packages from SPD_DEBIAN_APT_INSTALL"
-
-        cmd_filtered apt-get install -y "$SPD_DEBIAN_APT_INSTALL"
+        # shellcheck disable=SC2086 # expansion intended here
+        cmd_filtered apt-get install -y $SPD_DEBIAN_APT_INSTALL
     }
     # cmd_purge_output_file
 }
