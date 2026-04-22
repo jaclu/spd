@@ -186,9 +186,12 @@ fi
 
 # Ensure options are valid
 case "$opt_task" in
+    force | force-install)
+        lbl_1 "WARNING this task runs other tasks, they will all use force-install - be warned!"
+        ;;
     install) ;;
     *)
-        cmd_line_param_error "$module_name: opt_task must be install"
+        cmd_line_param_error "$module_name: opt_task must be install / force-install"
         ;;
 esac
 

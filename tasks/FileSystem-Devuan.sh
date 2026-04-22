@@ -86,9 +86,9 @@ fs_is_devuan || err_msg "$module_name: Rejected, not running on a Devuan FS"
 
 # Ensure options are valid
 case "$opt_task" in
-    install) ;;
+    install | force | force-install) ;;
     *)
-        cmd_line_param_error "$module_name: opt_task must be install"
+        cmd_line_param_error "$module_name: opt_task must be install / force-install"
         ;;
 esac
 
