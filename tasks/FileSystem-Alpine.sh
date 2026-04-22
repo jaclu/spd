@@ -11,8 +11,8 @@ locale_gen() {
         return 0
     }
     lbl_3 "Generating required locales: $SPD_LOCALES"
-    cmd_filtered "locale-gen $SPD_LOCALES" \
-        "$module_name: Failed to generate required locales"
+    # shellcheck disable=SC2086 # Param expansion intentional
+    cmd_filtered locale-gen $SPD_LOCALES
 }
 
 task_prepare() {
@@ -61,19 +61,21 @@ task_execute() {
 
     lbl_3 "Updating environment"
     lbl_4 "First doing apk update"
-    cmd_filtered "apk update"
+    cmd_filtered apk update
     lbl_4 "Then apk upgrade"
-    cmd_filtered "apk upgrade"
+    cmd_filtered apk upgrade
 
     [ -n "$SPD_APK_REMOVE" ] && {
         lbl_3 "Will remove Alpine packages in SPD_APK_REMOVE"
         # apk add automatically runs update, but apk del does not
-        cmd_filtered "apk del $SPD_APK_REMOVE"
+        # shellcheck disable=SC2086 # Param expansion intentional
+        cmd_filtered apk del $SPD_APK_REMOVE
     }
 
     [ -n "$SPD_APK_INSTALL" ] && {
         lbl_3 "Installing Alpine packages from SPD_APK_INSTALL"
-        cmd_filtered "apk add $SPD_APK_INSTALL"
+        # shellcheck disable=SC2086 # Param expansion intentional
+        cmd_filtered apk add $SPD_APK_INSTALL
     }
 
     # musl doesn't need locale-gen, and it doesn't even have it, so skip this step if musl is used

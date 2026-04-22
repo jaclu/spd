@@ -282,34 +282,40 @@ cmd_line_param_error() {
 #  or command failed.
 #
 #  When current_dbg_lvl=0 cnd output is saved to tmpfile, only displayed if it failed
-#  If debugging is active cmd output is displayed
+#  If debugging is active cmd output is always displayed directly to stdout
 #
 # Typical workflows:
 #
 #   Case 1 - Will exit showing failed cmd output and defined error msg if provided
 #            otherwise the error msg will just display the command used
 #
-#       cmd_filtered "apt update" "Error msg on failure"
+#       cmd_filtered apt update
 #
 #     By pre-creating the output file once, overhead is reduced for a sequence
 #     of commands, remember to purge it!
 #
 #       cmd_create_output_file
-#       cmd_filtered "apt update"
-#       cmd_filtered "apt upgrade"
-#       cmd_filtered "apt install vim"
+#       cmd_filtered apt update
+#       cmd_filtered apt upgrade
+#       cmd_filtered apt install vim
 #       cmd_purge_output_file
 #
+#     Normally you would just run one cmd like this, if you really need to chain cmds
+#     use this workaround that wraps cmd separators like ; or &&
+#     The actual commands are executed insied cmd_filtered,
+#     so output display is still controllable
+#       cmd_filtered sh -c 'apt update && apt install vim'
+#
 #   Case 2 - will not display failed cmd or output, just exit the program with error
-#     cmd_filtered --silent "apt install vim"
+#     cmd_filtered --silent apt install vim
 #
 #   Case 3 - will continue returning false if cmd fails after reporting error.
-#     cmd_filtered --continue "apt install vim" ||
+#     cmd_filtered --continue apt install vim ||
 #       ... custom error handling
 #     }
 #
 #   Case 4 - will continue, not displaying failed cmd output or error msg
-#     cmd_filtered --silent --continue "apt install vim" ||
+#     cmd_filtered --silent --continue apt install vim ||
 #       ... custom error handling
 #     }
 #
@@ -347,9 +353,8 @@ cmd_filtered() {
         esac
         shift
     done
-
-    _cf_cmd="$1"
-    _cf_err_msg="${2:-Command failed: $_cf_cmd}"
+    _cf_cmd="$*"
+    _cf_err_msg="Command failed: $_cf_cmd"
 
     # dbg_msg "cmd_filtered: $_cf_cmd" 1
 
@@ -358,7 +363,7 @@ cmd_filtered() {
         _cf_self_created_output_file=1
     }
     [ -f "$f_cmd_output" ] || printf '\n%s\n' "$_cf_cmd"
-    if $_cf_cmd >"$f_cmd_output" 2>&1; then
+    if "$@" >"$f_cmd_output" 2>&1; then
         [ -f "$f_cmd_output" ] || echo # spacer after cmd
     else
         cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
@@ -384,8 +389,9 @@ cmd_err() {
     fi
 
     [ -f "$f_cmd_output" ] && {
-        # Only display if saved to file
-        echo # spacer before command output
+        # Only display if saved to file - spacer and actual command
+        printf '\n\n%s\n' "$_cf_cmd"
+
         cat "$f_cmd_output"
     }
 

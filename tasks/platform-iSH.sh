@@ -44,7 +44,7 @@ alpine_use_old_mtr() {
     [ "$_auom_mtr_found" -eq 1 ] && {
         lbl_4 "Removing current mtr version: $(mtr -v)"
         # Remove incorrect version
-        cmd_filtered "apk del mtr"
+        cmd_filtered apk del mtr
     }
     #
     #  Download and install specific older mtr
@@ -56,15 +56,15 @@ alpine_use_old_mtr() {
     url_prefix="https://dl-cdn.alpinelinux.org/alpine/v3.10/main/x86"
 
     lbl_4 "Downloading older mtr-0.92-r0.apk"
-    cmd_filtered "wget $url_prefix/mtr-0.92-r0.apk"
+    cmd_filtered wget "$url_prefix"/mtr-0.92-r0.apk
     lbl_4 "Installing downloaded mtr-0.92-r0.apk"
-    cmd_filtered "apk add mtr-0.92-r0.apk"
+    cmd_filtered apk add mtr-0.92-r0.apk
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Downloading mtr-doc-0.92-r0.apk"
-        cmd_filtered "wget $url_prefix/mtr-doc-0.92-r0.apk"
+        cmd_filtered wget "$url_prefix"/mtr-doc-0.92-r0.apk
         lbl_4 "Installing downloaded mtr-doc-0.92-r0.apk"
-        cmd_filtered "apk add mtr-doc-0.92-r0.apk"
+        cmd_filtered apk add mtr-doc-0.92-r0.apk
     }
     tmp_file_remove "$d_downloads"
     return 0
