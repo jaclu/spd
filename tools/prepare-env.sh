@@ -404,6 +404,18 @@ module_name="${module_name:-$0}"
     }
 }
 
+[ -z "$current_dbg_lvl" ] && {
+    #
+    # In case current_dbg_lvl has been exported to the env, do not override it
+    # otherwise default to 1 in order to display progress for cmd_filtered
+    # since sctipt-utils.sh hasn't been sourced yet and thus set_debug_lvl is not
+    # yet available. In addition that script would default it to 0 if undefined.
+    # All this results in that we have to manually set the variable directly
+    # at this point to both have an opinion and respect current env preferences
+    #
+    export current_dbg_lvl=1
+}
+
 source_script_utils
 populate_config
 
