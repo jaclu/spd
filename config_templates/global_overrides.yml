@@ -5,6 +5,8 @@
 # if the base configs are changed/updated and manually apply user preferences again.
 #
 
+# In my case i reduce the FS deploys to increase test turnarround times
+
 SPD_APK_INSTALL:
   - bash # The GNU Bourne Again shell
   - bash-completion # Command-line tab-completion for bash
