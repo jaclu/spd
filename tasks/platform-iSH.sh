@@ -17,6 +17,18 @@ early_start_runbg() {
     return 0
 }
 
+reactivate_busybox_uptime() {
+    if [ ! -L /usr/bin/uptime ] \
+        || [ "$(readlink -f /usr/bin/uptime)" != "/bin/busybox" ]; then
+        lbl_3 "Linking /usr/bin/uptime to /bin/busybox"
+        if [ -e /usr/bin/uptime ]; then
+            rm -f /usr/bin/uptime.ORG # only remove .ORG if it will be replaced
+            mv -f /usr/bin/uptime /usr/bin/uptime.ORG || exit 30
+        fi
+        ln -sf /bin/busybox /usr/bin/uptime || exit 31
+    fi
+}
+
 alpine_use_old_mtr() {
     _auom_mtr_found=0
     if command -v mtr >/dev/null; then
@@ -69,6 +81,7 @@ ish_alpine_tasks() {
         }
     }
     alpine_release_ge 3.20 && alpine_use_old_mtr
+    reactivate_busybox_uptime
 }
 
 ish_aok_tasks() {
@@ -123,7 +136,6 @@ task_execute() {
 
     # FS Alpine
 
-    # Install old IP# able mtr 0.92-a
     # Ensure /usr/bin/uptime is symlink to /bin/busybox
     # Install etc/inittab-alpine
     # Install extras to /usr/local/bin
