@@ -337,14 +337,13 @@ cmd_filtered() {
         cmd_create_output_file
         _cf_self_created_output_file=1
     }
-    is_debug_lvl 1 && echo "$_cf_cmd"
+    [ -f "$f_cmd_output" ] || printf '\n%s\n' "$_cf_cmd"
     if $_cf_cmd >"$f_cmd_output" 2>&1; then
-        is_debug_lvl 1 && echo # spacer after cmd
+        [ -f "$f_cmd_output" ] || echo # spacer after cmd
     else
         cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
         _cf_ex_code=1 # in case continue has been requested
     fi
-
     # only purge if the cmd output file was created here
     [ "$_cf_self_created_output_file" -eq 1 ] && cmd_purge_output_file
     return "$_cf_ex_code"
