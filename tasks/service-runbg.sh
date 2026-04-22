@@ -51,7 +51,7 @@ case "$opt_task" in
     remove | force | force-install) ;;
     install) ;;
     *)
-        cmd_line_param_error "$module_name: opt_task must be install/remove"
+        cmd_line_param_error "$module_name: opt_task must be install/force-install/remove"
         ;;
 esac
 
