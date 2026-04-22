@@ -11,6 +11,12 @@ task_prepare() {
     }
 
     lbl_2 "$module_name: Preparing task"
+    is_ish_aok && [ "$opt_task" = install ] && {
+        lbl_1 "WARNING: this service tends to fail on iSH-AOK"
+        _m="If you still want to try it, run this with force-install instead of install"
+        lbl_2 "$_m"
+        script_utils_cleanup 1
+    }
     check_for_abort 1 task_prepare
     check_service_env runbg
 
@@ -44,7 +50,8 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 
 # Ensure options are valid
 case "$opt_task" in
-    install | remove) ;;
+    remove | force | force-install) ;;
+    install) ;;
     *)
         cmd_line_param_error "$module_name: opt_task must be install/remove"
         ;;
