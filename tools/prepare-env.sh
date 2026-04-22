@@ -49,7 +49,6 @@ get_basic_config() {
     #     }
     # }
 
-    # current_dbg_lvl=5
     parse_yaml_config_file "$D_REPO"/configs/defaults.yml
 
     # file system related
@@ -175,7 +174,7 @@ check_for_abort() {
 #---------------------------------------------------------------------
 
 ensure_spd_var_defined() {
-    # Expands variable, then displays it if current_dbg_lvl>=1
+    # Expands variable, then displays it if is_debug_lvl 1 is true
     # otherwise print dependency warning and set spd_dependency_issue=1
     # to inicate dependency issue for caller
     _esvd_variable="$1"
@@ -183,9 +182,9 @@ ensure_spd_var_defined() {
     expand_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
-        dbg_msg "$_esvd_variable: $_esvd_value" 2
+        is_debug_lvl 2 && lbl_4 "$_esvd_variable: $_esvd_value"
     else
-        lbl_2 "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable"
+        dbg_msg "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable" 1
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
         spd_dependency_issue=1
     fi
@@ -297,7 +296,7 @@ cmd_line_param_error() {
 #---------------------------------------------------------------------
 
 cmd_create_output_file() {
-    if [ "$current_dbg_lvl" -gt 0 ]; then
+    if is_debug_lvl 1; then
         f_cmd_output=/dev/stdout
     else
         tmp_file_create f_cmd_output
@@ -306,9 +305,7 @@ cmd_create_output_file() {
 }
 
 cmd_purge_output_file() {
-    [ -n "$f_cmd_output" ] && {
-        [ "$f_cmd_output" != /dev/stdout ] && tmp_file_remove "$f_cmd_output"
-    }
+    [ -n "$f_cmd_output" ] && [ -f "$f_cmd_output" ] && tmp_file_remove "$f_cmd_output"
     f_cmd_output="" # indicate inactive
 }
 
@@ -334,14 +331,15 @@ cmd_filtered() {
     _cf_cmd="$1"
     _cf_err_msg="${2:-Command failed: $_cf_cmd}"
 
-    dbg_msg "cmd_filtered: $_cf_cmd" 1
+    # dbg_msg "cmd_filtered: $_cf_cmd" 1
 
     [ -z "$f_cmd_output" ] && {
         cmd_create_output_file
         _cf_self_created_output_file=1
     }
+    is_debug_lvl 1 && echo "$_cf_cmd"
     if $_cf_cmd >"$f_cmd_output" 2>&1; then
-        [ "$f_cmd_output" = "/dev/stdout" ] && echo # spacer after cmd
+        is_debug_lvl 1 && echo # spacer after cmd
     else
         cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
         _cf_ex_code=1 # in case continue has been requested
@@ -366,7 +364,8 @@ cmd_err() {
         fi
     fi
 
-    [ "$f_cmd_output" != /dev/stdout ] && {
+    [ -f "$f_cmd_output" ] && {
+        # Only display if saved to file
         echo # spacer before command output
         cat "$f_cmd_output"
     }

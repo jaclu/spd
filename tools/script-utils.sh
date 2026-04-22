@@ -358,15 +358,21 @@ dbg_msg() {
     else
         _dm_this_dbg_lvl=0
     fi
-    [ "$_dm_this_dbg_lvl" -le "$current_dbg_lvl" ] && log_it "DBG[$_dm_this_dbg_lvl]  $1" "$3"
+    # [ "$_dm_this_dbg_lvl" -le "$current_dbg_lvl" ]
+    is_debug_lvl "$_dm_this_dbg_lvl" && log_it "DBG[$_dm_this_dbg_lvl]  $1" "$3"
 
 }
 
 set_debug_lvl() {
     _dl_new_lvl="$1"
     is_int "$_dl_new_lvl" || err_msg "set_debug_lvl - non int param: $_dl_new_lvl"
-    # current_dbg_lvl="$_dl_new_lvl"
     export current_dbg_lvl="$_dl_new_lvl" # propagate it to any subshells
+}
+
+is_debug_lvl() {
+    _id_lvl="$1"
+    is_int "$_id_lvl" || err_msg "is_debug_lbl - non int param: $_dl_new_lvl"
+    [ "$_id_lvl" -le "$current_dbg_lvl" ]
 }
 
 #---------------------------------------------------------------
@@ -661,7 +667,6 @@ tmp_file_create() {
         }
         dbg_msg "Created tmp file: $_tfc_f_tmp" 3
     fi
-
 
     # for tracking and cleanup in err_msg()
     tmp_file_list=$(printf '%s\n%s\n' "$tmp_file_list" "$_tfc_f_tmp")
