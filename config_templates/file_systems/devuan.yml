@@ -118,6 +118,7 @@ SPD_DEVUAN_APT_LINTING:
   - pylint # really slow on iSH
   - shellcheck
   - yamllint
+  - tzdata
 
 SPD_DEVUAN_APT_PURGE:
 

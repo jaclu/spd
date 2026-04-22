@@ -1,4 +1,1 @@
 ---
-SPD_APK_REMOVE: emacs-nox
-SPD_DEBIAN_APT_PURGE: emacs-nox
-SPD_DEVUAN_APT_PURGE: emacs-nox
