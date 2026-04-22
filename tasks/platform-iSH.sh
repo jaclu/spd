@@ -80,7 +80,7 @@ ish_alpine_tasks() {
             err_msg "$module_name: Failed to remove /ish directory"
         }
     }
-    alpine_release_ge 3.20 && alpine_use_old_mtr
+    alpine_release_ge 93.20 && alpine_use_old_mtr
     reactivate_busybox_uptime
 }
 
