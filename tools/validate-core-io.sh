@@ -7,14 +7,14 @@
 # License: MIT
 #
 # Solves an issue I have only noticed in iSH:
-# At startup stdio devices are absent or occationally garbled. The fixes are platform
+# At startup stdio devices are absent or occasionally garbled. The fixes are platform
 # Neutral, but I doubt other platforms need this.
 #
 # Validates and repairs standard I/O device nodes when required:
 #   /dev/null, /dev/stdin, /dev/stdout, /dev/stderr
 #
 # The fixes follow pure POSIX, so should be applicable on any system.
-# So far I have only noted a recuring need for this on ISH
+# So far I have only noted a recurring need for this on ISH
 # No effect on other platforms. Minimal overhead when devices are healthy.
 # Uses generic POSIX mechanisms where possible.
 #
