@@ -34,7 +34,6 @@ app="$0"
 }
 
 if [ "$(whoami)" != "root" ]; then
-    #  shell check disable=SC2154
     if [ -z "$hide_run_as_root" ]; then
         echo "Executing $app as root"
         echo

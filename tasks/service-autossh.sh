@@ -15,13 +15,11 @@ task_prepare() {
     check_service_env autossh
     command -v autossh >/dev/null 2>&1 || {
         lbl_2 "Dependency issue - autossh not found"
-        # shell check disable=SC2034 # spd_dependency_issue used by caller
         spd_dependency_issue=1
     }
     # _cmd=/usr/local/bin/logger
     # [ -x "$_cmd" ] || {
     #     lbl_2 "Dependency issue - $_cmd not found"
-    #     # shell check disable=SC2034 # spd_dependency_issue used by caller
     #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
     # }
 

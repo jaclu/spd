@@ -22,7 +22,6 @@ task_prepare() {
 
     # is_ish || { # disabled during deubgging, re-enable once done
     #     lbl_2 "Dependency issue - Can only be used on iSH"
-    #     # shell check disable=SC2034 # spd_dependency_issue used by caller
     #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
     # }
     return "$spd_dependency_issue"
@@ -45,7 +44,6 @@ module_name="service_runbg.sh"
 service_name=runbg
 
 D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
-# shell check source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
 
 # Ensure options are valid
