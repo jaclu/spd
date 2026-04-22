@@ -13,9 +13,11 @@ task_prepare() {
     lbl_2 "$module_name: Preparing task"
     is_ish_aok && [ "$opt_task" = install ] && {
         lbl_1 "WARNING: this service tends to fail on iSH-AOK"
-        _m="If you still want to try it, run this with force-install instead of install"
+        _m="If you still want to use it, run this with force-install instead of install"
         lbl_2 "$_m"
-        script_utils_cleanup 1
+        # exit ok in order not to abort scripts that runs multiple
+        # tasks, hopefully this warning explains the issue
+        script_utils_cleanup 0
     }
     check_for_abort 1 task_prepare
     check_service_env runbg
