@@ -50,3 +50,11 @@ Add a passive option, to just list what tasks would be done
 
 1 - neither install or remove can be done
 2 - remove but not install can be done
+
+## Config files
+
+Configs are assumed to be in configs/
+The repo has generic sample congis in config_templates/ when any task is started
+and configs/ does not exist config_templates/ are copied there for initial usage.
+configs/ is in .gitignore, and if it exists it is never touched. So any changes
+there will never be meddled with if the repo is updated.
