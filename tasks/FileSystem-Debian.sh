@@ -109,3 +109,6 @@ ensure_spd_var_defined SPD_PKGS_LINTING
 
 task_prepare
 task_execute
+
+# Exit in a controlled manner, cleaning up temp files remaining etc
+script_utils_cleanup 0

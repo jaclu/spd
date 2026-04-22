@@ -124,3 +124,6 @@ is_musl_lib || ensure_spd_var_defined SPD_LOCALES
 
 task_prepare
 task_execute
+
+# Exit in a controlled manner, cleaning up temp files remaining etc
+script_utils_cleanup 0

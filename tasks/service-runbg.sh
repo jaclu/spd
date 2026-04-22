@@ -54,3 +54,6 @@ parse_yaml_config_file "$D_REPO"/configs/task/service_runbg.yml
 
 task_prepare
 task_execute
+
+# Exit in a controlled manner, cleaning up temp files remaining etc
+script_utils_cleanup 0
