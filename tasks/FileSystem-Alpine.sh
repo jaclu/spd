@@ -62,8 +62,9 @@ task_execute() {
     [ -n "$SPD_APK_REMOVE" ] && {
         lbl_3 "Will remove Alpine packages in SPD_APK_REMOVE"
         # apk add automatically runs update, but apk del does not
+        lbl_4 "First doing apk update"
         cmd_filtered "apk update"
-
+        lbl_4 "Doing apk del"
         cmd_filtered "apk del $SPD_APK_REMOVE"
     }
 

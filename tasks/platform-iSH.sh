@@ -28,42 +28,33 @@ alpine_use_old_mtr() {
     fi
 
     lbl_3 "Alpine >= 3.20 detected, installing older mtr, able to run with IP# in iSH"
-    cmd_create_output_file
 
     [ "$_auom_mtr_found" -eq 1 ] && {
         lbl_4 "Removing current mtr version: $(mtr -v)"
         # Remove incorrect version
-        apk del mtr >"$f_cmd_output" 2>&1 || cmd_err "Failed to remove current mtr"
+        cmd_filtered "apk del mtr"
     }
-
     #
     #  Download and install specific older mtr
     #
     # Create temporary directory for downloaded mtr files
     tmp_file_create -d d_downloads
     # shellcheck disable=SC2154 # d_downloads created via tmp_file_create
-    cd "$d_downloads" || cmd_err "Failed to cd to temporary directory $d_downloads"
+    cd "$d_downloads" || err_msg "Failed to cd to temporary directory $d_downloads"
     url_prefix="https://dl-cdn.alpinelinux.org/alpine/v3.10/main/x86"
 
-    lbl_4 "Installing older mtr-0.92-r0.apk"
-    wget "$url_prefix"/mtr-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-        cmd_err "Failed to download mtr-0.92-r0.apk"
-    }
-    apk add mtr-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-        cmd_err "Failed to install mtr-0.92-r0.apk"
-    }
+    lbl_4 "Downloading older mtr-0.92-r0.apk"
+    cmd_filtered "wget $url_prefix/mtr-0.92-r0.apk"
+    lbl_4 "Installing downloaded mtr-0.92-r0.apk"
+    cmd_filtered "apk add mtr-0.92-r0.apk"
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
-        lbl_4 "Installing mtr-doc-0.92-r0.apk"
-        wget "$url_prefix"/mtr-doc-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-            cmd_err "Failed to download mtr-doc-0.92-r0.apk"
-        }
-        apk add mtr-doc-0.92-r0.apk >"$f_cmd_output" 2>&1 || {
-            cmd_err "Failed to install mtr-doc-0.92-r0.apk"
-        }
+        lbl_4 "Downloading mtr-doc-0.92-r0.apk"
+        cmd_filtered "wget $url_prefix/mtr-doc-0.92-r0.apk"
+        lbl_4 "Installing downloaded mtr-doc-0.92-r0.apk"
+        cmd_filtered "apk add mtr-doc-0.92-r0.apk"
     }
     tmp_file_remove "$d_downloads"
-    cmd_purge_output_file
     return 0
 }
 
@@ -161,6 +152,18 @@ task_execute() {
 #
 module_name="platform-iSH"
 
+# [ -z "$current_dbg_lvl" ] && {
+#     #
+#     # In case current_dbg_lvl has been exported to the env, do not override it
+#     # otherwise default to 1 in order to display progress for cmd_filtered
+#     # since sctipt-utils.sh hasn't been sourced yet and thus set_debug_lvl is not
+#     # yet available. In addition that script would default it to 0 if undefined.
+#     # All this results in that we have to manually set the variable directly
+#     # at this point to both have an opinion and respect current env preferences
+#     #
+#     export current_dbg_lvl=0
+# }
+
 D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
@@ -200,3 +203,6 @@ fi
 echo # Spacer before this task begins
 task_prepare
 task_execute
+
+# Exit in a controlled manner, cleaning up temp files remaining etc
+script_utils_cleanup 0
