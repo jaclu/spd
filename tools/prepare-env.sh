@@ -122,7 +122,6 @@ cmd_line_param_parse() {
         esac
         shift
     done
-    dbg_msg "cmd_line_param_parse - opt_task[$opt_task]"
     cmd_line_param_list
 }
 
@@ -132,7 +131,7 @@ cleanup_custom() {
     #
     # The exit code is mostly informational, if this returns to script_utils_cleanup
     # it will exit with this code.
-    # It might still be good to know if this is a sucessfull or an error exit
+    # It might still be good to know if this is a successful or an error exit
     #
     #
     _cc_ex_code="$1"
