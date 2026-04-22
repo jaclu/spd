@@ -16,9 +16,10 @@
     description="Reads GPS to ensure iSH continues to run when in the background"
 
     command="/bin/cat"
-    command_args="/dev/location > /dev/null"
-    command_background="YES"
-
+    command_args="/dev/location"
+    command_background=true
+    output_log="/dev/null"
+    error_log="/dev/null"
     pidfile="/run/runbg.pid"
 }
 
