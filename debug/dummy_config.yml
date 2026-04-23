@@ -21,4 +21,11 @@ SPD_WITH_BLANKS:
   - zsh
 
 SPD_EMPTY:
-SPD_EMPTY_NOT: hepp
+SPD_EMPTY_NOT: alpha
+
+SPD_CONTENT: something
+SPD_REF_1: "{{ SPD_CONTENT }}"
+SPD_REF_2: "{{ SPD_REF_4 }}"
+SPD_REF_3: "{{ SPD_REF_2 }}"
+SPD_REF_4: "{{ SPD_REF_3 }}"
+SPD_REF_5: "{{ SPD_REF_4 }}"

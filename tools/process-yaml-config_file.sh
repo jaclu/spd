@@ -17,7 +17,7 @@
 
 # Strip inline comment and surrounding whitespace from a value
 # e.g.  "bar" # comment  ->  bar
-pcf_strip_inline_comment() {
+pycf_strip_inline_comment() {
     _sic_val=$1
     # Remove optional surrounding double-quotes first, then strip # comment
     # We process: remove leading/trailing quotes if paired, then cut at ' #'
@@ -41,7 +41,7 @@ pcf_strip_inline_comment() {
     printf '%s' "$_sic_val"
 }
 
-pcf_expand_template() {
+pycf_expand_template() {
     _pet_val=$1
     # Replace {{ VAR_NAME }} with ${VAR_NAME}
     # Handles optional whitespace inside the braces
@@ -61,10 +61,10 @@ pcf_expand_template() {
     printf '%s' "$_pet_val"
 }
 
-pcf_flush_pending() {
+pycf_flush_pending() {
     # Uses: $_fp_var, $_fp_content  -- sets them back to empty
     [ -z "$_fp_var" ] && [ -n "$_fp_content" ] && {
-        printf 'ERROR: pcf_flush_pending() - content but no var\n' >&2
+        printf 'ERROR: pycf_flush_pending() - content but no var\n' >&2
         exit 1
     }
     [ -n "$_fp_var" ] && {
@@ -74,9 +74,9 @@ pcf_flush_pending() {
     _fp_content=''
 }
 
-pcf_parse_config_file() {
+pycf_parse_config_file() {
     _pcf_f_cfg=$1
-    pcf_flush_pending
+    pycf_flush_pending
 
     while IFS= read -r _pcf_line; do
         # Trim leading whitespace
@@ -96,8 +96,8 @@ pcf_parse_config_file() {
                     exit 1
                 }
                 _pcf_item=${_pcf_trimmed#'- '}
-                _pcf_item=$(pcf_strip_inline_comment "$_pcf_item")
-                _pcf_item=$(pcf_expand_template "$_pcf_item")
+                _pcf_item=$(pycf_strip_inline_comment "$_pcf_item")
+                _pcf_item=$(pycf_expand_template "$_pcf_item")
                 # Append with space separator (first item has no leading space)
                 if [ -z "$_fp_content" ]; then
                     _fp_content=$_pcf_item
@@ -110,7 +110,7 @@ pcf_parse_config_file() {
         esac
 
         # Any new key: flush whatever was pending
-        pcf_flush_pending
+        pycf_flush_pending
 
         # Extract key and raw value
         _pcf_key=${_pcf_trimmed%%':'*}
@@ -146,16 +146,58 @@ pcf_parse_config_file() {
                 ;;
             *)
                 # Scalar value on same line
-                _val=$(pcf_strip_inline_comment "$_pcf_rest")
-                _val=$(pcf_expand_template "$_val")
+                _val=$(pycf_strip_inline_comment "$_pcf_rest")
+                _val=$(pycf_expand_template "$_val")
                 eval "$_pcf_key=\$_val"
                 ;;
         esac
 
     done <"$_pcf_f_cfg"
 
-    pcf_flush_pending
+    pycf_flush_pending
     return 0
+}
+
+pycf_extract_ref() {
+    s=${1#\$\{} # remove leading "${"
+    s=${s%\}}   # remove trailing "}"
+    printf '%s' "$s"
+}
+
+pycf_display_references() {
+    # shellcheck disable=SC2086
+    set -- $pycf_expanded_items
+
+    first=1
+    for x; do
+        if [ "$first" -eq 1 ]; then
+            printf '%s' "$x"
+            first=0
+        else
+            printf ' -> %s' "$x"
+        fi
+    done
+    printf '\n'
+}
+
+pycf_check_recursion() {
+    #
+    #  stores each reference, and aborts if something points to an already
+    #  referred variable
+    #
+    _pcr_item=$(pycf_extract_ref "$1")
+    [ -z "$_pcr_item" ] && return # empty param
+    dbg_msg "pycf_check_recursion() [$(pycf_extract_ref "$1")]" 9
+    case "$pycf_expanded_items" in
+        *${_pcr_item}*)
+            echo
+            pycf_expanded_items="$pycf_expanded_items $_pcr_item"
+            lbl_1 "Circular reference back to a previous variable name"
+            pycf_display_references
+            err_msg "Circular config expansion back to $_pcr_item"
+            ;;
+        *) pycf_expanded_items="$pycf_expanded_items $_pcr_item" ;;
+    esac
 }
 
 #===============================================================
@@ -172,7 +214,7 @@ parse_yaml_config_file() {
     # shellcheck disable=SC2154 # module_name defined in caller
     if [ -f "$_rcf_f_cfg" ]; then
         dbg_msg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 5
-        pcf_parse_config_file "$_rcf_f_cfg"
+        pycf_parse_config_file "$_rcf_f_cfg"
     else
         dbg_msg "Config file not found: $_rcf_f_cfg" 3
     fi
@@ -194,16 +236,27 @@ parse_yaml_config_file() {
 # even if SPD_UNAME itself is also a nested variable. SPD_UNAME can be expanded
 # after SPD_HOME_DIR, so expansion order does not depend on how they are nested
 #
+
 expand_config_var() {
     _ecv_varname=$1
     _ecv_default="$2"
-    while eval "_ev_val=\"\$$_ecv_varname\""; do
-        # shellcheck disable=SC2154 # _ev_val defined in eval above
-        [ "$_ev_val" = "${_ev_val#*\$\{}" ] && break
+    pycf_expanded_items="$_ecv_varname"
+
+    dbg_msg "expand_config_var() [$_ecv_varname] [$_ecv_default]" 9
+    while eval "_ecv_val=\"\$$_ecv_varname\""; do
+        pycf_check_recursion "$_ecv_val"
+        [ "$_ecv_val" = "${_ecv_val#*\$\{}" ] && break
+        eval "$_ecv_varname=\"$_ecv_val\""
     done
-    [ -z "$_ev_val" ] && _ev_val="$_ecv_default" # ok if _ecv_default is empty
-    eval "$_ecv_varname=\"$_ev_val\""
+    [ -z "$_ecv_val" ] && _ecv_val="$_ecv_default" # ok if _ecv_default is empty
+    eval "$_ecv_varname=\"$_ecv_val\""
 }
+
+#=====================================================================
+#
+#   Main
+#
+#=====================================================================
 
 # D_REPO is set by $0 to give the path to the repository
 [ -z "$D_REPO" ] && {

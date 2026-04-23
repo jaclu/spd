@@ -21,14 +21,25 @@ test_variable_retrieval() {
 
 test_variable_defaults() {
 
-    expand_config_var SPD_EMPTY_NOT jupp
-    expand_config_var SPD_EMPTY yes
+    expand_config_var SPD_EMPTY_NOT omega
+    expand_config_var SPD_EMPTY omega
 
     # shellcheck disable=SC2154 # SPD_ vars read via config files
     {
         echo "SPD_EMPTY_NOT [$SPD_EMPTY_NOT]"
         echo "SPD_EMPTY [$SPD_EMPTY]"
     }
+}
+
+test_recursive_references() {
+
+    # expand_config_var SPD_REF_3
+    # # shellcheck disable=SC2154 # SPD_ vars read via config files
+    # echo "SPD_REF_3 [$SPD_REF_3]"
+
+    expand_config_var SPD_REF_5
+    # shellcheck disable=SC2154 # SPD_ vars read via config files
+    echo "SPD_REF_5 [$SPD_REF_5]"
 }
 
 #=====================================================================
@@ -52,5 +63,6 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 parse_yaml_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
 parse_yaml_config_file "$D_REPO"/debug/dummy_config.yml
 
-# test_variable_defaults
-test_variable_retrieval
+# test_variable_retrieval
+test_variable_defaults
+test_recursive_references
