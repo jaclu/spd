@@ -169,27 +169,29 @@ fs_is_gentoo() {
 script_utils_cleanup() {
     _suc_ex_code="$1"
     _suc_no_custom="${2:-}" # if not empty, cleanup_custom() will not be called
-
+    _suc_dont_display_residual_tmp_files="$3"
     # Remove all tmp files created by this script,
     # and display content if any, before removing them
-    for _sc_f in $tmp_file_list; do
-        [ -s "$_sc_f" ] && {
-            # Only display if file has content
-            printf '\n=====   [%s]%s tmp-file %s still remains, displaying content   =====\n' \
-                "$$" "$app_name" "$_sc_f" >&2
-            cat "$_sc_f" >&2
-            printf '\n-----   end of tmp file, will remove it now   -----\n' >&2
-        }
-        [ -f "$_sc_f" ] && {
-            was_sys_path "$_sc_f" && {
-                printf '\nWARNING: tmp file: is in a sys path, not removing: %s\n' \
-                    "$_sc_f" >&2
-                continue
+    [ -z "$_suc_dont_display_residual_tmp_files" ] && {
+        for _sc_f in $tmp_file_list; do
+            [ -s "$_sc_f" ] && {
+                # Only display if file has content
+                printf '\n=====   [%s]%s tmp-file %s still remains, displaying content   =====\n' \
+                    "$$" "$app_name" "$_sc_f" >&2
+                cat "$_sc_f" >&2
+                printf '\n-----   end of tmp file, will remove it now   -----\n' >&2
             }
-            # Remove even if tmp file is empty
-            rm -f "$_sc_f" || printf '\nERROR: failed to remove: %s\n' "$_sc_f"
-        }
-    done
+            [ -f "$_sc_f" ] && {
+                was_sys_path "$_sc_f" && {
+                    printf '\nWARNING: tmp file: is in a sys path, not removing: %s\n' \
+                        "$_sc_f" >&2
+                    continue
+                }
+                # Remove even if tmp file is empty
+                rm -f "$_sc_f" || printf '\nERROR: failed to remove: %s\n' "$_sc_f"
+            }
+        done
+    }
 
     [ -z "$_suc_no_custom" ] && {
         if command -v cleanup_custom >/dev/null 2>&1; then
