@@ -20,3 +20,7 @@ Think this is better but remains to be seen
 2 .. more and more
 
 should dbg lvl condition be added to log it via second param
+
+# parameter expansion
+
+- handle parallel expansion  spd_full_name: "{{ SPD_FIRST_name }} {{ spd_last_name }}"
