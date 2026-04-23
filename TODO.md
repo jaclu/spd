@@ -20,7 +20,3 @@ Think this is better but remains to be seen
 2 .. more and more
 
 should dbg lvl condition be added to log it via second param
-
-## config variable defaults
-
-verify defaults work as intended
