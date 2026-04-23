@@ -1,9 +1,12 @@
 #!/bin/sh
 
+#---------------------------------------------------------------------
 #
-#  Service handler openrc
+#   Service handler openrc
 #
-openrc_dependency_check() {
+#---------------------------------------------------------------------
+
+sh_openrc_dependency_check() {
     ensure_spd_var_defined SPD_SVC_OPENRC_RUNLVLS
 
     command -v openrc >/dev/null 2>&1 || {
@@ -21,7 +24,7 @@ openrc_dependency_check() {
     }
 }
 
-handler_openrc() {
+sh_handler_openrc() {
     # First remove from all runlevels, since we don't know previously used
     # runlevels and openrc doesn't have a simple way to remove from all runlevels,
     # this is done this is done by removing from all runlevels on file level
@@ -34,15 +37,15 @@ handler_openrc() {
         install | force | force-install) ;;
         remove)
             lbl_3 "No longer used as service: $service_name"
-            handle_initd_script
+            sh_handle_initd_script
             return
             ;;
-        *) err_msg "handler_openrc() unrecognized option: [$opt_task]" ;;
+        *) err_msg "sh_handler_openrc() unrecognized option: [$opt_task]" ;;
     esac
 
     # assume install
 
-    handle_initd_script
+    sh_handle_initd_script
     # shellcheck disable=SC2154 # defined by caller
     for lvl in $SPD_SVC_OPENRC_RUNLVLS; do
         rc-update add "$service_name" "$lvl" || {
@@ -66,10 +69,13 @@ handler_openrc() {
     fi
 }
 
+#---------------------------------------------------------------------
 #
-#  Service handler sysv-init
+#   Service handler SysV-init
 #
-sysv_dependency_check() {
+#---------------------------------------------------------------------
+
+sh_sysv_dependency_check() {
     ensure_spd_var_defined SPD_SVC_SYSV_LVL_START
     ensure_spd_var_defined SPD_SVC_SYSV_LVL_STOP
     ensure_spd_var_defined SPD_SVC_SYSV_LVL_RUN_TASK
@@ -82,7 +88,7 @@ sysv_dependency_check() {
     }
 }
 
-handler_sysv_init() {
+sh_handler_sysv_init() {
     # Expecting the following variables to be defined in config:
     # SPD_SVC_SYSV_LVL_START - runlevels to start service on, e.g. "2 3 4 5"
     # SPD_SVC_SYSV_LVL_STOP - runlevels to stop service on, e.g. "0 1 6"
@@ -97,15 +103,15 @@ handler_sysv_init() {
             # Since we can't be sure of previous S/K numbers, remove all links for the service from runlevels
             safe_remove --silent --ignore-sys-path /etc/rc?.d/*"${service_name}"
             dbg_msg "Removed links for $service_name from runlevels" 2
-            handle_initd_script
+            sh_handle_initd_script
             return
             ;;
-        *) err_msg "handler_sysv_init() unrecognized option: [$opt_task]" ;;
+        *) err_msg "sh_handler_sysv_init() unrecognized option: [$opt_task]" ;;
     esac
 
     # assume install
 
-    handle_initd_script
+    sh_handle_initd_script
     lbl_3 "Adding service to runlevels"
     # shellcheck disable=SC2154 # defined by caller
     for lvl in $SPD_SVC_SYSV_LVL_STOP; do
@@ -123,16 +129,18 @@ handler_sysv_init() {
     done
 }
 
+#---------------------------------------------------------------------
 #
-#  common service handler tasks
+#   common service handler tasks
 #
+#---------------------------------------------------------------------
 
-handle_initd_script() {
+sh_handle_initd_script() {
     [ -z "$service_name" ] && {
-        err_msg "handle_initd_script() - service_name not defined"
+        err_msg "sh_handle_initd_script() - service_name not defined"
     }
     [ -z "$init_scr_org" ] && {
-        err_msg "handle_initd_script() - init_scr_org not defined"
+        err_msg "sh_handle_initd_script() - init_scr_org not defined"
     }
     service_script="/etc/init.d/$service_name"
 
@@ -140,16 +148,22 @@ handle_initd_script() {
     case "$opt_task" in
         install | force | force-install)
             cp "$init_scr_org" "$service_script" || {
-                m="handle_initd_script() - Failed to copy"
+                m="sh_handle_initd_script() - Failed to copy"
                 m="$m $init_scr_org $service_script"
                 err_msg "$m"
             }
             lbl_3 "Copied $service_script"
             ;;
         remove) safe_remove --ignore-sys-path "$service_script" ;;
-        *) err_msg "handle_initd_script() - invalid opt_task: [$opt_task]" ;;
+        *) err_msg "sh_handle_initd_script() - invalid opt_task: [$opt_task]" ;;
     esac
 }
+
+#---------------------------------------------------------------------
+#
+#   Public methods
+#
+#---------------------------------------------------------------------
 
 check_service_env() {
     [ -z "$service_name" ] && {
@@ -167,11 +181,11 @@ check_service_env() {
         case "$SPD_SERVICE_HANDLER" in
             openrc)
                 lbl_3 "Using service handler: openrc"
-                openrc_dependency_check
+                sh_openrc_dependency_check
                 ;;
             sysv-init)
                 lbl_3 "Using service handler: sysv-init"
-                sysv_dependency_check
+                sh_sysv_dependency_check
                 ;;
             *)
                 m="check_service_env() - Unrecognized service-handler"
@@ -194,8 +208,8 @@ check_service_env() {
 process_service() {
     # attach service to handler
     case "$SPD_SERVICE_HANDLER" in
-        'openrc') handler_openrc ;;
-        'sysv-init') handler_sysv_init ;;
+        'openrc') sh_handler_openrc ;;
+        'sysv-init') sh_handler_sysv_init ;;
         *)
             m="process_service() - Unrecognized service-handler"
             m="$m SPD_SERVICE_HANDLER: $SPD_SERVICE_HANDLER"
