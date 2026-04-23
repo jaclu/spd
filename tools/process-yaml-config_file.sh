@@ -193,6 +193,9 @@ pycf_display_references() {
 
 pycf_check_circular_reference() {
     #
+    #  First extracts references, if multiple, process them one at a time in a
+    #  new call to expand_config_var after resetting all states except
+    #  pycf_expansion_step, if just a single, store it and return
     #  stores each reference, and aborts if something points to an already
     #  referred variable
     #
@@ -253,6 +256,9 @@ parse_yaml_config_file() {
 expand_config_var() {
     _ecv_varname=$1
     _ecv_default="$2"
+    _ecv_maintain_expansion_depth="$3"
+
+    [ -z "$_ecv_maintain_expansion_depth" ] && pycf_expansion_step=0
     pycf_expanded_items="$_ecv_varname"
 
     dbg_msg "expand_config_var() [$_ecv_varname] [$_ecv_default]" 9
@@ -260,6 +266,12 @@ expand_config_var() {
         dbg_msg "  _ecv_val[$_ecv_val]" 9
         pycf_check_circular_reference "$_ecv_val"
         [ "$_ecv_val" = "${_ecv_val#*\$\{}" ] && break
+        pycf_expansion_step=$((pycf_expansion_step + 1))
+        [ "$pycf_expansion_step" -ge "$pycf_expansion_steps_max" ] && {
+            m="expand_config_var() - max depth reahced,"
+            m="$m aborting to avoid infinete recursion"
+            err_msg "$m"
+        }
         eval "$_ecv_varname=\"$_ecv_val\""
     done
     [ -z "$_ecv_val" ] && _ecv_val="$_ecv_default" # ok if _ecv_default is empty
@@ -271,6 +283,8 @@ expand_config_var() {
 #   Main
 #
 #=====================================================================
+
+pycf_expansion_steps_max=50
 
 # D_REPO is set by $0 to give the path to the repository
 [ -z "$D_REPO" ] && {
