@@ -26,12 +26,29 @@ task_prepare() {
     return "$spd_dependency_issue"
 }
 
+replace_line_ending_in_tag() {
+    _rleik_replacement_line="$1"
+    _rleik_tag="$2"
+    _rleik_file="$3"
+
+    # tmp_file_create
+    # sed "s|.*# ${_rleik_tag}\$|${_rleik_replacement_line}|" "$_rleik_file" >"$f_tmp" \
+    #     && mv "$f_tmp" "$_rleik_file"
+    # tmp_file_remove
+}
+
 task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task"
 
     # shellcheck disable=SC2154 # SPD_SVC_AUTOSSH_RUNLVL defined via config
     process_service
+
+    # replace_line_ending_in_tag \
+    #     "${SPD_SVC_AUTOSSH_REVERSE_PORT}:localhost:${SPD_SVC_SSHD_PORT}" \
+    #     "# LOOPBACK_DIRECIVE" \
+    #     /etc/init.d/autossh
+
 }
 
 #=====================================================================
@@ -58,10 +75,11 @@ esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_autossh.yml
 
+ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT # LOOPBACK_DIRECIVE
+ensure_spd_var_defined SPD_SVC_SSHD_PORT            # LOOPBACK_DIRECIVE
 ensure_spd_var_defined SPD_SVC_AUTOSSH_KEY_FILE
-ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
 ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_PORT
-ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT
+ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
 
 task_prepare
 task_execute
