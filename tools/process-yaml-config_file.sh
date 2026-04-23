@@ -195,12 +195,14 @@ parse_yaml_config_file() {
 # after SPD_HOME_DIR, so expansion order does not depend on how they are nested
 #
 expand_config_var() {
-    _ev_varname=$1
-    while eval "_ev_val=\"\$$_ev_varname\""; do
+    _ecv_varname=$1
+    _ecv_default="$2"
+    while eval "_ev_val=\"\$$_ecv_varname\""; do
         # shellcheck disable=SC2154 # _ev_val defined in eval above
         [ "$_ev_val" = "${_ev_val#*\$\{}" ] && break
-        eval "$_ev_varname=\"$_ev_val\""
     done
+    [ -z "$_ev_val" ] && _ev_val="$_ecv_default" # ok if _ecv_default is empty
+    eval "$_ecv_varname=\"$_ev_val\""
 }
 
 # D_REPO is set by $0 to give the path to the repository
