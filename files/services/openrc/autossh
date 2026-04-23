@@ -1,5 +1,5 @@
 #!/sbin/openrc-run
-# shellcheck shell=bash # since this is essentially bash, this makes shellcheck proces it
+# shellcheck shell=bash # since this is essentially bash, this makes shellcheck process it
 #
 #  Copyright (c) 2025-2026: Jacob.Lundqvist@gmail.com
 #  License: BSD
@@ -96,7 +96,7 @@ case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
 esac
 
 # Remember that the last item on the line must match your sshd port!
-loopback_directive="$reverse_port:localhost:[sshd port]" # LOOPBACK_DIRECIVE
+loopback_directive="[SPD_SVC_AUTOSSH_REVERSE_PORT]:localhost:[SPD_SVC_SSHD_PORT]" # LOOPBACK_DIRECIVE
 
 autossh_opts="-M 0 -f \
     -NT \
@@ -111,13 +111,13 @@ autossh_opts="-M 0 -f \
     -E /var/log/autossh-ssh.log \
     -R $loopback_directive"
 
-key_file="[SPD_SVC_AUTOSSH_KEY_FILE]" # KEY_FILE
+key_file="[SPD_SVC_AUTOSSH_KEY_FILE]" # SPD_SVC_AUTOSSH_KEY_FILE
 [ -n "$key_file" ] && autossh_opts="$autossh_opts -i $key_file"
 
-jump_port="[SPD_SVC_AUTOSSH_JUMP_PORT]" # JUMP_PORT
+jump_port="[SPD_SVC_AUTOSSH_JUMP_PORT]" # SPD_SVC_AUTOSSH_JUMP_PORT
 [ -n "$jump_port" ] && autossh_opts="$autossh_opts -p $jump_port"
 
-jump_account="[SPD_UNAME]@[SPD_SVC_AUTOSSH_JUMP_HOST]" # JUMP_ACCOUNT
+jump_account="[SPD_UNAME]@[SPD_SVC_AUTOSSH_JUMP_HOST]" # SPD_SVC_AUTOSSH_JUMP_HOST
 
 # shellcheck disable=SC2034 # command_args defined for openrc handling
 command_args="$autossh_opts $jump_account"

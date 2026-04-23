@@ -75,5 +75,5 @@ po::powerokwait:/etc/init.d/powerfail stop
 # Only /dev/console exists inside nspawn, so we need a getty on that.
 # Also make sure to comment out the gettys on tty* above.
 
-# Ends up puting a getty on the console messing with logfiles
+# Ends up putting a getty on the console messing with logfiles
 #C0:2345:respawn:/sbin/getty -8 --noclear --keep-baud console 115200,38400,9600
