@@ -23,8 +23,9 @@ should dbg lvl condition be added to log it via second param
 
 ## parameter expansion
 
-### handle parallel expansion  
+### handle parallel expansion
 
-spd_full_name: "{{ SPD_FIRST_name }} {{ spd_last_name }}"
+SPD_FULL_NAME: "{{ SPD_FIRST_NAME }} {{ SPD_LAST_NAME }}"
 
-When more than one detected reset relative stats except for global lookup depth count and do full expansion of each item 
+When more than one detected reset relative stats except for global lookup depth
+count and do full expansion of each item
