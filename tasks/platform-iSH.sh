@@ -209,7 +209,7 @@ elif fs_is_devuan; then
 elif fs_is_debian; then
     "$D_REPO"/tasks/FileSystem-Debian.sh "$opt_task" || script_utils_cleanup 1
 else
-    err_msg "$module_name: Unsupported filesystem, cannot continue"
+    err_msg "$module_name: Unrecognized filesystem, cannot continue"
 fi
 
 # Services
