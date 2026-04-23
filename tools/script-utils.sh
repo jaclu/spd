@@ -217,11 +217,21 @@ log_it() {
     #
 
     # option parsing
+    _li_dbg_lvl=""
     _li_use_time_stamp=0
     _li_use_lf=1
     while [ -n "$1" ]; do
+        is_int "$1" && { # assume its short notation for log_lvl
+            _li_dbg_lvl="$1"
+            shift
+            continue
+        }
         case "$1" in
             ---*) break ;; # dont parse any further opts
+            -d | --dbg_level)
+                _li_dbg_lvl="$2"
+                shift
+                ;;
             -p | --pre-lf) printf '\n' ;;
             -n | --no-lf) _li_use_lf=0 ;;
             -t | --timestamp) _li_use_time_stamp=1 ;;
@@ -231,26 +241,30 @@ log_it() {
         shift
     done
 
-    _s="$1"
+    _li_msg="$1"
     _t=""
-    [ -z "$_s" ] && err_msg "log_it() - no param"
+    [ -z "$_li_msg" ] && err_msg "log_it() - no param"
+    [ -n "$_li_dbg_lvl" ] && {
+        is_debug_lvl "$_li_dbg_lvl" || return
+    }
+
     if [ "$_li_use_time_stamp" = 1 ] || [ "$script_utils_always_use_time_stamps" = 1 ]; then
-        _t="[$(show_timestamp)] $_s"
-        _s="$_t"
+        _t="[$(show_timestamp)] $_li_msg"
+        _li_msg="$_t"
     fi
     if [ "$_li_use_lf" = 1 ]; then
-        printf -- '%s\n' "$_s" >&2
+        printf -- '%s\n' "$_li_msg" >&2
     else
-        printf -- '%s' "$_s" >&2
+        printf -- '%s' "$_li_msg" >&2
     fi
 
     [ -z "$f_script_utils_log_file" ] && return 0 # logfile not used
-    case "$_s" in
+    case "$_li_msg" in
         *[![:space:]]*) ;; # more than white space - log it to file
         *) return 0 ;;     # only whitespace - skip logging it to file
     esac
     # Always use timestamp if printing to logfile
-    [ -z "$_t" ] && _t="[$(show_timestamp)] $_s"
+    [ -z "$_t" ] && _t="[$(show_timestamp)] $_li_msg"
     printf -- '%s\n' "$_t" >>"$f_script_utils_log_file"
 }
 
