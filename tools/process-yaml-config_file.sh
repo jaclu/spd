@@ -225,8 +225,10 @@ parse_yaml_config_file() {
 # should run this for each of the variables it indends to use, before using them.
 # Referrals are not expanded until this is done, this approach handles nested referrals
 # and allows referrals to be overridden in other config files.
-# Since expansion is recursive, until no more ${} constructs remaini,
-# it does not matter in what order variables are expanded
+# Since expansion is recursive, until no more ${} constructs remains,
+# it does not matter in what order variables are expanded.
+# Circular references like SPD_HOME_DIR -> SPD_UNAME -> SPD_HOME_DIR will be detected
+# and throws an error.
 #
 # Sample usage
 # expand_config_var SPD_HOME_DIR
