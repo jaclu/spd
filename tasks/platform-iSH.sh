@@ -136,7 +136,6 @@ task_execute() {
 
     # FS Alpine
 
-    # Ensure /usr/bin/uptime is symlink to /bin/busybox
     # Install etc/inittab-alpine
     # Install extras to /usr/local/bin
     # Generate sshd host keys
