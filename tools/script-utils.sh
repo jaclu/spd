@@ -317,39 +317,39 @@ msg_dbg() {
 
 lbl_1() {
     [ -z "$1" ] && err_msg "lbl_1() no param"
-    _l1_s="$1"
+    _l1s="$1" # can't use _s due to multiple log_it calls and it overwrites _s
     shift
-    echo >&2
-    log_it "===  $_l1_s  ===" "${@}"
-    echo >&2
+    log_it "${@}" " "
+    log_it "${@}" "===  $_l1s  ==="
+    log_it "${@}" " "
 }
 
 lbl_2() {
     [ -n "$1" ] || err_msg "lbl_2() no param"
-    _l2_s="$1"
+    _s="$1"
     shift
-    log_it "---  $_l2_s" "${@}"
+    log_it "${@}" "---  $_s"
 }
 
 lbl_3() {
     [ -n "$1" ] || err_msg "lbl_3() no param"
-    _l3_s="$1"
+    _s="$1"
     shift
-    log_it " --  $_l3_s" "${@}"
+    log_it "${@}" " --  $_s"
 }
 
 lbl_4() {
     [ -n "$1" ] || err_msg "lbl_4() no param"
-    _l4_s="$1"
+    _s="$1"
     shift
-    log_it "  -  $_l4_s" "${@}"
+    log_it "${@}" "  -  $_s"
 }
 
 lbl_5() {
     [ -n "$1" ] || err_msg "lbl_5() no param"
-    _l5_s="$1"
+    _s="$1"
     shift
-    log_it "  .  $_l5_s" "${@}"
+    log_it "${@}" "  -  $_s"
 }
 
 #---------------------------------------------------------------
