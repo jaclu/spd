@@ -23,9 +23,18 @@ SPD_WITH_BLANKS:
 SPD_EMPTY:
 SPD_EMPTY_NOT: alpha
 
+# testing circular ref aborts
+
 SPD_CONTENT: something
-SPD_REF_1: "{{ SPD_CONTENT }}"
-SPD_REF_2: "{{ SPD_REF_4 }}"
-SPD_REF_3: "{{ SPD_REF_2 }}"
-SPD_REF_4: "{{ SPD_REF_3 }}"
-SPD_REF_5: "{{ SPD_REF_4 }}"
+SPD_REF_1: "adam {{ SPD_CONTENT }}"
+SPD_REF_2: "bertil {{ SPD_REF_4 }}"
+SPD_REF_3: "caesar {{ SPD_REF_2 }}"
+SPD_REF_4: "david {{ SPD_REF_3 }}"
+SPD_REF_5: "erik {{ SPD_REF_4 }}"
+
+SPD_SELF_REF: "{{ SPD_SELF_REF }}"
+
+# testing multiple refs with spaces
+SPD_MULTIPLE: "/home/${SPD_UNAME}/${SPD_GIIT_FOLDER} tar ${SPD_TAR_OPTIONS} source.tgz"
+SPD_GIIT_FOLDER: git_repos/mine
+SPD_TAR_OPTIONS: xfz

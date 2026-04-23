@@ -37,9 +37,21 @@ test_recursive_references() {
     # # shellcheck disable=SC2154 # SPD_ vars read via config files
     # echo "SPD_REF_3 [$SPD_REF_3]"
 
+    # # circular ref 5 4 3 2 4
     expand_config_var SPD_REF_5
     # shellcheck disable=SC2154 # SPD_ vars read via config files
     echo "SPD_REF_5 [$SPD_REF_5]"
+
+    # expand_config_var SPD_SELF_REF
+    # # shellcheck disable=SC2154 # SPD_ vars read via config files
+    # echo "SPD_SELF_REF [$SPD_SELF_REF]"
+}
+
+test_multiple_references() {
+
+    expand_config_var SPD_MULTIPLE
+    # shellcheck disable=SC2154 # SPD_ vars read via config files
+    echo "SPD_MULTIPLE [$SPD_MULTIPLE]"
 }
 
 #=====================================================================
@@ -64,5 +76,6 @@ parse_yaml_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
 parse_yaml_config_file "$D_REPO"/debug/dummy_config.yml
 
 # test_variable_retrieval
-test_variable_defaults
-test_recursive_references
+# test_variable_defaults
+# test_recursive_references
+test_multiple_references

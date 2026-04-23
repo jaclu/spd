@@ -164,6 +164,17 @@ pycf_extract_ref() {
     printf '%s' "$s"
 }
 
+pycf_not_done_extract_all_variable_references() {
+    echo "$1" \
+        | awk '{
+            while (match($0, /\$\{[A-Za-z_][A-Za-z0-9_]*\}/)) {
+                v = substr($0, RSTART+2, RLENGTH-3)
+                print v
+                $0 = substr($0, RSTART + RLENGTH)
+            }
+        }'
+}
+
 pycf_display_references() {
     # shellcheck disable=SC2086
     set -- $pycf_expanded_items
