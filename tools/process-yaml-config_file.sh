@@ -194,7 +194,7 @@ pycf_display_references() {
 pycf_check_circular_reference() {
     #
     #  First extracts references, if multiple, process them one at a time in a
-    #  new call to expand_config_var after resetting all states except
+    #  new call to expand_yaml_config_var after resetting all states except
     #  pycf_expansion_step, if just a single, store it and return
     #  stores each reference, and aborts if something points to an already
     #  referred variable
@@ -214,11 +214,11 @@ pycf_check_circular_reference() {
     esac
 }
 
-#===============================================================
+#---------------------------------------------------------------------
 #
-#   Public content
+#   Public methods
 #
-#===============================================================
+#---------------------------------------------------------------------
 
 #
 # Processes a yaml-style config file and assigns the corresponding posix variable
@@ -245,15 +245,15 @@ parse_yaml_config_file() {
 # and throws an error.
 #
 # Sample usage
-# expand_config_var SPD_HOME_DIR
-# expand_config_var SPD_UNAME
+# expand_yaml_config_var SPD_HOME_DIR
+# expand_yaml_config_var SPD_UNAME
 #
 # The first line will handle the case of the config: SPD_HOME_DIR: "/home/{{ SPD_UNAME }}"
 # even if SPD_UNAME itself is also a nested variable. SPD_UNAME can be expanded
 # after SPD_HOME_DIR, so expansion order does not depend on how they are nested
 #
 
-expand_config_var() {
+expand_yaml_config_var() {
     _ecv_varname=$1
     _ecv_default="$2"
     _ecv_maintain_expansion_depth="$3"
@@ -261,14 +261,14 @@ expand_config_var() {
     [ -z "$_ecv_maintain_expansion_depth" ] && pycf_expansion_step=0
     pycf_expanded_items="$_ecv_varname"
 
-    dbg_msg "expand_config_var() [$_ecv_varname] [$_ecv_default]" 9
+    dbg_msg "expand_yaml_config_var() [$_ecv_varname] [$_ecv_default]" 9
     while eval "_ecv_val=\"\$$_ecv_varname\""; do
         dbg_msg "  _ecv_val[$_ecv_val]" 9
         pycf_check_circular_reference "$_ecv_val"
         [ "$_ecv_val" = "${_ecv_val#*\$\{}" ] && break
         pycf_expansion_step=$((pycf_expansion_step + 1))
         [ "$pycf_expansion_step" -ge "$pycf_expansion_steps_max" ] && {
-            m="expand_config_var() - max depth reahced,"
+            m="expand_yaml_config_var() - max depth reahced,"
             m="$m aborting to avoid infinete recursion"
             err_msg "$m"
         }

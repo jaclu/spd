@@ -100,7 +100,7 @@ esac
 ensure_spd_var_defined SPD_DEBIAN_APT_INSTALL
 ensure_spd_var_defined SPD_DEBIAN_APT_DEVEL
 ensure_spd_var_defined SPD_DEBIAN_APT_LINTING
-expand_config_var SPD_DEBIAN_APT_PURGE # dont nag if it is empty
+expand_yaml_config_var SPD_DEBIAN_APT_PURGE # dont nag if it is empty
 
 ensure_spd_var_defined SPD_PKGS_MAN
 ensure_spd_var_defined SPD_PKGS_DEVEL

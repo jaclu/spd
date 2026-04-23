@@ -163,7 +163,7 @@ check_for_abort() {
     _cfa_max="${1:-0}"
     _cfa_lbl="${2:- current task}"
 
-    expand_config_var SPD_ABORT
+    expand_yaml_config_var SPD_ABORT
     [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
     {
         dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 9
@@ -197,7 +197,7 @@ ensure_spd_var_defined() {
     # to inicate dependency issue for caller
     _esvd_variable="$1"
 
-    expand_config_var "$_esvd_variable"
+    expand_yaml_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
         is_debug_lvl 2 && lbl_4 "$_esvd_variable: $_esvd_value"
@@ -223,7 +223,7 @@ display_list_content() {
     # Displays content of list variable, with each item on a new line
     _dlc_variable="$1"
 
-    expand_config_var "$_dlc_variable"
+    expand_yaml_config_var "$_dlc_variable"
     eval "_dlc_value=\"\${$_dlc_variable}\""
     [ "$2" = "no_label" ] || lbl_3 "$_dlc_variable:"
     if [ -n "$_dlc_value" ]; then
@@ -437,7 +437,7 @@ lbl_1 "Module: $module_name"
 
 pe_cmd_line_param_parse "$@"
 
-# Provides parse_yaml_config_file & expand_config_var
+# Provides parse_yaml_config_file & expand_yaml_config_var
 source_it "$D_REPO"/tools/process-yaml-config_file.sh
 
 # [ -z  "$_initial_dbg_lvl" ] && {
@@ -449,7 +449,7 @@ source_it "$D_REPO"/tools/process-yaml-config_file.sh
 #     # All this results in that we have to manually set the variable directly
 #     # at this point to both have an opinion and respect current env preferences
 #     #
-#     expand_config_var SPD_DBG_LVL
+#     expand_yaml_config_var SPD_DBG_LVL
 #     set_debug_lvl "$SPD_DBG_LVL"
 # }
 
