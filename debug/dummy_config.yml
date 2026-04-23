@@ -19,3 +19,6 @@ SPD_WITH_BLANKS:
   - bash-completion # Command-line tab-completion for bash
 
   - zsh
+
+SPD_EMPTY: 
+SPD_EMPTY_NOT: hepp
