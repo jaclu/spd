@@ -16,7 +16,7 @@
 #
 #---------------------------------------------------------------------
 
-source_script_utils() {
+pe_source_script_utils() {
     #
     #  Manually sourcing script-utils.sh
     #  Once loaded it offers tons of convenience functions
@@ -37,7 +37,7 @@ source_script_utils() {
     }
 }
 
-get_basic_config() {
+pe_get_basic_config() {
     #
     # To ensure no previous task's config spills over, we process the entire config
     # hierarchy for each task
@@ -81,7 +81,7 @@ get_basic_config() {
     parse_yaml_config_file "$D_REPO/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
 }
 
-populate_config() {
+pe_populate_config() {
     # if configs is empty copy from config_templates
     spd_dependency_issue=0 # set default to no issue
     # If config/ is empty populate it with config_templates as a default
@@ -96,40 +96,26 @@ populate_config() {
     }
 }
 
-cleanup_custom() {
-    #
-    # Called at the very end of script_utils_cleanup, so all cleanup has been completed
-    #
-    # The exit code is mostly informational, if this returns to script_utils_cleanup
-    # it will exit with this code.
-    # It might still be good to know if this is a successful or an error exit
-    #
-    #
-    _cc_ex_code="$1"
-
-    display_app_run_time
-}
-
 #---------------------------------------------------------------------
 #
 #   Option parsing
 #
 #---------------------------------------------------------------------
 
-indicate_unset() {
+pe_indicate_unset() {
     case "$1" in
         '') echo "*unset*" ;;
         *) echo "$1" ;;
     esac
 }
 
-cmd_line_param_list() {
+pe_cmd_line_param_list() {
     _lbl="${1:-Listing of cmd line options}"
     lbl_2 "$_lbl"
-    lbl_4 "  opt_task    $(indicate_unset "$opt_task")"
+    lbl_4 "  opt_task    $(pe_indicate_unset "$opt_task")"
 }
 
-cmd_line_param_parse() {
+pe_cmd_line_param_parse() {
     opt_task=install # defaults to install
     while [ -n "$1" ]; do
         case "$1" in
@@ -142,18 +128,18 @@ cmd_line_param_parse() {
                 opt_task=force-install
                 ;;
             *)
-                cmd_line_param_list
+                pe_cmd_line_param_list
                 err_msg "Unrecognized major option: $1"
                 ;;
         esac
         shift
     done
-    cmd_line_param_list
+    pe_cmd_line_param_list
 }
 
 cmd_line_param_error() {
     lbl_1 "Invalid command-line param"
-    # cmd_line_param_list "Processed options"
+    # pe_cmd_line_param_list "Processed options"
     err_msg "$1"
 }
 
@@ -249,6 +235,20 @@ display_list_content() {
     fi
 }
 
+cleanup_custom() {
+    #
+    # Called at the very end of script_utils_cleanup, so all cleanup has been completed
+    #
+    # The exit code is mostly informational, if this returns to script_utils_cleanup
+    # it will exit with this code.
+    # It might still be good to know if this is a successful or an error exit
+    #
+    #
+    _cc_ex_code="$1"
+
+    display_app_run_time
+}
+
 #---------------------------------------------------------------------
 #
 #   FS Specific
@@ -335,6 +335,37 @@ cmd_purge_output_file() {
     f_cmd_output="" # indicate inactive
 }
 
+pe_pe_cmd_err() {
+    _ce_msg="${1:-Command failed}"
+    _ce_silent="${2:-0}"
+    _ce_continue="${3:-0}"
+
+    if [ "$_cf_silent" -eq 1 ]; then
+        if [ "$_cf_continue" -eq 1 ]; then
+            return
+        else
+            cmd_purge_output_file
+            script_utils_cleanup 1
+        fi
+    fi
+
+    [ -f "$f_cmd_output" ] && {
+        # Only display if saved to file - spacer and actual command
+        printf '\n\n%s\n' "$_cf_cmd"
+
+        cat "$f_cmd_output"
+    }
+
+    if [ "$_ce_continue" -eq 1 ]; then
+        echo # spacer after command output
+        lbl_2 "ISSUE: $_ce_msg"
+        return
+    else
+        cmd_purge_output_file
+        err_msg "$_ce_msg"
+    fi
+}
+
 cmd_filtered() {
     _cf_ex_code=0
     _cf_self_created_output_file=0
@@ -366,43 +397,12 @@ cmd_filtered() {
     if "$@" >"$f_cmd_output" 2>&1; then
         [ -f "$f_cmd_output" ] || echo # spacer after cmd
     else
-        cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
+        pe_cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
         _cf_ex_code=1 # in case continue has been requested
     fi
     # only purge if the cmd output file was created here
     [ "$_cf_self_created_output_file" -eq 1 ] && cmd_purge_output_file
     return "$_cf_ex_code"
-}
-
-cmd_err() {
-    _ce_msg="${1:-Command failed}"
-    _ce_silent="${2:-0}"
-    _ce_continue="${3:-0}"
-
-    if [ "$_cf_silent" -eq 1 ]; then
-        if [ "$_cf_continue" -eq 1 ]; then
-            return
-        else
-            cmd_purge_output_file
-            script_utils_cleanup 1
-        fi
-    fi
-
-    [ -f "$f_cmd_output" ] && {
-        # Only display if saved to file - spacer and actual command
-        printf '\n\n%s\n' "$_cf_cmd"
-
-        cat "$f_cmd_output"
-    }
-
-    if [ "$_ce_continue" -eq 1 ]; then
-        echo # spacer after command output
-        lbl_2 "ISSUE: $_ce_msg"
-        return
-    else
-        cmd_purge_output_file
-        err_msg "$_ce_msg"
-    fi
 }
 
 #=====================================================================
@@ -430,12 +430,12 @@ _initial_dbg_lvl="$current_dbg_lvl"
     }
 }
 
-source_script_utils
-populate_config
+pe_source_script_utils
+pe_populate_config
 
 lbl_1 "Module: $module_name"
 
-cmd_line_param_parse "$@"
+pe_cmd_line_param_parse "$@"
 
 # Provides parse_yaml_config_file & expand_config_var
 source_it "$D_REPO"/tools/process-yaml-config_file.sh
@@ -453,4 +453,4 @@ source_it "$D_REPO"/tools/process-yaml-config_file.sh
 #     set_debug_lvl "$SPD_DBG_LVL"
 # }
 
-get_basic_config
+pe_get_basic_config
