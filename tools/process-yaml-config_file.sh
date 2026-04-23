@@ -180,14 +180,14 @@ pycf_display_references() {
     printf '\n'
 }
 
-pycf_check_recursion() {
+pycf_check_circular_reference() {
     #
     #  stores each reference, and aborts if something points to an already
     #  referred variable
     #
     _pcr_item=$(pycf_extract_ref "$1")
+    dbg_msg "pycf_check_circular_reference() [$(pycf_extract_ref "$1")]" 9
     [ -z "$_pcr_item" ] && return # empty param
-    dbg_msg "pycf_check_recursion() [$(pycf_extract_ref "$1")]" 9
     case "$pycf_expanded_items" in
         *${_pcr_item}*)
             echo
@@ -246,7 +246,8 @@ expand_config_var() {
 
     dbg_msg "expand_config_var() [$_ecv_varname] [$_ecv_default]" 9
     while eval "_ecv_val=\"\$$_ecv_varname\""; do
-        pycf_check_recursion "$_ecv_val"
+        dbg_msg "  _ecv_val[$_ecv_val]" 9
+        pycf_check_circular_reference "$_ecv_val"
         [ "$_ecv_val" = "${_ecv_val#*\$\{}" ] && break
         eval "$_ecv_varname=\"$_ecv_val\""
     done
