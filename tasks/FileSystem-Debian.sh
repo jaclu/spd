@@ -14,28 +14,50 @@ task_prepare() {
     }
 
     [ -n "$SPD_DEBIAN_APT_PURGE" ] && {
-        lbl_3 "Will remove items in SPD_DEBIAN_APT_PURGE"
+        lbl_3 "Will purge items in SPD_DEBIAN_APT_PURGE"
         display_list_content SPD_DEBIAN_APT_PURGE no_label
+        echo
     }
     lbl_3 "Will install items in SPD_DEBIAN_APT_INSTALL"
     display_list_content SPD_DEBIAN_APT_INSTALL no_label
+    echo
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
-    yaml_true "$SPD_PKGS_MAN" && {
+    if yaml_true "$SPD_PKGS_MAN"; then
         lbl_4 "Will install man pages"
         SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL man-db"
+    else
+        lbl_4 "Will purge man pages"
+        SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE man-db"
+    fi
+
+    [ -n "$SPD_DEBIAN_APT_DEVEL" ] && {
+        # shellcheck disable=SC2154 # SPD_ vars via config files
+        if yaml_true "$SPD_PKGS_DEVEL"; then
+            lbl_3 "Will install devel packages"
+            display_list_content SPD_DEBIAN_APT_DEVEL no_label
+            SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_DEVEL"
+            echo
+        else
+            lbl_3 "Will purge devel packages"
+            display_list_content SPD_DEBIAN_APT_DEVEL no_label
+            SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_DEVEL"
+            echo
+        fi
     }
-    # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
-    yaml_true "$SPD_PKGS_DEVEL" && [ -n "$SPD_DEBIAN_APT_DEVEL" ] && {
-        lbl_4 "Will install devel packages"
-        display_list_content SPD_DEBIAN_APT_DEVEL no_label
-        SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_DEVEL"
-    }
-    # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
-    yaml_true "$SPD_PKGS_LINTING" && [ -n "$SPD_DEBIAN_APT_LINTING" ] && {
-        lbl_4 "Will install linting packages"
-        display_list_content SPD_DEBIAN_APT_LINTING no_label
-        SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_LINTING"
+    [ -n "$SPD_DEBIAN_APT_LINTING" ] && {
+        # shellcheck disable=SC2154 # SPD_ vars via config files
+        if yaml_true "$SPD_PKGS_LINTING"; then
+            lbl_3 "Will install linting packages"
+            display_list_content SPD_DEBIAN_APT_LINTING no_label
+            SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_LINTING"
+            echo
+        else
+            lbl_3 "Will purge linting packages"
+            display_list_content SPD_DEBIAN_APT_LINTING no_label
+            SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_LINTING"
+            echo
+        fi
     }
     return "$spd_dependency_issue"
 }

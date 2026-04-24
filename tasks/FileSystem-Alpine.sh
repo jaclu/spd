@@ -34,30 +34,40 @@ task_prepare() {
     }
     lbl_3 "Will install items in SPD_APK_INSTALL"
     display_list_content SPD_APK_INSTALL no_label
+    echo
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
-    yaml_true "$SPD_PKGS_MAN" && {
-        lbl_4 "Will install man pages"
+    if yaml_true "$SPD_PKGS_MAN"; then
+        lbl_3 "Will install man pages"
         SPD_APK_INSTALL="$SPD_APK_INSTALL docs apk-tools-doc"
-    }
-    # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
-    if yaml_true "$SPD_PKGS_DEVEL"; then
-        lbl_4 "Will install devel packages"
-        display_list_content SPD_APK_DEVEL no_label
-        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_DEVEL"
     else
-        lbl_4 "Will remove devel packages"
-        display_list_content SPD_APK_DEVEL no_label
-        SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_DEVEL"
+        lbl_3 "Will remove man pages"
+        SPD_APK_REMOVE="$SPD_APK_REMOVE docs apk-tools-doc"
     fi
+    # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
+    [ -n "$SPD_APK_DEVEL" ] && {
+        if yaml_true "$SPD_PKGS_DEVEL"; then
+            lbl_3 "Will install devel packages"
+            display_list_content SPD_APK_DEVEL no_label
+            echo
+            SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_DEVEL"
+        else
+            lbl_3 "Will remove devel packages"
+            display_list_content SPD_APK_DEVEL no_label
+            echo
+            SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_DEVEL"
+        fi
+    }
     # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
     if yaml_true "$SPD_PKGS_LINTING"; then
-        lbl_4 "Will install linting packages"
+        lbl_3 "Will install linting packages"
         display_list_content SPD_APK_LINTING no_label
+        echo
         SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_LINTING"
     else
-        lbl_4 "Will remove linting packages"
+        lbl_3 "Will remove linting packages"
         display_list_content SPD_APK_LINTING no_label
+        echo
         SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_LINTING"
     fi
     return "$spd_dependency_issue"
