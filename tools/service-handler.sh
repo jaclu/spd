@@ -7,20 +7,10 @@
 #---------------------------------------------------------------------
 
 sh_openrc_dependency_check() {
-    ensure_spd_var_defined SPD_SVC_OPENRC_RUNLVLS
+    ensure_spd_var_defined SPD_SVC_OPENRC_RUNLVLS # || return # no need to continue
 
     command -v openrc >/dev/null 2>&1 || {
-        if fs_is_alpine; then
-            lbl_2 "NOTICE: openrc missing - attempting to install"
-            cmd_wrapper_t sh -c 'apk update && apk add openrc'
-        elif fs_is_debian; then
-            lbl_2 "NOTICE: openrc missing - attempting to install"
-            cmd_wrapper_t sh -c 'apt update && apt install openrc'
-        else
-            lbl_2 "Dependency issue - openrc not found" 1
-            # shellcheck disable=SC2034 # spd_dependency_issue used by caller
-            spd_dependency_issue=1
-        fi
+        package_install openrc || spd_dependency_issue=1
     }
 }
 
@@ -32,12 +22,12 @@ sh_handler_openrc() {
     # shellcheck disable=SC2154 # service_name defined by caller
     rm -f /etc/runlevels/*/"$service_name" || echo "rm issue"
 
+    sh_handle_initd_script
     # shellcheck disable=SC2154 # opt_task defined by caller
     case "$opt_task" in
         install | force | force-install) ;;
         remove)
             lbl_3 "No longer used as service: $service_name" 1
-            sh_handle_initd_script
             return
             ;;
         *) err_msg "sh_handler_openrc() unrecognized option: [$opt_task]" ;;
@@ -45,10 +35,14 @@ sh_handler_openrc() {
 
     # assume install
 
-    sh_handle_initd_script
+    if is_debug_lvl 1; then
+        _sh_dev_output=/dev/stdout
+    else
+        _sh_dev_output=/dev/null
+    fi
     # shellcheck disable=SC2154 # defined by caller
     for lvl in $SPD_SVC_OPENRC_RUNLVLS; do
-        rc-update add "$service_name" "$lvl" || {
+        rc-update add "$service_name" "$lvl" >"$_sh_dev_output" || {
             m="svc_handler-openrc.sh: Failed cmd -"
             m="$m rc-update add $service_name $lvl"
             err_msg "$m"
@@ -81,11 +75,23 @@ sh_sysv_dependency_check() {
     ensure_spd_var_defined SPD_SVC_SYSV_LVL_RUN_TASK
     ensure_spd_var_defined SPD_SVC_SYSV_LVL_KILL_TASK
 
-    [ -d /etc/rc2.d ] || {
-        lbl_2 "Dependency issue - /etc/rc2.d/ not found" 1
+    # [ "$spd_dependency_issue" -ge 1 ] && return 1
+
+    [ -d /etc/init.d ] || {
+        lbl_2 "Dependency issue - /etc/init.d not found"
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
         spd_dependency_issue=1
     }
+
+    # Verify that the expected destinations where to list the service at
+    # various runlevels do exist
+    for _ssdc_rl in 0 1 2 3 4 5 6; do
+        _ssdc_d="/etc/rc${_ssdc_rl}.d"
+        [ -d "$_ssdc_d" ] || {
+            lbl_2 "Dependency issue - $_ssdc_d/ not found"
+            spd_dependency_issue=1
+        }
+    done
 }
 
 sh_handler_sysv_init() {
@@ -112,6 +118,7 @@ sh_handler_sysv_init() {
     # assume install
 
     sh_handle_initd_script
+
     lbl_3 "Adding service to runlevels" 1
     # shellcheck disable=SC2154 # defined by caller
     for lvl in $SPD_SVC_SYSV_LVL_STOP; do
@@ -120,6 +127,7 @@ sh_handler_sysv_init() {
         dbg_msg "linking $service_script to $_f" 3
         ln -sf "$service_script" "$_f"
     done
+
     # shellcheck disable=SC2154 # defined by caller
     for lvl in $SPD_SVC_SYSV_LVL_START; do
         _hs_zero_prefix=$(printf '%02d\n' "$SPD_SVC_SYSV_LVL_RUN_TASK")
@@ -147,7 +155,8 @@ sh_handle_initd_script() {
     # shellcheck disable=SC2154 # opt_task defined by caller
     case "$opt_task" in
         install | force | force-install)
-            cp "$init_scr_org" "$service_script" || {
+            lbl_2 "Will copy $init_scr_org -> $service_script" 1
+            cp -a "$init_scr_org" "$service_script" || {
                 m="sh_handle_initd_script() - Failed to copy"
                 m="$m $init_scr_org $service_script"
                 err_msg "$m"
@@ -171,36 +180,27 @@ check_service_env() {
     }
 
     ensure_spd_var_defined SPD_SERVICE_HANDLER
-    if [ -n "$SPD_SERVICE_HANDLER" ]; then
-        # shellcheck disable=SC2154 # D_REPO & SPD_SERVICE_HANDLER defined by caller
-        init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
-        [ -f "$init_scr_org" ] || {
-            lbl_2 "check_service_env() - Service script not found: [$init_scr_org]" 1
-            spd_dependency_issue=1
-        }
-        case "$SPD_SERVICE_HANDLER" in
-            openrc)
-                lbl_3 "Using service handler: openrc" 1
-                sh_openrc_dependency_check
-                ;;
-            sysv-init)
-                lbl_3 "Using service handler: sysv-init" 1
-                sh_sysv_dependency_check
-                ;;
-            *)
-                m="check_service_env() - Unrecognized service-handler"
-                m="$m SPD_SERVICE_HANDLER: $SPD_SERVICE_HANDLER"
-                err_msg "$m"
-                ;;
-        esac
-    else
-        lbl_2 "check_service_env() - SPD_SERVICE_HANDLER undefined" 1
-        spd_dependency_issue=1
-    fi
+    # shellcheck disable=SC2154 # SPD_SERVICE_HANDLER defined via config
+    case "$SPD_SERVICE_HANDLER" in
+        openrc)
+            sh_openrc_dependency_check
+            ;;
+        sysv-init)
+            sh_sysv_dependency_check
+            ;;
+        '') err_msg "check_service_env() - SPD_SERVICE_HANDLER undefined" ;;
+        *)
+            m="check_service_env() - Unrecognized service-handler"
+            m="$m SPD_SERVICE_HANDLER: $SPD_SERVICE_HANDLER"
+            err_msg "$m"
+            ;;
+    esac
 
-    [ -d /etc/init.d ] || {
-        lbl_2 "check_service_env() - Dependency issue - /etc/init.d not found" 1
-        # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+    # shellcheck disable=SC2154 # D_REPO  defined by caller
+    init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
+    [ -f "$init_scr_org" ] || {
+        lbl_2 "check_service_env() - Service script not found: [$init_scr_org]"
+        # shellcheck disable=SC2034 # used by caller
         spd_dependency_issue=1
     }
 }
@@ -234,4 +234,4 @@ process_service() {
 }
 
 # shellcheck disable=SC2034 # indicates this has been sourced, used by caller
-SPD_SOURCED_SERVICE_HANDLER=1
+service_handler_is_sourced=1

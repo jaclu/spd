@@ -5,8 +5,8 @@ task_prepare() {
     # such as installing dependencies if need be etc
     # is_linux || err_msg "Will not run apt on non-Linux"
 
-    # Handling of service tasks
-    [ -z "$SPD_SOURCED_SERVICE_HANDLER" ] && {
+    [ -z "$service_handler_is_sourced" ] && {
+        # Load handler of service tasks
         source_it "$D_REPO"/tools/service-handler.sh
     }
 
@@ -58,6 +58,7 @@ case "$opt_task" in
 esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_runbg.yml
+parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml # always do this last!
 
 task_prepare
 task_execute
