@@ -8,7 +8,7 @@
 # In my case i reduce the FS deploys to increase test turnarround times
 
 # SPD_APK_REMOVE: tzdata
-SPD_APK_INSTALL:
+SPD_aAPK_INSTALL:
   - bash # The GNU Bourne Again shell
   - bash-completion # Command-line tab-completion for bash
   - mg
@@ -36,7 +36,7 @@ SPD_DEVUAN_APT_INSTALL:
   - autossh
   - tzdata
 
-SPD_PKGS_MAN: false # If set to 1 man pages will be deployed
+# SPD_PKGS_MAN: true # If set to 1 man pages will be deployed
 SPD_PKGS_DEVEL: false # If set to 1 development packages will be deployed
 SPD_PKGS_LINTING: false # If set to 1 linting packages will be deployed
 
