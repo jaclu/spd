@@ -232,7 +232,7 @@ log_it() {
             ---*) break ;; # dont parse any further opts
             -d | --dbg_level)
                 _li_dbg_lvl="$2"
-                shift
+                shift # extra shift for $2
                 ;;
             -p | --pre-lf) printf '\n' ;;
             -n | --no-lf) _li_use_lf=0 ;;
@@ -389,7 +389,7 @@ set_debug_lvl() {
 
 is_debug_lvl() {
     _id_lvl="$1"
-    is_int "$_id_lvl" || err_msg "is_debug_lbl - non int param: $_dl_new_lvl"
+    is_int "$_id_lvl" || err_msg "is_debug_lvl - non int param: $_dl_new_lvl"
     [ "$_id_lvl" -le "$current_dbg_lvl" ]
 }
 
@@ -407,7 +407,7 @@ select_safe_now_method() { # local usage by safe_now()
     # Provides: selected_safe_now_mthd
     #
     [ -n "$selected_safe_now_mthd" ] && {
-        error_msg_safe "Recursive call to: select_safe_now_method"
+        err_msg "Recursive call to: select_safe_now_method"
     }
     # log_it "select_safe_now_method()"
 
@@ -444,7 +444,7 @@ safe_now() {
             # to prevent infinite recursion, eunsure a valid timing method is now selected
             case "$selected_safe_now_mthd" in
                 date | gdate | perl) ;;
-                *) error_msg "safe_now($_sn_var_name) - failed to select a timing method" ;;
+                *) err_msg "safe_now($_sn_var_name) - failed to select a timing method" ;;
             esac
 
             safe_now "$_sn_var_name"
@@ -719,15 +719,20 @@ tmp_file_create() {
     lbl_3 "_tfc_tmp_file [$_tfc_tmp_file]" 9
     if [ -z "$_tfc_tmp_file" ] || [ ! -e "$_tfc_tmp_file" ]; then
         lbl_3 "will create new tmp file" 9
-        _tfc_template="${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX"
+        if [ -n "$app_name" ]; then
+            _tfc_template_label="$(basename "app_name")"
+        else
+            _tfc_template_label="script-utils.sh"
+        fi
+        _tfc_template="${TMPDIR:-/tmp}/${_tfc_template_label}.XXXXXX"
         if $_tfc_is_dir; then
             _tfc_tmp_file=$(mktemp -d "$_tfc_template") || {
-                err_msg "mktemp failed for: _tfc_tmp_file"
+                err_msg "mktemp -d $_tfc_template failed for: _tfc_tmp_file"
             }
             dbg_msg "Created tmp directory: $_tfc_tmp_file" 3
         else
             _tfc_tmp_file=$(mktemp "$_tfc_template") || {
-                err_msg "mktemp failed for: $_tfc_f_tmp"
+                err_msg "mktemp $_tfc_template failed for: _tfc_tmp_file"
             }
             dbg_msg "Created tmp file: $_tfc_tmp_file" 3
         fi
@@ -798,14 +803,10 @@ cancel_log_file() {
 #
 #  Locations for various stuff
 #
-
-# echo "><> processing script_utils"
-
 TMPDIR="${TMPDIR:-/tmp}"
 TMPDIR="${TMPDIR%/}" # strip trailing slah, mostly for MacOS
 
 app_name_full_path=$(realpath "$0")
-
 [ -z "$app_name" ] && app_name=$(basename "$0")
 t_start="$(date +%s)" # is used in display_app_run_time()
 
