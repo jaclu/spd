@@ -664,45 +664,99 @@ tmp_file_create() {
         shift
     done
 
-    _tfc_tmp_file_variable="${1:-f_tmp}"
+    _tfc_f_tmp="$1"  # name of variable getting assigned]
+    _tfc_tmp_file="" # pointer to existing tmpfile if any
 
-    [ -n "$f_tmp" ] && [ -e "$f_tmp" ] && {
-        # err_msg "tmp_file_create() - variable f_tmp already assigned to existing file: $f_tmp"
-        safe_remove "$f_tmp"
-    }
-
-    _tfc_template="${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX"
-    if $_tfc_is_dir; then
-        _tfc_f_tmp=$(mktemp -d "$_tfc_template") || {
-            err_msg "mktemp failed for: $_tfc_f_tmp"
+    lbl_1 "f_tmp [$f_tmp] _tfc_f_tmp [$_tfc_f_tmp]" 9
+    # remove pre-existing tmp file if wrong type
+    if [ -z "$_tfc_f_tmp" ]; then
+        _tfc_f_tmp="f_tmp"
+        if [ -n "$f_tmp" ] && [ -e "$f_tmp" ]; then
+            lbl_4 "f_tmp existed" 9
+            # using the common f_tmp, remove if existing is wrong type
+            if $_tfc_is_dir; then
+                lbl_4 "now is dir" 9
+                [ -d "$f_tmp" ] || {
+                    lbl_4 "remove existing dir f_tmp" 9
+                    tmp_file_remove "$f_tmp" # changed type
+                    f_tmp=""
+                }
+            else
+                lbl_4 "now not dir" 9
+                [ -d "$f_tmp" ] && {
+                    lbl_4 "remove existing dir ftm" 9
+                    tmp_file_remove "$f_tmp" # changed type
+                    f_tmp=""
+                }
+            fi
+            [ -n "$f_tmp" ] && [ -e "$f_tmp" ] && {
+                lbl_4 "using f_tmp [$f_tmp]" 9
+                _tfc_tmp_file="$f_tmp"
+            }
+        else
+            lbl_4 "using name f_tmp" 9
+        fi
+    elif [ -n "$_tfc_f_tmp" ]; then
+        [ -e "_tfc_f_tmp" ] && {
+            if $_tfc_is_dir; then
+                [ -d "$_tfc_f_tmp" ] || tmp_file_remove "$_tfc_f_tmp"
+            else
+                [ -d "$_tfc_f_tmp" ] && tmp_file_remove "$_tfc_f_tmp"
+            fi
         }
-        dbg_msg "Created tmp directory: $_tfc_f_tmp" 3
-    else
-        _tfc_f_tmp=$(mktemp "$_tfc_template") || {
-            err_msg "mktemp failed for: $_tfc_f_tmp"
-        }
-        dbg_msg "Created tmp file: $_tfc_f_tmp" 3
+        [ -e "$_tfc_f_tmp" ] && _tfc_tmp_file="$_tfc_f_tmp"
     fi
 
-    # for tracking and cleanup in err_msg()
-    tmp_file_list=$(printf '%s\n%s\n' "$tmp_file_list" "$_tfc_f_tmp")
+    # [ -n "$_tfc_f_tmp" ] && [ -e "$_tfc_f_tmp" ] && {
+    #     # replace if exist, to ensure no collisi
+    #     safe_remove "$_tfc_f_tmp"
+    # }
 
-    # assign tmpfile name to selected variable name
-    eval "$_tfc_tmp_file_variable=\$_tfc_f_tmp"
+    lbl_5 "before potential create" 9
+    lbl_3 "_tfc_f_tmp [$_tfc_f_tmp]" 9
+    lbl_3 "_tfc_tmp_file [$_tfc_tmp_file]" 9
+    if [ -z "$_tfc_tmp_file" ] || [ ! -e "$_tfc_tmp_file" ]; then
+        lbl_3 "will create new tmp file" 9
+        _tfc_template="${TMPDIR:-/tmp}/${app_name:-script-utils.sh}.XXXXXX"
+        if $_tfc_is_dir; then
+            _tfc_tmp_file=$(mktemp -d "$_tfc_template") || {
+                err_msg "mktemp failed for: _tfc_tmp_file"
+            }
+            dbg_msg "Created tmp directory: $_tfc_tmp_file" 3
+        else
+            _tfc_tmp_file=$(mktemp "$_tfc_template") || {
+                err_msg "mktemp failed for: $_tfc_f_tmp"
+            }
+            dbg_msg "Created tmp file: $_tfc_tmp_file" 3
+        fi
+        # for tracking and cleanup in err_msg()
+        tmp_file_list=$(printf '%s\n%s\n' "$tmp_file_list" "$_tfc_tmp_file")
+
+        lbl_4 "eval set _tfc_f_tmp[$_tfc_f_tmp] from _tfc_tmp_file[$_tfc_tmp_file]" 9
+        # assign tmpfile name to selected variable name
+        eval "$_tfc_f_tmp=\$_tfc_tmp_file"
+    fi
+    lbl_1 "_tfc_f_tmp[$_tfc_f_tmp]" 9
 }
 
 tmp_file_remove() {
     # If tmp_file is a folder, delete it and it's content
-    _tfr_tmp="${1:-$f_tmp}"
-
-    [ -z "$_tfr_tmp" ] && err_msg "tmp_file_remove() called with no param"
+    # _tfr_tmp="${1:-$f_tmp}"
+    _tfr_tmp="$1"
+    [ -z "$_tfr_tmp" ] && {
+        # use f_tmp as default, and clear it
+        _tfr_tmp="$f_tmp"
+        f_tmp=""
+    }
+    lbl_2 "tmp_file_remove($_tfr_tmp)" 9
+    [ -z "$_tfr_tmp" ] && err_msg "tmp_file_remove() called with no param, and f_tmp couldn't be used"
 
     case "$_tfr_tmp" in
         /dev/stdout | /dev/stderr)
             err_msg "tmp_file_remove() called with invalid param: $_tfr_tmp"
             ;;
         *)
-            dbg_msg "Will remove tmp file/directory: $_tfc_f_tmp" 3
+            lbl_2 "Will remove tmp file/directory: $_tfr_tmp" 9
             safe_remove --silent --remove-dir "$_tfr_tmp"
             ;;
     esac

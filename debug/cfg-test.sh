@@ -1,5 +1,47 @@
 #!/bin/sh
 
+display_ftype() {
+    [ -d "$1" ] && {
+        printf 'd'
+        return
+    }
+    [ -f "$1" ] && {
+        printf 'f'
+        return
+    }
+    printf '-'
+}
+
+display_both_tmp_files() {
+    lbl_4 "$(display_ftype "$t1") t1    [$t1]"
+    lbl_4 "$(display_ftype "$f_tmp") f_tmp [$f_tmp]"
+}
+
+kill_both_tmp_files() {
+    [ -n "$t1" ] && {
+        tmp_file_remove "$t1"
+        t1=""
+    }
+    [ -n "$f_tmp" ] && tmp_file_remove
+}
+
+check_if_tmp_files_the_same() {
+    if [ "$1" = "same" ]; then
+        [ "$t1" != "$f_tmp" ] && {
+            lbl_4 "verifying same [$1]"
+            # should be same
+            display_both_tmp_files
+            err_msg "should have been same"
+        }
+    elif [ "$t1" = "$f_tmp" ]; then
+        lbl_4 "verifying different [$1]"
+        # should be different
+        display_both_tmp_files
+        err_msg "should have been different"
+    fi
+    kill_both_tmp_files
+}
+
 test_variable_retrieval() {
     expand_yaml_config_var SPD_UNAME
 
@@ -54,6 +96,39 @@ test_multiple_references() {
     echo "SPD_MULTIPLE [$SPD_MULTIPLE]"
 }
 
+test_tmp_file_handling() {
+    # lbl_2 "initial dbg lvl $current_dbg_lvl"
+
+    lbl_2 "both files - should be same"
+    tmp_file_create
+    # shellcheck disable=SC2154 # f_tmp defined in script-utils
+    t1="$f_tmp"
+    tmp_file_create
+    check_if_tmp_files_the_same same
+
+    lbl_2 "both folders - should be same"
+    tmp_file_create -d
+    # shellcheck disable=SC2154 # f_tmp defined in script-utils
+    t1="$f_tmp"
+    tmp_file_create -d
+    check_if_tmp_files_the_same same
+
+    lbl_2 "file then folders - should be different"
+    tmp_file_create
+    # shellcheck disable=SC2154 # f_tmp defined in script-utils
+    t1="$f_tmp"
+    tmp_file_create -d
+    check_if_tmp_files_the_same not
+
+    lbl_2 "folder then file - should be different"
+    tmp_file_create -d
+    # shellcheck disable=SC2154 # f_tmp defined in script-utils
+    t1="$f_tmp"
+    tmp_file_create
+    check_if_tmp_files_the_same not
+    display_both_tmp_files
+}
+
 #=====================================================================
 #
 #   Main
@@ -75,7 +150,11 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 parse_yaml_config_file "$D_REPO"/configs/task_overrides/filesystem_alpine.yml
 parse_yaml_config_file "$D_REPO"/debug/dummy_config.yml
 
-# test_variable_retrieval
-# test_variable_defaults
-# test_recursive_references
-test_multiple_references
+echo
+test_variable_retrieval
+test_variable_defaults
+test_recursive_references
+# test_multiple_references
+test_tmp_file_handling
+
+script_utils_cleanup 0 "" no
