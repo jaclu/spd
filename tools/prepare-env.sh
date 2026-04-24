@@ -286,6 +286,8 @@ alpine_release_ge() {
 #
 # Typical workflows:
 #
+#   cmd_filtered_t - displays time elapsed if >= 2s otherwise the same
+#
 #   Case 1 - Will exit showing failed cmd output and defined error msg if provided
 #            otherwise the error msg will just display the command used
 #
@@ -366,6 +368,20 @@ pe_pe_cmd_err() {
     fi
 }
 
+cmd_filtered_t() {
+    pe_cmd_start="$(date +%s)" # is used in display_app_run_time()
+    cmd_filtered "$@"
+    _cft_elapsed="$(($(date +%s) - pe_cmd_start))"
+    [ "$_cft_elapsed" -ge 2 ] && {
+        lbl_5 "  took: $(display_time_elapsed "$_cft_elapsed")"
+    }
+    is_debug_lvl 1 && {
+        # spacer after cmd if cmd output was displayed
+        echo
+    }
+    pe_cmd_start=""
+}
+
 cmd_filtered() {
     _cf_ex_code=0
     _cf_self_created_output_file=0
@@ -395,7 +411,10 @@ cmd_filtered() {
     }
     [ -f "$f_cmd_output" ] || printf '\n%s\n' "$_cf_cmd"
     if "$@" >"$f_cmd_output" 2>&1; then
-        [ -f "$f_cmd_output" ] || echo # spacer after cmd
+        [ ! -f "$f_cmd_output" ] && [ -z "$pe_cmd_start" ] && {
+            # spacer after cmd in not using output file and displaying time
+            echo
+        }
     else
         pe_cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
         _cf_ex_code=1 # in case continue has been requested

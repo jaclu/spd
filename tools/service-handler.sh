@@ -12,10 +12,10 @@ sh_openrc_dependency_check() {
     command -v openrc >/dev/null 2>&1 || {
         if fs_is_alpine; then
             lbl_2 "NOTICE: openrc missing - attempting to install"
-            cmd_filtered sh -c 'apk update && apk add openrc'
+            cmd_filtered_t sh -c 'apk update && apk add openrc'
         elif fs_is_debian; then
             lbl_2 "NOTICE: openrc missing - attempting to install"
-            cmd_filtered sh -c 'apt update && apt install openrc'
+            cmd_filtered_t sh -c 'apt update && apt install openrc'
         else
             lbl_2 "Dependency issue - openrc not found"
             # shellcheck disable=SC2034 # spd_dependency_issue used by caller
