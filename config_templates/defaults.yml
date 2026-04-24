@@ -10,6 +10,9 @@
 #
 SPD_ABORT: 0
 
+SPD_DEBUG_LEVEL: 1
+SPD_ACTIVE_PURGE_DISABLED_PACKAGES: false
+
 #
 # Also display what tasks will not be done in the summary, before restore begins.
 # If not set to 1 or if undefined, only tasks that will be done, will be listed.
