@@ -213,6 +213,9 @@ fi
 
 # Services
 "$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
+command -v autossh >/dev/null && {
+    "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
+}
 
 # "$D_REPO"/tasks/service-runbg.sh "$opt_task"
 # "$D_REPO"/tasks/service-autossh.sh "$opt_task"
