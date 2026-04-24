@@ -96,7 +96,7 @@ case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
 esac
 
 # Remember that the last item on the line must match your sshd port!
-loopback_directive="[SPD_SVC_AUTOSSH_REVERSE_PORT]:localhost:[SPD_SVC_SSHD_PORT]" # LOOPBACK_DIRECIVE
+loopback_directive="[SPD_SVC_AUTOSSH_REVERSE_PORT]:localhost:[SPD_SVC_SSHD_PORT]" # LOOPBACK_DIRECTIVE
 
 autossh_opts="-M 0 -f \
     -NT \

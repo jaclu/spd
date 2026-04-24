@@ -45,6 +45,7 @@ PIDFILE="/run/autossh.pid"
 #  ---  what reverse port to use?  ---
 #
 # Match vs lowercase hostname
+# shellcheck disable=SC2034 # reverse_port used  by sysv-init
 case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
     # known iSH hosts
     jacpad) reverse_port=2272 ;;
@@ -62,7 +63,7 @@ case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
 esac
 
 # Remember that the last item on the line must match your sshd port!
-loopback_directive="$reverse_port:localhost:{{ ift_port_sshd }}"
+loopback_directive="[SPD_SVC_AUTOSSH_REVERSE_PORT]:localhost:[SPD_SVC_SSHD_PORT]" # LOOPBACK_DIRECTIVE
 
 autossh_opts="-M 0 -f \
     -NT \
@@ -77,13 +78,13 @@ autossh_opts="-M 0 -f \
     -E /var/log/autossh-ssh.log \
     -R $loopback_directive"
 
-key_file="{{ ift_jump_key_file }}"
+key_file="[SPD_SVC_AUTOSSH_KEY_FILE]" # SPD_SVC_AUTOSSH_KEY_FILE
 [ -n "$key_file" ] && autossh_opts="$autossh_opts -i /home/{{ ift_user_name }}/$key_file"
 
-jump_port="{{ ift_jump_port }}"
+jump_port="[SPD_SVC_AUTOSSH_JUMP_PORT]" # SPD_SVC_AUTOSSH_JUMP_PORT
 [ -n "$jump_port" ] && autossh_opts="$autossh_opts -p $jump_port"
 
-jump_account="{{ ift_user_name }}@{{ ift_jump_host }}"
+jump_account="[SPD_UNAME]@[SPD_SVC_AUTOSSH_JUMP_HOST]" # SPD_SVC_AUTOSSH_JUMP_HOST
 
 case "$1" in
     start)
