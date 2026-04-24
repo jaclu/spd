@@ -24,7 +24,7 @@ task_prepare() {
     check_for_abort 1 task_prepare
 
     fs_is_alpine || {
-        lbl_3 "$module_name: Dependency issue - This is not running on an Alpine FS" 1
+        lbl_3 "$module_name: Dependency issue - This is not running on an Alpine FS"
         spd_dependency_issue=1
     }
 
@@ -37,21 +37,21 @@ task_prepare() {
     is_debug_lvl 1 && echo
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
-    if yaml_true "$SPD_PKGS_MAN"; then
+    if is_yaml_true "$SPD_PKGS_MAN"; then
         lbl_3 "Will install man pages" 1
         SPD_APK_INSTALL="$SPD_APK_INSTALL docs apk-tools-doc"
-    elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+    elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
         lbl_3 "Will remove man pages" 1
         SPD_APK_REMOVE="$SPD_APK_REMOVE docs apk-tools-doc"
     fi
     # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
     [ -n "$SPD_APK_DEVEL" ] && {
-        if yaml_true "$SPD_PKGS_DEVEL"; then
+        if is_yaml_true "$SPD_PKGS_DEVEL"; then
             lbl_3 "Will install devel packages" 1
             SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_DEVEL"
             display_list_content SPD_APK_DEVEL no_label
             is_debug_lvl 1 && echo
-        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will remove devel packages" 1
             SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_DEVEL"
             display_list_content SPD_APK_DEVEL no_label
@@ -60,12 +60,12 @@ task_prepare() {
     }
     [ -n "$SPD_APK_DEVEL" ] && {
         # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
-        if yaml_true "$SPD_PKGS_LINTING"; then
+        if is_yaml_true "$SPD_PKGS_LINTING"; then
             lbl_3 "Will install linting packages" 1
             SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_LINTING"
             display_list_content SPD_APK_LINTING no_label
             is_debug_lvl 1 && echo
-        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will remove linting packages" 1
             SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_LINTING"
             display_list_content SPD_APK_LINTING no_label
@@ -131,22 +131,25 @@ case "$opt_task" in
 esac
 
 #
-# Ensure required options have been set, and expand any variables that need to be expanded
+# Expand any variables that need to be expanded
 #
-expand_yaml_config_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES # dont nag if it is empty
+lbl_2 "Config variables used" 2
 
-ensure_spd_var_defined SPD_APK_INSTALL
-ensure_spd_var_defined SPD_APK_DEVEL
-ensure_spd_var_defined SPD_APK_LINTING
-expand_yaml_config_var SPD_APK_REMOVE # dont nag if it is empty
+expand_show_spd_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES
+expand_show_spd_var SPD_PKGS_MAN
+expand_show_spd_var SPD_PKGS_DEVEL
+expand_show_spd_var SPD_PKGS_LINTING
 
-ensure_spd_var_defined SPD_PKGS_MAN
-ensure_spd_var_defined SPD_PKGS_DEVEL
-ensure_spd_var_defined SPD_PKGS_LINTING
+expand_show_spd_var SPD_APK_INSTALL
+expand_show_spd_var SPD_APK_REMOVE
+expand_show_spd_var SPD_APK_DEVEL
+expand_show_spd_var SPD_APK_LINTING
 
-is_musl_lib || ensure_spd_var_defined SPD_LOCALES
+is_musl_lib || expand_yaml_config_var SPD_LOCALES
 
 task_prepare
+
+# err_msg "debug abort"
 task_execute
 
 # Exit in a controlled manner, cleaning up temp files remaining etc

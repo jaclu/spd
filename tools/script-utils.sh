@@ -145,9 +145,9 @@ is_musl_lib() {
     ldd /bin/sh 2>&1 | grep -qi musl
 }
 
-yaml_true() {
+is_yaml_true() {
     _yt_s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
-    [ -z "$_yt_s" ] && err_msg "yaml_true() - no param"
+    # [ -z "$_yt_s" ] && err_msg "is_yaml_true() - no param"
     _yt_result=1 # default
     case "$_yt_s" in
         1 | yes | true) _yt_result=0 ;;
@@ -548,7 +548,7 @@ _do_safe_remove() {
         rm -- "$_dsr_item" || {
             err_msg "Failed to remove file: $_dsr_item" "$_sr_err_ex_code"
         }
-        $_sr_display_removal && lbl_4 "Removed file: $_dsr_item"
+        $_sr_display_removal && lbl_4 "Removed file: $_dsr_item" 1
     else
         err_msg "Refusing to remove non-file: $_dsr_item" "$_sr_err_ex_code"
     fi

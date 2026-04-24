@@ -126,9 +126,9 @@ fs_is_ubuntu() {
     grep -qs '^ID=ubuntu$' /etc/os-release
 }
 
-yaml_true() {
+is_yaml_true() {
     _s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
-    [ -z "$_s" ] && err_msg "yaml_true() - no param"
+    [ -z "$_s" ] && err_msg "is_yaml_true() - no param"
     case "$_s" in
         1 | yes | true) return 0 ;;
         *) ;;

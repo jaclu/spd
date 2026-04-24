@@ -227,7 +227,7 @@ parse_yaml_config_file() {
     _rcf_f_cfg="$1"
     # shellcheck disable=SC2154 # module_name defined in caller
     if [ -f "$_rcf_f_cfg" ]; then
-        dbg_msg "Processing config-file: $(relative_path "$_rcf_f_cfg")" 5
+        dbg_msg "Processing config-file: $(relative_path_repo "$_rcf_f_cfg")" 5
         pycf_parse_config_file "$_rcf_f_cfg"
     else
         dbg_msg "Config file not found: $_rcf_f_cfg" 3

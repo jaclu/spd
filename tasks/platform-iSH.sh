@@ -60,7 +60,7 @@ alpine_use_old_mtr() {
     lbl_4 "Installing downloaded mtr-0.92-r0.apk" 1
     cmd_wrapper_t apk add mtr-0.92-r0.apk
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
-    yaml_true "$SPD_PKGS_MAN" && {
+    is_yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Downloading mtr-doc-0.92-r0.apk" 1
         cmd_wrapper_t wget "$url_prefix"/mtr-doc-0.92-r0.apk
         lbl_4 "Installing downloaded mtr-doc-0.92-r0.apk" 1
@@ -197,9 +197,9 @@ esac
 early_start_runbg
 
 #
-# Ensure required options have been set, and expand any variables that need to be expanded
+# Expand any variables that need to be expanded
 #
-ensure_spd_var_defined SPD_PKGS_MAN
+expand_yaml_config_var SPD_PKGS_MAN
 
 if fs_is_alpine; then
     "$D_REPO"/tasks/FileSystem-Alpine.sh "$opt_task" || script_utils_cleanup 1

@@ -9,7 +9,7 @@ task_prepare() {
     check_for_abort 1 task_prepare
 
     fs_is_debian || {
-        lbl_3 "$module_name: Dependency issue - This is not running on an Debian FS" 1
+        lbl_3 "$module_name: Dependency issue - This is not running on an Debian FS"
         spd_dependency_issue=1
     }
 
@@ -23,22 +23,22 @@ task_prepare() {
     is_debug_lvl 1 && echo
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
-    if yaml_true "$SPD_PKGS_MAN"; then
+    if is_yaml_true "$SPD_PKGS_MAN"; then
         lbl_4 "Will install man pages" 1
         SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL man-db"
-    elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+    elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
         lbl_4 "Will purge man pages" 1
         SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE man-db"
     fi
 
     [ -n "$SPD_DEBIAN_APT_DEVEL" ] && {
         # shellcheck disable=SC2154 # SPD_ vars via config files
-        if yaml_true "$SPD_PKGS_DEVEL"; then
+        if is_yaml_true "$SPD_PKGS_DEVEL"; then
             lbl_3 "Will install devel packages" 1
             display_list_content SPD_DEBIAN_APT_DEVEL no_label
             SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_DEVEL"
             is_debug_lvl 1 && echo
-        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will purge devel packages" 1
             display_list_content SPD_DEBIAN_APT_DEVEL no_label
             SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_DEVEL"
@@ -47,12 +47,12 @@ task_prepare() {
     }
     [ -n "$SPD_DEBIAN_APT_LINTING" ] && {
         # shellcheck disable=SC2154 # SPD_ vars via config files
-        if yaml_true "$SPD_PKGS_LINTING"; then
+        if is_yaml_true "$SPD_PKGS_LINTING"; then
             lbl_3 "Will install linting packages" 1
             display_list_content SPD_DEBIAN_APT_LINTING no_label
             SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_LINTING"
             is_debug_lvl 1 && echo
-        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will purge linting packages" 1
             display_list_content SPD_DEBIAN_APT_LINTING no_label
             SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_LINTING"
@@ -117,18 +117,19 @@ case "$opt_task" in
 esac
 
 #
-# Ensure required options have been set, and expand any variables that need to be expanded
+# Expand any variables that need to be expanded
 #
-expand_yaml_config_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES # dont nag if it is empty
+lbl_2 "Config variables used" 2
 
-ensure_spd_var_defined SPD_DEBIAN_APT_INSTALL
-ensure_spd_var_defined SPD_DEBIAN_APT_DEVEL
-ensure_spd_var_defined SPD_DEBIAN_APT_LINTING
-expand_yaml_config_var SPD_DEBIAN_APT_PURGE # dont nag if it is empty
+expand_show_spd_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES
+expand_show_spd_var SPD_PKGS_MAN
+expand_show_spd_var SPD_PKGS_DEVEL
+expand_show_spd_var SPD_PKGS_LINTING
 
-ensure_spd_var_defined SPD_PKGS_MAN
-ensure_spd_var_defined SPD_PKGS_DEVEL
-ensure_spd_var_defined SPD_PKGS_LINTING
+expand_show_spd_var SPD_DEBIAN_APT_INSTALL
+expand_show_spd_var SPD_DEBIAN_APT_PURGE
+expand_show_spd_var SPD_DEBIAN_APT_DEVEL
+expand_show_spd_var SPD_DEBIAN_APT_LINTING
 
 task_prepare
 task_execute
