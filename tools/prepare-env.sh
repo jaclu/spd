@@ -453,4 +453,6 @@ source_it "$D_REPO"/tools/process-yaml-config_file.sh
 #     set_debug_lvl "$SPD_DBG_LVL"
 # }
 
+current_dbg_lvl=1
+
 pe_get_basic_config
