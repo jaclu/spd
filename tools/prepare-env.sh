@@ -417,7 +417,9 @@ cmd_filtered() {
 }
 
 module_name="${module_name:-$0}"
-_initial_dbg_lvl="$current_dbg_lvl"
+
+# if set in the env save it before sourcing script-utils
+pe_initial_dbg_lvl="$current_dbg_lvl"
 
 #
 # iSH-specific initialization guard for core /dev I/O stability.
@@ -440,19 +442,20 @@ pe_cmd_line_param_parse "$@"
 # Provides parse_yaml_config_file & expand_yaml_config_var
 source_it "$D_REPO"/tools/process-yaml-config_file.sh
 
-# [ -z  "$_initial_dbg_lvl" ] && {
-#     #
-#     # In case current_dbg_lvl has been exported to the env, do not override it
-#     # otherwise default to 1 in order to display progress for cmd_filtered
-#     # since sctipt-utils.sh hasn't been sourced yet and thus set_debug_lvl is not
-#     # yet available. In addition that script would default it to 0 if undefined.
-#     # All this results in that we have to manually set the variable directly
-#     # at this point to both have an opinion and respect current env preferences
-#     #
-#     expand_yaml_config_var SPD_DBG_LVL
-#     set_debug_lvl "$SPD_DBG_LVL"
-# }
-
-current_dbg_lvl=1
-
 pe_get_basic_config
+
+[ -z "$pe_initial_dbg_lvl" ] && {
+    #
+    # In case current_dbg_lvl has been exported to the env, do not override it
+    # otherwise default to 1 in order to display progress for cmd_filtered
+    # since sctipt-utils.sh hasn't been sourced yet and thus set_debug_lvl is not
+    # yet available. In addition that script would default it to 0 if undefined.
+    # All this results in that we have to manually set the variable directly
+    # at this point to both have an opinion and respect current env preferences
+    #
+    expand_yaml_config_var SPD_DEBUG_LEVEL         # dont nag if it is empty
+    [ -z "$SPD_DEBUG_LEVEL" ] && SPD_DEBUG_LEVEL=1 # global default
+    set_debug_lvl "$SPD_DEBUG_LEVEL"
+}
+
+# err_msg "current_dbg_lvl [$current_dbg_lvl]"
