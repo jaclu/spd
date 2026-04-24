@@ -5,36 +5,24 @@
 # if the base configs are changed/updated and manually apply user preferences again.
 #
 
+#
 # In my case i reduce the FS deploys to increase test turnarround times
+# only using the minim to get the deploy through
+#
 
-# SPD_APK_REMOVE: tzdata
-SPD_aAPK_INSTALL:
+# SPD_APK_REMOVE:
+SPD_APK_INSTALL:
   - bash # The GNU Bourne Again shell
-  - bash-completion # Command-line tab-completion for bash
-  - mg
-  - ripgrep
   - openrc
   - autossh
-  - musl-locales # Locales support for musl
-  - tzdata
-  - procps
 
-SPD_DEBIAN_APT_PURGE: emacs-nox
+SPD_DEBIAN_APT_PURGE:
 SPD_DEBIAN_APT_INSTALL:
-  - bash # The GNU Bourne Again shell
-  - bash-completion # Command-line tab-completion for bash
-  - mg
-  - ripgrep
   - autossh
-  - locales # Locales support
-  - tzdata # Timezone data
 
-SPD_DEVUAN_APT_PURGE: openrc
+SPD_DEVUAN_APT_PURGE:
 SPD_DEVUAN_APT_INSTALL:
-  - bash-completion # Command-line tab-completion for bash
-  - zsh # Very advanced and programmable command interpreter (shell)
   - autossh
-  - tzdata
 
 # SPD_PKGS_MAN: true # If set to 1 man pages will be deployed
 SPD_PKGS_DEVEL: false # If set to 1 development packages will be deployed
