@@ -5,10 +5,16 @@ replace_line_ending_in_tag() {
     _rleik_tag="$2"
     _rleik_file="$3"
 
-    tmp_file_create
-    sed "s|.*# ${_rleik_tag}\$|${_rleik_replacement_line}|" "$_rleik_file" >"$f_tmp" \
-        && mv "$f_tmp" "$_rleik_file"
-    tmp_file_remove
+    _rleik_f_tmp=$(mktemp "${TMPDIR:-/tmp}/autossh-config.XXXXXX") || {
+        err_msg "replace_line_ending_in_tag() - mktemp failed"
+    }
+    sed "s|.*# ${_rleik_tag}\$|${_rleik_replacement_line}|" "$_rleik_file" >"$_rleik_f_tmp" \
+        && mv "$_rleik_f_tmp" "$_rleik_file"
+    _ex_code="$?"
+    [ "$_ex_code" -ne 0 ] && {
+        rm -f "$_rleik_f_tmp" # ensure tmp file is removed
+        err_msg "replace_line_ending_in_tag() - failed to process tag: $_rleik_tag"
+    }
 }
 
 task_prepare() {
@@ -42,6 +48,7 @@ task_execute() {
     lbl_2 "$module_name: Executing task"
 
     process_service
+    set_debug_lvl 3
 
     # shellcheck disable=SC2154 # SPD_ variables defined via config
     # shellcheck disable=SC2154 # SPD_ variables defined via config
