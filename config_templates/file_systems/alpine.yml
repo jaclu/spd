@@ -78,7 +78,8 @@ SPD_APK_INSTALL:
   #
   #  Remote
   #
-  - inetutils-telnet
+  - autossh # Automatically restart SSH sessions and tunnels
+  - inetutils-telnet # Telnet client from GNU network utilities
   - mosh # Mobile shell surviving disconnects with local echo and line editing
   - openssh # Port of OpenBSD's free SSH release
 
