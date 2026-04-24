@@ -17,7 +17,7 @@ sh_openrc_dependency_check() {
             lbl_2 "NOTICE: openrc missing - attempting to install"
             cmd_wrapper_t sh -c 'apt update && apt install openrc'
         else
-            lbl_2 "Dependency issue - openrc not found"
+            lbl_2 "Dependency issue - openrc not found" 1
             # shellcheck disable=SC2034 # spd_dependency_issue used by caller
             spd_dependency_issue=1
         fi
@@ -36,7 +36,7 @@ sh_handler_openrc() {
     case "$opt_task" in
         install | force | force-install) ;;
         remove)
-            lbl_3 "No longer used as service: $service_name"
+            lbl_3 "No longer used as service: $service_name" 1
             sh_handle_initd_script
             return
             ;;
@@ -58,14 +58,14 @@ sh_handler_openrc() {
         if [ "$opt_task" = install ]; then
             [ -e "/etc/runlevels/$(rc-status -r)/$service_name" ] && {
                 # should be running in this runlevl
-                lbl_3 "Manually starting service, since it should run in this runlevel"
+                lbl_3 "Manually starting service, since it should run in this runlevel" 1
                 /etc/init.d/"$service_name" start
             }
         else
-            lbl_3 "Will not auto start service installed with force-install"
+            lbl_3 "Will not auto start service installed with force-install" 1
         fi
     else
-        lbl_3 "System didn't boot with openrc, so can't attempt to start service"
+        lbl_3 "System didn't boot with openrc, so can't attempt to start service" 1
     fi
 }
 
@@ -82,7 +82,7 @@ sh_sysv_dependency_check() {
     ensure_spd_var_defined SPD_SVC_SYSV_LVL_KILL_TASK
 
     [ -d /etc/rc2.d ] || {
-        lbl_2 "Dependency issue - /etc/rc2.d/ not found"
+        lbl_2 "Dependency issue - /etc/rc2.d/ not found" 1
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
         spd_dependency_issue=1
     }
@@ -99,7 +99,7 @@ sh_handler_sysv_init() {
     case "$opt_task" in
         install | force | force-install) ;;
         remove)
-            lbl_3 "Removing service from runlevels"
+            lbl_3 "Removing service from runlevels" 1
             # Since we can't be sure of previous S/K numbers, remove all links for the service from runlevels
             safe_remove --silent --ignore-sys-path /etc/rc?.d/*"${service_name}"
             dbg_msg "Removed links for $service_name from runlevels" 2
@@ -112,7 +112,7 @@ sh_handler_sysv_init() {
     # assume install
 
     sh_handle_initd_script
-    lbl_3 "Adding service to runlevels"
+    lbl_3 "Adding service to runlevels" 1
     # shellcheck disable=SC2154 # defined by caller
     for lvl in $SPD_SVC_SYSV_LVL_STOP; do
         _hs_zero_prefix=$(printf '%02d\n' "$SPD_SVC_SYSV_LVL_KILL_TASK")
@@ -152,7 +152,7 @@ sh_handle_initd_script() {
                 m="$m $init_scr_org $service_script"
                 err_msg "$m"
             }
-            lbl_3 "Copied $service_script"
+            lbl_3 "Copied $service_script" 1
             ;;
         remove) safe_remove --ignore-sys-path "$service_script" ;;
         *) err_msg "sh_handle_initd_script() - invalid opt_task: [$opt_task]" ;;
@@ -175,16 +175,16 @@ check_service_env() {
         # shellcheck disable=SC2154 # D_REPO & SPD_SERVICE_HANDLER defined by caller
         init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
         [ -f "$init_scr_org" ] || {
-            lbl_2 "check_service_env() - Service script not found: [$init_scr_org]"
+            lbl_2 "check_service_env() - Service script not found: [$init_scr_org]" 1
             spd_dependency_issue=1
         }
         case "$SPD_SERVICE_HANDLER" in
             openrc)
-                lbl_3 "Using service handler: openrc"
+                lbl_3 "Using service handler: openrc" 1
                 sh_openrc_dependency_check
                 ;;
             sysv-init)
-                lbl_3 "Using service handler: sysv-init"
+                lbl_3 "Using service handler: sysv-init" 1
                 sh_sysv_dependency_check
                 ;;
             *)
@@ -194,12 +194,12 @@ check_service_env() {
                 ;;
         esac
     else
-        lbl_2 "check_service_env() - SPD_SERVICE_HANDLER undefined"
+        lbl_2 "check_service_env() - SPD_SERVICE_HANDLER undefined" 1
         spd_dependency_issue=1
     fi
 
     [ -d /etc/init.d ] || {
-        lbl_2 "check_service_env() - Dependency issue - /etc/init.d not found"
+        lbl_2 "check_service_env() - Dependency issue - /etc/init.d not found" 1
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
         spd_dependency_issue=1
     }

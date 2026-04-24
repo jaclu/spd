@@ -8,9 +8,9 @@ copy_items() {
     mkdir -p "$d_dst" || err_msg "Failed: mkdir -p $d_dst"
 
     if [ -d "$f_src" ]; then
-        cp -a "$f_src"/* "$d_dst" || err_msg "$module_name: Failed to copy to $d_dst"
+        cp -a "$f_src"/* "$d_dst" || err_msg "Failed to copy to $d_dst"
     else
-        cp -a "$f_src" "$d_dst" || err_msg "$module_name: Failed to copy to $d_dst"
+        cp -a "$f_src" "$d_dst" || err_msg "Failed to copy to $d_dst"
     fi
 }
 
@@ -52,7 +52,7 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 case "$opt_task" in
     install) ;;
     *)
-        cmd_line_param_error "$module_name: opt_task must be install"
+        cmd_line_param_error "opt_task must be install"
         ;;
 esac
 

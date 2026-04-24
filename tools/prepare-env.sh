@@ -16,6 +16,20 @@
 #
 #---------------------------------------------------------------------
 
+pe_inform_about_debug_levels() {
+    _pe_f_user_warned="$D_REPO"/.user_warned
+    [ -f "$_pe_f_user_warned" ] || {
+        printf '\n%s\n%s\n%s\n' \
+            "Unless SPD_DEBUG_LEVEL is at least 1, theese tools will be comletely silent," \
+            "Only displaying any errro messages. (This is only shown first time this is run)" \
+            "For more info see the README.md"
+        touch "$_pe_f_user_warned" || {
+            # ignore this error
+            :
+        }
+    }
+}
+
 pe_source_script_utils() {
     #
     #  Manually sourcing script-utils.sh
@@ -110,6 +124,7 @@ pe_indicate_unset() {
 }
 
 pe_cmd_line_param_list() {
+    is_debug_lvl 1 || return
     _pclpl_lbl="${1:-Listing of cmd line options}"
     lbl_2 "$_pclpl_lbl"
     lbl_4 "  opt_task    $(pe_indicate_unset "$opt_task")"
@@ -167,19 +182,18 @@ check_for_abort() {
     [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
     {
         dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 9
-        # log_it "SPD_ABORT: $SPD_ABORT"
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
-            err_msg "$module_name: SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
+            err_msg "SPD_ABORT=$SPD_ABORT prevents running $_cfa_lbl"
         }
     }
 
     case "$opt_task" in
         install) [ "$spd_dependency_issue" != 0 ] && {
-            err_msg "$module_name: Dependency issue - Aborting $opt_task"
+            err_msg "Dependency issue - Aborting $opt_task"
         } ;;
 
         remove) [ "$spd_dependency_issue" = 1 ] && {
-            err_msg "$module_name: Dependency issue - Aborting $opt_task"
+            err_msg "Dependency issue - Aborting $opt_task"
         } ;;
         *) ;;
     esac
@@ -192,7 +206,7 @@ check_for_abort() {
 #---------------------------------------------------------------------
 
 ensure_spd_var_defined() {
-    # Expands variable, then displays it if is_debug_lvl 1 is true
+    # Expands variable, then displays it if is_debug_lvl 3 is true
     # otherwise print dependency warning and set spd_dependency_issue=1
     # to inicate dependency issue for caller
     _esvd_variable="$1"
@@ -200,7 +214,7 @@ ensure_spd_var_defined() {
     expand_yaml_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
-        is_debug_lvl 2 && lbl_4 "$_esvd_variable: $_esvd_value"
+        is_debug_lvl 3 && lbl_4 "$_esvd_variable: $_esvd_value"
     else
         dbg_msg "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable" 1
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
@@ -223,7 +237,8 @@ display_list_content() {
     # Displays content of list variable, with each item on a new line
     _dlc_variable="$1"
 
-    expand_yaml_config_var "$_dlc_variable"
+    is_debug_lvl 1 || return
+    expand_yaml_config_var "$_dlc_variable" # ensure it has been expanded
     eval "_dlc_value=\"\${$_dlc_variable}\""
     [ "$2" = "no_label" ] || lbl_3 "$_dlc_variable:"
     if [ -n "$_dlc_value" ]; then
@@ -246,7 +261,10 @@ cleanup_custom() {
     #
     _cc_ex_code="$1"
 
-    display_app_run_time
+    is_debug_lvl 1 && {
+        lbl_2 "cleanup_custom will call display_app_run_time()"
+        display_app_run_time
+    }
 }
 
 #---------------------------------------------------------------------
@@ -323,13 +341,13 @@ alpine_release_ge() {
 #---------------------------------------------------------------------
 
 cmd_wrapper_t() {
-    pe_cmd_start="$(date +%s)" # is used in display_app_run_time()
+    pe_cmd_start="$(date +%s)" # is checked in cmd_wrapper()
     cmd_wrapper "$@"
     _cwt_elapsed="$(($(date +%s) - pe_cmd_start))"
     [ "$_cwt_elapsed" -ge 2 ] && {
-        lbl_5 "  took: $(display_time_elapsed "$_cwt_elapsed")"
+        lbl_5 "  took: $(display_time_elapsed "$_cwt_elapsed")" 1
     }
-    is_debug_lvl 1 && {
+    is_debug_lvl 2 && {
         # spacer after cmd if cmd output was displayed
         echo
     }
@@ -361,14 +379,14 @@ cmd_wrapper() {
         cmd_create_output_file
         _cw_self_created_output_file=1
     }
-    [ -f "$pe_f_cmd_output" ] || printf '\n%s\n' "$_cw_cmd"
+    [ -f "$pe_f_cmd_output" ] || printf '\n%s\n' "$_cw_cmd" # show cmd if not using file
     if "$@" >"$pe_f_cmd_output" 2>&1; then
         [ ! -f "$pe_f_cmd_output" ] && [ -z "$pe_cmd_start" ] && {
             # spacer after cmd in not using output file and displaying time
             echo
         }
     else
-        pe_cmd_err "$module_name: $_cw_err_msg" "$_cw_silent" "$_cw_continue"
+        pe_cmd_err "$_cw_err_msg" "$_cw_silent" "$_cw_continue"
         _cw_ex_code=1 # in case continue has been requested
     fi
     # only purge if the cmd output file was created here
@@ -377,7 +395,7 @@ cmd_wrapper() {
 }
 
 cmd_create_output_file() {
-    if is_debug_lvl 1; then
+    if is_debug_lvl 2; then
         pe_f_cmd_output=/dev/stdout
     else
         tmp_file_create pe_f_cmd_output
@@ -409,6 +427,7 @@ pe_cmd_err() {
         printf '\n\n%s\n' "$_cw_cmd"
 
         cat "$pe_f_cmd_output"
+        echo
     }
 
     if [ "$_pce_continue" -eq 1 ]; then
@@ -428,11 +447,14 @@ pe_cmd_err() {
 #=====================================================================
 
 [ -n "$D_REPO" ] || {
-    printf '\n%s[%s] ERROR: This can not be run directly.\n' "$0" "$$" >&2
+    printf '\n%s[%s] ERROR: This can not be run directly, should be sourced.\n' "$0" "$$" >&2
     exit 1
 }
 
-module_name="${module_name:-$0}"
+pe_inform_about_debug_levels
+
+module_name="${module_name:-$(basename "$0")}"
+app_name="$module_name"
 
 # if set in the env save it before sourcing script-utils
 pe_initial_dbg_lvl="$current_dbg_lvl"
@@ -451,7 +473,7 @@ pe_initial_dbg_lvl="$current_dbg_lvl"
 pe_source_script_utils
 pe_populate_config
 
-lbl_1 "Module: $module_name"
+lbl_1 "Module: $module_name" 1
 
 pe_cmd_line_param_parse "$@"
 
@@ -469,6 +491,8 @@ pe_get_basic_config
     # All this results in that we have to manually set the variable directly
     # at this point to both have an opinion and respect current env preferences
     #
+
+    # shellcheck disable=SC2218 # defined in process-yaml-config_file.sh sourced above
     expand_yaml_config_var SPD_DEBUG_LEVEL         # dont nag if it is empty
     [ -z "$SPD_DEBUG_LEVEL" ] && SPD_DEBUG_LEVEL=1 # global default
     set_debug_lvl "$SPD_DEBUG_LEVEL"

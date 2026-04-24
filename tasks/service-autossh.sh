@@ -27,16 +27,16 @@ task_prepare() {
         source_it "$D_REPO"/tools/service-handler.sh
     }
 
-    lbl_2 "$module_name: Preparing task"
+    lbl_2 "$module_name: Preparing task" 1
     check_for_abort 1 task_prepare
     check_service_env autossh
     command -v autossh >/dev/null 2>&1 || {
-        lbl_2 "Dependency issue - autossh not found"
+        lbl_2 "Dependency issue - autossh not found" 1
         spd_dependency_issue=1
     }
     # _cmd=/usr/local/bin/logger
     # [ -x "$_cmd" ] || {
-    #     lbl_2 "Dependency issue - $_cmd not found"
+    #     lbl_2 "Dependency issue - $_cmd not found" 1
     #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
     # }
 
@@ -45,10 +45,9 @@ task_prepare() {
 
 task_execute() {
     check_for_abort 0 task_execute
-    lbl_2 "$module_name: Executing task"
+    lbl_2 "$module_name: Executing task" 1
 
     process_service
-    set_debug_lvl 3
 
     # shellcheck disable=SC2154 # SPD_ variables defined via config
     # shellcheck disable=SC2154 # SPD_ variables defined via config
@@ -95,7 +94,7 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 case "$opt_task" in
     install | remove) ;;
     *)
-        cmd_line_param_error "$module_name: opt_task must be install/remove"
+        cmd_line_param_error "opt_task must be install/remove"
         ;;
 esac
 

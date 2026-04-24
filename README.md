@@ -58,3 +58,13 @@ The repo has generic sample congis in config_templates/ when any task is started
 and configs/ does not exist config_templates/ are copied there for initial usage.
 configs/ is in .gitignore, and if it exists it is never touched. So any changes
 there will never be meddled with if the repo is updated.
+
+## SPD_DEBUG_LEVEL
+
+Standard output selection lower debug levels
+
+- 0 - Toally quiet, only displaying errors, for integration into other tools
+- 1 - Normal progress displayed, commands run wih cmd_wrapper will only display errors
+- 2 - cmd_wrapper will display output directly to stdout
+
+Higher levels will display more details

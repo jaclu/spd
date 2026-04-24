@@ -10,11 +10,11 @@ task_prepare() {
         source_it "$D_REPO"/tools/service-handler.sh
     }
 
-    lbl_2 "$module_name: Preparing task"
+    lbl_2 "$module_name: Preparing task" 1
     is_ish_aok && [ "$opt_task" = install ] && {
-        lbl_1 "WARNING: this service tends to fail on iSH-AOK"
+        lbl_1 "WARNING: this service tends to fail on iSH-AOK" 1
         _m="If you still want to use it, run this with force-install instead of install"
-        lbl_2 "$_m"
+        lbl_2 "$_m" 1
         # exit ok in order not to abort scripts that runs multiple
         # tasks, hopefully this warning explains the issue
         script_utils_cleanup 0
@@ -31,7 +31,7 @@ task_prepare() {
 
 task_execute() {
     check_for_abort 0 task_execute
-    lbl_2 "$module_name: Executing task"
+    lbl_2 "$module_name: Executing task" 1
     process_service
 }
 
@@ -53,7 +53,7 @@ case "$opt_task" in
     remove | force | force-install) ;;
     install) ;;
     *)
-        cmd_line_param_error "$module_name: opt_task must be install/force-install/remove"
+        cmd_line_param_error "opt_task must be install/force-install/remove"
         ;;
 esac
 
