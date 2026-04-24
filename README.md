@@ -63,8 +63,8 @@ there will never be meddled with if the repo is updated.
 
 Standard output selection lower debug levels
 
-- 0 - Toally quiet, only displaying errors, for integration into other tools
-- 1 - Normal progress displayed, commands run wih cmd_wrapper will only display errors
+- 0 - Totally quiet, only displaying errors, for integration into other tools
+- 1 - Normal progress displayed, commands run with cmd_wrapper will only display errors
 - 2 - cmd_wrapper will display output directly to stdout
 
 Higher levels will display more details
