@@ -148,12 +148,14 @@ is_musl_lib() {
 yaml_true() {
     _yt_s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
     [ -z "$_yt_s" ] && err_msg "yaml_true() - no param"
+    _yt_result=1 # default
     case "$_yt_s" in
-        1 | yes | true) return 0 ;;
+        1 | yes | true) _yt_result=0 ;;
         *) ;;
     esac
-    return 1
+    return "$_yt_result"
 }
+
 # ---  not currently used
 
 fs_is_gentoo() {
