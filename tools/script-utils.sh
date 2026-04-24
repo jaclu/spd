@@ -758,7 +758,7 @@ tmp_file_remove() {
             err_msg "tmp_file_remove() called with invalid param: $_tfr_tmp"
             ;;
         *)
-            lbl_2 "Will remove tmp file/directory: $_tfr_tmp" 9
+            lbl_2 "Will remove tmp file/directory: $_tfr_tmp" 3
             safe_remove --silent --remove-dir "$_tfr_tmp"
             ;;
     esac
