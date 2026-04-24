@@ -26,7 +26,7 @@ task_prepare() {
     if yaml_true "$SPD_PKGS_MAN"; then
         lbl_4 "Will install man pages"
         SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL man-db"
-    else
+    elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
         lbl_4 "Will purge man pages"
         SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE man-db"
     fi
@@ -38,7 +38,7 @@ task_prepare() {
             display_list_content SPD_DEBIAN_APT_DEVEL no_label
             SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_DEVEL"
             echo
-        else
+        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will purge devel packages"
             display_list_content SPD_DEBIAN_APT_DEVEL no_label
             SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_DEVEL"
@@ -52,7 +52,7 @@ task_prepare() {
             display_list_content SPD_DEBIAN_APT_LINTING no_label
             SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_LINTING"
             echo
-        else
+        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will purge linting packages"
             display_list_content SPD_DEBIAN_APT_LINTING no_label
             SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_LINTING"
@@ -119,6 +119,8 @@ esac
 #
 # Ensure required options have been set, and expand any variables that need to be expanded
 #
+expand_yaml_config_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES # dont nag if it is empty
+
 ensure_spd_var_defined SPD_DEBIAN_APT_INSTALL
 ensure_spd_var_defined SPD_DEBIAN_APT_DEVEL
 ensure_spd_var_defined SPD_DEBIAN_APT_LINTING

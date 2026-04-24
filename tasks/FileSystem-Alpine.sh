@@ -40,7 +40,7 @@ task_prepare() {
     if yaml_true "$SPD_PKGS_MAN"; then
         lbl_3 "Will install man pages"
         SPD_APK_INSTALL="$SPD_APK_INSTALL docs apk-tools-doc"
-    else
+    elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
         lbl_3 "Will remove man pages"
         SPD_APK_REMOVE="$SPD_APK_REMOVE docs apk-tools-doc"
     fi
@@ -48,28 +48,30 @@ task_prepare() {
     [ -n "$SPD_APK_DEVEL" ] && {
         if yaml_true "$SPD_PKGS_DEVEL"; then
             lbl_3 "Will install devel packages"
-            display_list_content SPD_APK_DEVEL no_label
-            echo
             SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_DEVEL"
-        else
-            lbl_3 "Will remove devel packages"
             display_list_content SPD_APK_DEVEL no_label
             echo
+        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+            lbl_3 "Will remove devel packages"
             SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_DEVEL"
+            display_list_content SPD_APK_DEVEL no_label
+            echo
         fi
     }
-    # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
-    if yaml_true "$SPD_PKGS_LINTING"; then
-        lbl_3 "Will install linting packages"
-        display_list_content SPD_APK_LINTING no_label
-        echo
-        SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_LINTING"
-    else
-        lbl_3 "Will remove linting packages"
-        display_list_content SPD_APK_LINTING no_label
-        echo
-        SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_LINTING"
-    fi
+    [ -n "$SPD_APK_DEVEL" ] && {
+        # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
+        if yaml_true "$SPD_PKGS_LINTING"; then
+            lbl_3 "Will install linting packages"
+            SPD_APK_INSTALL="$SPD_APK_INSTALL $SPD_APK_LINTING"
+            display_list_content SPD_APK_LINTING no_label
+            echo
+        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+            lbl_3 "Will remove linting packages"
+            SPD_APK_REMOVE="$SPD_APK_REMOVE $SPD_APK_LINTING"
+            display_list_content SPD_APK_LINTING no_label
+            echo
+        fi
+    }
     return "$spd_dependency_issue"
 }
 
@@ -131,6 +133,8 @@ esac
 #
 # Ensure required options have been set, and expand any variables that need to be expanded
 #
+expand_yaml_config_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES # dont nag if it is empty
+
 ensure_spd_var_defined SPD_APK_INSTALL
 ensure_spd_var_defined SPD_APK_DEVEL
 ensure_spd_var_defined SPD_APK_LINTING

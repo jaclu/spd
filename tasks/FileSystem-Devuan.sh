@@ -21,21 +21,40 @@ task_prepare() {
     display_list_content SPD_DEVUAN_APT_INSTALL no_label
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
-    yaml_true "$SPD_PKGS_MAN" && {
+    if yaml_true "$SPD_PKGS_MAN"; then
         lbl_4 "Will install man pages"
         SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL man-db"
-    }
-    # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
-    yaml_true "$SPD_PKGS_DEVEL" && [ -n "$SPD_DEVUAN_APT_DEVEL" ] && {
-        lbl_4 "Will install devel packages"
-        display_list_content SPD_DEVUAN_APT_DEVEL no_label
-        SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL $SPD_DEVUAN_APT_DEVEL"
+    elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        lbl_4 "Will purge man pages"
+        SPD_DEVUAN_APT_PURGE="$SPD_DEVUAN_APT_PURGE man-db"
+    fi
+    [ -n "$SPD_DEVUAN_APT_DEVEL" ] && {
+        # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
+        if yaml_true "$SPD_PKGS_DEVEL"; then
+            lbl_3 "Will install devel packages"
+            SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL $SPD_DEVUAN_APT_DEVEL"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
+            echo
+        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+            lbl_3 "Will purge devel packages"
+            SPD_DEVUAN_APT_PURGE="$SPD_DEVUAN_APT_PURGE $SPD_DEVUAN_APT_DEVEL"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
+            echo
+        fi
     }
     # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
-    yaml_true "$SPD_PKGS_LINTING" && [ -n "$SPD_DEVUAN_APT_LINTING" ] && {
-        lbl_4 "Will install linting packages"
-        display_list_content SPD_DEVUAN_APT_LINTING no_label
-        SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL $SPD_DEVUAN_APT_LINTING"
+    [ -n "$SPD_DEVUAN_APT_LINTING" ] && {
+        if yaml_true "$SPD_PKGS_LINTING"; then
+            lbl_3 "Will install linting packages"
+            SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL $SPD_DEVUAN_APT_LINTING"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
+            echo
+        elif yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+            lbl_3 "Will purge linting packages"
+            SPD_DEVUAN_APT_PURGE="$SPD_DEVUAN_APT_PURGE $SPD_DEVUAN_APT_LINTING"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
+            echo
+        fi
     }
     return "$spd_dependency_issue"
 }
@@ -95,6 +114,8 @@ esac
 #
 # Ensure required options have been set, and expand any variables that need to be expanded
 #
+expand_yaml_config_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES # dont nag if it is empty
+
 ensure_spd_var_defined SPD_DEVUAN_APT_INSTALL
 ensure_spd_var_defined SPD_DEVUAN_APT_DEVEL
 ensure_spd_var_defined SPD_DEVUAN_APT_LINTING
