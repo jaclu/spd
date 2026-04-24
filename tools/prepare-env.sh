@@ -286,94 +286,48 @@ alpine_release_ge() {
 #
 # Typical workflows:
 #
-#   cmd_filtered_t - displays time elapsed if >= 2s otherwise the same
+#   cmd_wrapper_t - displays time elapsed if >= 2s otherwise the same
 #
-#   Case 1 - Will exit showing failed cmd output and defined error msg if provided
-#            otherwise the error msg will just display the command used
+#   Case 1 - Will exit showing failed cmd output and failed command used
 #
-#       cmd_filtered apt update
+#       cmd_wrapper apt update
 #
 #     By pre-creating the output file once, overhead is reduced for a sequence
 #     of commands, remember to purge it!
 #
 #       cmd_create_output_file
-#       cmd_filtered apt update
-#       cmd_filtered apt upgrade
-#       cmd_filtered apt install vim
+#       cmd_wrapper apt update
+#       cmd_wrapper apt upgrade
+#       cmd_wrapper apt install vim
 #       cmd_purge_output_file
 #
-#     Normally you would just run one cmd like this, if you really need to chain cmds
+#     Normally you would just run one cmd with cmd_wrapper, if you really need to chain cmds
 #     use this workaround that wraps cmd separators like ; or &&
-#     The actual commands are executed insied cmd_filtered,
+#     The actual commands are executed insied cmd_wrapper,
 #     so output display is still controllable
-#       cmd_filtered sh -c 'apt update && apt install vim'
+#       cmd_wrapper sh -c 'apt update && apt install vim'
 #
 #   Case 2 - will not display failed cmd or output, just exit the program with error
-#     cmd_filtered --silent apt install vim
+#     cmd_wrapper --silent apt install vim
 #
 #   Case 3 - will continue returning false if cmd fails after reporting error.
-#     cmd_filtered --continue apt install vim ||
+#     cmd_wrapper --continue apt install vim ||
 #       ... custom error handling
 #     }
 #
 #   Case 4 - will continue, not displaying failed cmd output or error msg
-#     cmd_filtered --silent --continue apt install vim ||
+#     cmd_wrapper --silent --continue apt install vim ||
 #       ... custom error handling
 #     }
 #
 #---------------------------------------------------------------------
 
-cmd_create_output_file() {
-    if is_debug_lvl 1; then
-        f_cmd_output=/dev/stdout
-    else
-        tmp_file_create f_cmd_output
-    fi
-    dbg_msg "cmd_create_output_file() filtered commd output is now: $f_cmd_output" 5
-}
-
-cmd_purge_output_file() {
-    [ -n "$f_cmd_output" ] && [ -f "$f_cmd_output" ] && tmp_file_remove "$f_cmd_output"
-    f_cmd_output="" # indicate inactive
-}
-
-pe_pe_cmd_err() {
-    _ce_msg="${1:-Command failed}"
-    _ce_silent="${2:-0}"
-    _ce_continue="${3:-0}"
-
-    if [ "$_cf_silent" -eq 1 ]; then
-        if [ "$_cf_continue" -eq 1 ]; then
-            return
-        else
-            cmd_purge_output_file
-            script_utils_cleanup 1
-        fi
-    fi
-
-    [ -f "$f_cmd_output" ] && {
-        # Only display if saved to file - spacer and actual command
-        printf '\n\n%s\n' "$_cf_cmd"
-
-        cat "$f_cmd_output"
-    }
-
-    if [ "$_ce_continue" -eq 1 ]; then
-        echo # spacer after command output
-        lbl_2 "ISSUE: $_ce_msg"
-        return
-    else
-        cmd_purge_output_file
-        err_msg "$_ce_msg"
-    fi
-}
-
-cmd_filtered_t() {
+cmd_wrapper_t() {
     pe_cmd_start="$(date +%s)" # is used in display_app_run_time()
-    cmd_filtered "$@"
-    _cft_elapsed="$(($(date +%s) - pe_cmd_start))"
-    [ "$_cft_elapsed" -ge 2 ] && {
-        lbl_5 "  took: $(display_time_elapsed "$_cft_elapsed")"
+    cmd_wrapper "$@"
+    _cwt_elapsed="$(($(date +%s) - pe_cmd_start))"
+    [ "$_cwt_elapsed" -ge 2 ] && {
+        lbl_5 "  took: $(display_time_elapsed "$_cwt_elapsed")"
     }
     is_debug_lvl 1 && {
         # spacer after cmd if cmd output was displayed
@@ -382,46 +336,89 @@ cmd_filtered_t() {
     pe_cmd_start=""
 }
 
-cmd_filtered() {
-    _cf_ex_code=0
-    _cf_self_created_output_file=0
+cmd_wrapper() {
+    _cw_ex_code=0
+    _cw_self_created_output_file=0
 
     #
     # Option parsing
     #
-    _cf_silent=0
-    _cf_continue=0
+    _cw_silent=0
+    _cw_continue=0
     while [ -n "$1" ]; do
         case "$1" in
-            -s | --silent) _cf_silent=1 ;;     # dont report error
-            -c | --continue) _cf_continue=1 ;; # dont abort on error just return false
-            -*) err_msg "cmd_filtered() - Unknown option: [$1]" ;;
+            -s | --silent) _cw_silent=1 ;;     # dont report error, juest exit
+            -c | --continue) _cw_continue=1 ;; # dont abort on error just return false
+            -*) err_msg "cmd_wrapper() - Unknown option: [$1]" ;;
             *) break ;; # no more options
         esac
         shift
     done
-    _cf_cmd="$*"
-    _cf_err_msg="Command failed: $_cf_cmd"
+    _cw_cmd="$*" # only used for presentation, cmd is executed as "$@"
+    _cw_err_msg="Command failed: $_cw_cmd"
 
-    # dbg_msg "cmd_filtered: $_cf_cmd" 1
-
-    [ -z "$f_cmd_output" ] && {
+    [ -z "$pe_f_cmd_output" ] && {
         cmd_create_output_file
-        _cf_self_created_output_file=1
+        _cw_self_created_output_file=1
     }
-    [ -f "$f_cmd_output" ] || printf '\n%s\n' "$_cf_cmd"
-    if "$@" >"$f_cmd_output" 2>&1; then
-        [ ! -f "$f_cmd_output" ] && [ -z "$pe_cmd_start" ] && {
+    [ -f "$pe_f_cmd_output" ] || printf '\n%s\n' "$_cw_cmd"
+    if "$@" >"$pe_f_cmd_output" 2>&1; then
+        [ ! -f "$pe_f_cmd_output" ] && [ -z "$pe_cmd_start" ] && {
             # spacer after cmd in not using output file and displaying time
             echo
         }
     else
-        pe_cmd_err "$module_name: $_cf_err_msg" "$_cf_silent" "$_cf_continue"
-        _cf_ex_code=1 # in case continue has been requested
+        pe_cmd_err "$module_name: $_cw_err_msg" "$_cw_silent" "$_cw_continue"
+        _cw_ex_code=1 # in case continue has been requested
     fi
     # only purge if the cmd output file was created here
-    [ "$_cf_self_created_output_file" -eq 1 ] && cmd_purge_output_file
-    return "$_cf_ex_code"
+    [ "$_cw_self_created_output_file" -eq 1 ] && cmd_purge_output_file
+    return "$_cw_ex_code"
+}
+
+cmd_create_output_file() {
+    if is_debug_lvl 1; then
+        pe_f_cmd_output=/dev/stdout
+    else
+        tmp_file_create pe_f_cmd_output
+    fi
+    dbg_msg "cmd_create_output_file() filtered commd output is now: $pe_f_cmd_output" 5
+}
+
+cmd_purge_output_file() {
+    [ -n "$pe_f_cmd_output" ] && [ -f "$pe_f_cmd_output" ] && tmp_file_remove "$pe_f_cmd_output"
+    pe_f_cmd_output="" # indicate inactive
+}
+
+pe_cmd_err() {
+    _pce_msg="${1:-Command failed}"
+    _pce_silent="${2:-0}"
+    _pce_continue="${3:-0}"
+
+    if [ "$_pce_silent" -eq 1 ]; then
+        if [ "$_cw_continue" -eq 1 ]; then
+            return
+        else
+            cmd_purge_output_file
+            script_utils_cleanup 1
+        fi
+    fi
+
+    [ -f "$pe_f_cmd_output" ] && {
+        # Only display if saved to file - spacer and actual command
+        printf '\n\n%s\n' "$_cw_cmd"
+
+        cat "$pe_f_cmd_output"
+    }
+
+    if [ "$_pce_continue" -eq 1 ]; then
+        echo # spacer after command output
+        lbl_2 "ISSUE: $_pce_msg"
+        return
+    else
+        cmd_purge_output_file
+        err_msg "$_pce_msg"
+    fi
 }
 
 #=====================================================================

@@ -44,7 +44,7 @@ alpine_use_old_mtr() {
     [ "$_auom_mtr_found" -eq 1 ] && {
         lbl_4 "Removing current mtr version: $(mtr -v)"
         # Remove incorrect version
-        cmd_filtered_t apk del mtr
+        cmd_wrapper_t apk del mtr
     }
     #
     #  Download and install specific older mtr
@@ -56,15 +56,15 @@ alpine_use_old_mtr() {
     url_prefix="https://dl-cdn.alpinelinux.org/alpine/v3.10/main/x86"
 
     lbl_4 "Downloading older mtr-0.92-r0.apk"
-    cmd_filtered_t wget "$url_prefix"/mtr-0.92-r0.apk
+    cmd_wrapper_t wget "$url_prefix"/mtr-0.92-r0.apk
     lbl_4 "Installing downloaded mtr-0.92-r0.apk"
-    cmd_filtered_t apk add mtr-0.92-r0.apk
+    cmd_wrapper_t apk add mtr-0.92-r0.apk
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     yaml_true "$SPD_PKGS_MAN" && {
         lbl_4 "Downloading mtr-doc-0.92-r0.apk"
-        cmd_filtered_t wget "$url_prefix"/mtr-doc-0.92-r0.apk
+        cmd_wrapper_t wget "$url_prefix"/mtr-doc-0.92-r0.apk
         lbl_4 "Installing downloaded mtr-doc-0.92-r0.apk"
-        cmd_filtered_t apk add mtr-doc-0.92-r0.apk
+        cmd_wrapper_t apk add mtr-doc-0.92-r0.apk
     }
     tmp_file_remove "$d_downloads"
     return 0
@@ -166,7 +166,7 @@ module_name="platform-iSH"
 # [ -z "$current_dbg_lvl" ] && {
 #     #
 #     # In case current_dbg_lvl has been exported to the env, do not override it
-#     # otherwise default to 1 in order to display progress for cmd_filtered
+#     # otherwise default to 1 in order to display progress for cmd_wrapper
 #     # since sctipt-utils.sh hasn't been sourced yet and thus set_debug_lvl is not
 #     # yet available. In addition that script would default it to 0 if undefined.
 #     # All this results in that we have to manually set the variable directly
