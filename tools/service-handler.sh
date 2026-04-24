@@ -224,8 +224,9 @@ process_service() {
 #
 #=====================================================================
 
-[ -z "$D_REPO" ] && {
-    echo "service-handler.sh - D_REPO undefined, this should be sourced"
+[ -n "$D_REPO" ] || {
+    printf '\n%s[%s] ERROR: This can not be run directly, should be sourced.\n' "$0" "$$" >&2
+    exit 1
 }
 
 [ -z "$service_name" ] && {

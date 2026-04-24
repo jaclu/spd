@@ -92,6 +92,11 @@ verify_fd() {
 #
 #=====================================================================
 
+[ -n "$D_REPO" ] || {
+    printf '\n%s[%s] ERROR: This can not be run directly, should be sourced.\n' "$0" "$$" >&2
+    exit 1
+}
+
 validate_dev_null
 
 validate_dev_fd stdin /proc/self/fd/0

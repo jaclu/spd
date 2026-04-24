@@ -284,6 +284,11 @@ expand_yaml_config_var() {
 #
 #=====================================================================
 
+[ -n "$D_REPO" ] || {
+    printf '\n%s[%s] ERROR: This can not be run directly, should be sourced.\n' "$0" "$$" >&2
+    exit 1
+}
+
 pycf_expansion_steps_max=50
 
 # D_REPO is set by $0 to give the path to the repository
