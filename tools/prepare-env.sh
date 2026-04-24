@@ -10,6 +10,23 @@
 # global variables are lower case without _ prefix
 #
 
+package_install() {
+    # Attempts to install one or more packages, if it can guess the package handler
+    _pi_pkg="$*"
+    [ -z "$_pi_pkg" ] && err_msg "package_install() - no param"
+    lbl_2 "package_install() attempting to install: $_pi_pkg" 1
+    if fs_is_alpine; then
+        cmd_wrapper_t sh -c 'apk update && apk add '"$_pi_pkg"
+    elif fs_is_debian || fs_is_devuan; then
+        cmd_wrapper_t sh -c 'apt update && apt install -y '"$_pi_pkg"
+    else
+        lbl_2 "package_install() - Failed to recognize platform - unable to install $_pi_pkg"
+        # # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+        # spd_dependency_issue=1
+        return 1
+    fi
+}
+
 #---------------------------------------------------------------------
 #
 #   Internals / only used here
@@ -20,8 +37,8 @@ pe_inform_about_debug_levels() {
     _pe_f_user_warned="$D_REPO"/.user_warned
     [ -f "$_pe_f_user_warned" ] || {
         printf '\n%s\n%s\n%s\n' \
-            "Unless SPD_DEBUG_LEVEL is at least 1, theese tools will be comletely silent," \
-            "Only displaying any errro messages. (This is only shown first time this is run)" \
+            "Unless SPD_DEBUG_LEVEL is at least 1, these tools will be completely silent," \
+            "Only displaying any error messages. (This is only shown first time this is run)" \
             "For more info see the README.md"
         touch "$_pe_f_user_warned" || {
             # ignore this error
@@ -179,7 +196,8 @@ check_for_abort() {
     _cfa_lbl="${2:- current task}"
 
     expand_yaml_config_var SPD_ABORT
-    [ -n "$SPD_ABORT" ] || err_msg "SPD_ABORT undefined"
+    lbl_4 "check_for_abort() SPD_ABORT: $SPD_ABORT" 4
+    [ -n "$SPD_ABORT" ] || err_msg "required config variable SPD_ABORT undefined"
     {
         dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 9
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
@@ -214,23 +232,31 @@ ensure_spd_var_defined() {
     expand_yaml_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
-        is_debug_lvl 3 && lbl_4 "$_esvd_variable: $_esvd_value"
+        lbl_4 "$_esvd_variable:   $_esvd_value" 2
+        return 0
     else
-        dbg_msg "${module_name:-}: Dependency issue - no content/undefined: $_esvd_variable" 1
+        lbl_3 "${module_name:-}: Dependency issue - $_esvd_variable no content/undefined"
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
         spd_dependency_issue=1
+        return 1
     fi
 }
 
-#---------------------------------------------------------------------
-#
-#   General utils
-#
-#---------------------------------------------------------------------
+expand_show_spd_var() {
+    _essv_variable="$1"
+    _essv_value="" # used when retrieving content
 
-relative_path() {
-    # For files in this repo, returns path relative to D_REPO
-    printf '%s\n' "${1#"$D_REPO"/}"
+    expand_yaml_config_var "$_essv_variable"
+    eval "_essv_value=\"\${$_essv_variable}\""
+    is_debug_lvl 2 || return
+    if [ -n "$_essv_value" ]; then
+        # printf '%s\t\t%s\n' "$_essv_variable" "$_essv_value"
+        lbl_4 "$_essv_variable:   $_essv_value"
+    else
+        [ -n "$_esvf_empy_ok" ]
+        # printf '%s  *unset*\n' "$_essv_variable"
+        lbl_4 "$_essv_variable:   *unset*"
+    fi
 }
 
 display_list_content() {
@@ -250,6 +276,17 @@ display_list_content() {
     fi
 }
 
+#---------------------------------------------------------------------
+#
+#   General utils
+#
+#---------------------------------------------------------------------
+
+relative_path_repo() {
+    # For files in this repo, returns path relative to D_REPO
+    printf '%s\n' "${1#"$D_REPO"/}"
+}
+
 cleanup_custom() {
     #
     # Called at the very end of script_utils_cleanup, so all cleanup has been completed
@@ -261,10 +298,7 @@ cleanup_custom() {
     #
     _cc_ex_code="$1"
 
-    is_debug_lvl 1 && {
-        lbl_2 "cleanup_custom will call display_app_run_time()"
-        display_app_run_time
-    }
+    is_debug_lvl 1 && display_app_run_time
 }
 
 #---------------------------------------------------------------------
@@ -329,12 +363,12 @@ alpine_release_ge() {
 #     cmd_wrapper --silent apt install vim
 #
 #   Case 3 - will continue returning false if cmd fails after reporting error.
-#     cmd_wrapper --continue apt install vim ||
+#     cmd_wrapper --continue no content/undefinedstall vim ||
 #       ... custom error handling
 #     }
 #
 #   Case 4 - will continue, not displaying failed cmd output or error msg
-#     cmd_wrapper --silent --continue apt install vim ||
+#     cmd_wrapper --silent --continue no content/undefinedstall vim ||
 #       ... custom error handling
 #     }
 #
