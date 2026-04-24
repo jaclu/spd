@@ -24,9 +24,9 @@ SPD_HOME_DIR_UNPACKED_PTR   my_home_dir_unpacked_ptr
 SPD_LOCATION_SERVICE
 
 SPD_SSH_HOST_KEYS           ssh_host_keys
-SPD_SSHD_SERVICE
+SPD_SVC_SSHD
 SPD_SERVIVE_SSHD            activate_sshd_service
-SPD_SSHD_PORT
+SPD_SVC_SSHD_PORT
 SPD_PORT_SSHD   sshd_port
 
 SPD_TIME_ZONE               time_zone

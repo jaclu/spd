@@ -301,12 +301,12 @@ SPD_LOCALES: en_US.UTF-8 en_GB.UTF-8
 #  1 = activate, dependent stuff will be installed and setup.
 #  0 = do not touch, this is the default if undefined
 # -1 = disabled, ensures sshd is neither running nor autostarted
-SPD_SSHD_SERVICE: 0
+SPD_SVC_SSHD: 0
 
 #
 # What port sshd should listen on, must be specified!
 #
-SPD_SSHD_PORT: 22
+SPD_SVC_SSHD_PORT: 22
 
 #
 # If you want to maintain your ssh host keys across deploys

@@ -1,2 +1,5 @@
 ---
+# For example of the FileSystem config needs to be changed for this platform
+# it can be overridden here
+
 SPD_ABORT: 1
