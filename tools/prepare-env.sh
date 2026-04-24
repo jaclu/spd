@@ -110,8 +110,8 @@ pe_indicate_unset() {
 }
 
 pe_cmd_line_param_list() {
-    _lbl="${1:-Listing of cmd line options}"
-    lbl_2 "$_lbl"
+    _pclpl_lbl="${1:-Listing of cmd line options}"
+    lbl_2 "$_pclpl_lbl"
     lbl_4 "  opt_task    $(pe_indicate_unset "$opt_task")"
 }
 
@@ -258,22 +258,22 @@ cleanup_custom() {
 alpine_release_ge() {
     # usage: alpine_release_ge MAIN.MIN   (e.g., alpine_release_ge 3.20)
     # returns: 0 (true) if running Alpine >= MAIN.MIN, else 1
-    req=$1
+    _arg_req=$1
 
     # parse running version
-    ver=$(cat /etc/alpine-release 2>/dev/null) || return 1
-    curM=${ver%%.*}
-    rest=${ver#*.}
-    curm=${rest%%.*}
+    _arg_ver=$(cat /etc/alpine-release 2>/dev/null) || return 1
+    _arg_cur_maj=${_arg_ver%%.*}
+    _arg_rest=${_arg_ver#*.}
+    _arg_cur_min=${_arg_rest%%.*}
 
     # parse required version
-    reqM=${req%%.*}
-    rest=${req#*.}
-    reqm=${rest%%.*}
+    _arg_reqM=${_arg_req%%.*}
+    _arg_rest=${_arg_req#*.}
+    _arg_rreqm=${_arg_rest%%.*}
 
     # numeric compare
-    [ "$curM" -gt "$reqM" ] \
-        || { [ "$curM" -eq "$reqM" ] && [ "$curm" -ge "$reqm" ]; }
+    [ "$_arg_cur_maj" -gt "$_arg_reqM" ] \
+        || { [ "$_arg_cur_maj" -eq "$_arg_reqM" ] && [ "$_arg_cur_min" -ge "$_arg_rreqm" ]; }
 }
 
 #---------------------------------------------------------------------
@@ -463,7 +463,7 @@ pe_get_basic_config
 [ -z "$pe_initial_dbg_lvl" ] && {
     #
     # In case current_dbg_lvl has been exported to the env, do not override it
-    # otherwise default to 1 in order to display progress for cmd_filtered
+    # otherwise default to 1 in order to display progress for cmd_wrapper
     # since sctipt-utils.sh hasn't been sourced yet and thus set_debug_lvl is not
     # yet available. In addition that script would default it to 0 if undefined.
     # All this results in that we have to manually set the variable directly
