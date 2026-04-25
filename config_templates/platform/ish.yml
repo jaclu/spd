@@ -1,3 +1,39 @@
 ---
 # For example of the FileSystem config needs to be changed for this platform
 # it can be overridden here
+
+#
+# If not all files should be deployed list those that should be deployed under
+# the destination variable name.
+# 
+# SPD_FILES_ISH_ULB: # ULB = /usr/local/bin destination
+#   - myip
+#   - network-check
+#   - set-timezone
+#   - uptime-tracker
+#
+# If all files in the source should be installed use:
+#
+# SPD_FILES_ISH_ULB: *all*
+#
+
+# <spd> files/platform/ish/usr_local_bin -> /usr/local/bin
+SPD_FILES_ISH_ULB: *all*
+
+# <spd> files/platform/ish/usr_local_sbin -> /usr/local/sbin
+SPD_FILES_ISH_ULSB: *all*
+
+# <spd> files/platform/ish/AOK/usr_local_bin -> /usr/local/bin
+SPD_FILES_ISH_AOK_ULB: *all*
+
+# <spd> files/platform/ish/not-AOK/usr_local_bin -> /usr/local/bin
+SPD_FILES_ISH_NOT_AOK_ULB: *all*
+
+# <spd> files/platform/ish/FS/Alpine/usr_local_bin -> /usr/local/bin
+SPD_FILES_ISH_ALPINE_ULB: *all*
+
+# <spd> files/platform/ish/FS/Debian/usr_local_bin -> /usr/local/bin
+SPD_FILES_ISH_DEBIAN_ULB: *all*
+
+# <spd> files/platform/ish/FS/Debian/usr_local_sbin -> /usr/local/sbin
+SPD_FILES_ISH_DEBIAN_ULSB: *all*

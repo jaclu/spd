@@ -29,6 +29,10 @@ reactivate_busybox_uptime() {
     fi
 }
 
+handle_usr_local_bin() {
+    
+}
+
 alpine_use_old_mtr() {
     _auom_mtr_found=0
     if command -v mtr >/dev/null; then

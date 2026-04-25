@@ -1,4 +1,4 @@
-# Content
+# Service related files
 
 Service scripts divided in SysV-init and openrc
 
