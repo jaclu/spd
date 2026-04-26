@@ -23,6 +23,14 @@ If this is deployed on a mountable file system, be it iCloud, USB-stick etc
 All that should be needed is to have this tool-set mounted on the target system
 and run `bin/deploy`
 
+## Current status
+
+Far from done, but can be tested on iSH, make sure to remove
+`config_templates/global_overrides.yml` and/or `configs/global_overrides.yml`
+for simplicity, or edit them accordingly.
+
+Then run `./tasks/platform-iSH.sh`
+
 ## SPD modularity
 
 Main workflow is to first set up the env, reading relevant configs and overrides,
