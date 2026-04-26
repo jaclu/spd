@@ -37,6 +37,53 @@ and configs/ does not exist config_templates/ are copied there for initial usage
 configs/ is in .gitignore, and if it exists it is never touched. So any changes
 there will never be meddled with if the repo is updated.
 
+Configs are expected to by yaml files, and referencing other settings is valid
+
+SPF_FOO: "{{ SPD_BAR }}"
+
+a config file is read using `parse_yaml_config_file config.yml`
+This pre-parses the yml file creating variables of each entry, but no expansion.
+if the same name is found in a later config file, the previous state of the variable
+is simply replaced.
+
+Before using a config var `expand_yaml_config_var variable` should be done, this
+expands the variable it it contains a `{{ FOO }}` block, depending on the current
+variables defined via prior calls to `parse_yaml_config_file`
+
+OK this is a two step procedure, but offers yaml handling without any dependencies.
+
+### Basic config
+
+At task initializsation the following configs are read
+
+- configs/defaults.yml
+
+Then depending on detected File System, one of:
+
+- `configs/file_systems/alpine.yml`
+- `configs/file_systems/debian.yml`
+- `configs/file_systems/devuan.yml`
+
+Next depending on Platform, one of:
+
+- `configs/platform/ish.yml`
+  Special case if kernel is iSH-AOK an additional platform config is read,
+  to allow for iSH-AOK specific overrides
+  - `configs/platform/ish_aok.yml`
+
+- `configs/platform/linux.yml`
+- `configs/platform/macos.yml` Essentially only to set `SPD_ABORT: 2` to prevent
+  accidental running of any code there.
+
+Then based on hostname-s (lowercased) `configs/hostname/[lowercased hostname].yml
+
+Finally the global user overrides are read `configs/overrides.yml`
+
+Tasks needing additinoal configs, or perhaps needing to override a general config,
+like `tasks/service/service-runbg.sh` are recommended to first read
+`configs/task/service_runbg.yml`, then reread `configs/overrides.yml` to ensure
+user overrides are always honored.
+
 ### File selection
 
 Not providing a selection when a folder of files, like a recommended content for
