@@ -497,8 +497,9 @@ display_app_run_time() {
     # additional notices can be added in $1
     _dart_msg="${1:-}" # linting safe way to handle "optional" parameters...
     _dart_app_run_time=$(($(date +%s) - t_start))
+    _dart_te=$(display_time_elapsed "$_dart_app_run_time")
     echo
-    log_it "Time elapsed: $(display_time_elapsed "$_dart_app_run_time") - $app_name $_dart_msg"
+    log_it "Time elapsed: $_dart_te - $app_name $_dart_msg"
 }
 
 #---------------------------------------------------------------
