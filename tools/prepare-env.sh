@@ -143,7 +143,7 @@ pe_get_basic_config() {
     fs_is_alpine && parse_yaml_config_file "$D_REPO"/configs/file_systems/alpine.yml
     fs_is_debian && parse_yaml_config_file "$D_REPO"/configs/file_systems/debian.yml
     fs_is_devuan && parse_yaml_config_file "$D_REPO"/configs/file_systems/devuan.yml
-    fs_is_ubuntu && parse_yaml_config_file "$D_REPO"/configs/file_systems/ubuntu.yml
+    # fs_is_ubuntu && parse_yaml_config_file "$D_REPO"/configs/file_systems/ubuntu.yml
 
     # platform related
     is_linux && parse_yaml_config_file "$D_REPO"/configs/platform/linux.yml
@@ -160,7 +160,7 @@ pe_get_basic_config() {
     # }
 
     # user overrides
-    parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
+    parse_yaml_config_file "$D_REPO"/configs/overrides.yml
 
     # hostname specific overrides comes last, to allow per device overrides
     parse_yaml_config_file "$D_REPO/configs/hostname/$(hostname -s \
