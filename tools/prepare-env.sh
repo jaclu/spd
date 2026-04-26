@@ -21,10 +21,65 @@ package_install() {
         cmd_wrapper_t sh -c 'apt update && apt install -y '"$_pi_pkg"
     else
         lbl_2 "package_install() - Failed to recognize platform - unable to install $_pi_pkg"
-        # # shellcheck disable=SC2034 # spd_dependency_issue used by caller
-        # spd_dependency_issue=1
         return 1
     fi
+}
+
+copy_items() {
+    _ci_d_src="$1"
+    _ci_d_dst="$2"
+    _ci_selected_items="$3" # if $_fu_all_files, assume all
+    _ci_all_files="-all-"   # when copying folders indicates all should be copied
+    _ci_no_files="-none-"   # when copying folders indicates nothing should be copied
+    expand_yaml_config_var SPD_NO_FILE_COPY_REPLACEMENTS
+
+    [ -d "$_ci_d_src" ] || err_msg "copy_items() - source not a folder: $_ci_d_src"
+    [ "$_ci_selected_items" = "$_ci_no_files" ] && {
+        lbl_3 "Nothing from $_ci_d_src copied, selection: $_ci_no_files"
+        return
+    }
+
+    mkdir -p "$_ci_d_dst" || err_msg "Failed: mkdir -p $_ci_d_dst"
+
+    _ci_files_found=0
+    if [ "$_ci_selected_items" = "$_ci_all_files" ]; then
+        lbl_3 "Copying $_ci_d_src/ -> $_ci_d_dst" 1
+        for _ci_f_src in "$_ci_d_src"/*; do
+            [ -f "$_ci_f_src" ] || continue
+            _ci_f_name_rel="${_ci_f_src##*/}"
+            _ci_f_dst="$_ci_d_dst/$_ci_f_name_rel"
+            # shellcheck disable=SC2154 # SPD_NO_FILE_COPY_REPLACEMENTS defined in config
+            [ -e "$_ci_f_dst" ] && is_yaml_true "$SPD_NO_FILE_COPY_REPLACEMENTS" && {
+                err_msg "copy_items() - file already exists: $_ci_f_dst"
+            }
+            cp -a "$_ci_f_src" "$_ci_f_dst" || {
+                err_msg "copy_items() - Failed to copy $_ci_f_src"
+            }
+            _ci_files_found=1
+        done
+    else
+        lbl_3 "Copying subset of $_ci_d_src/ to $_ci_d_dst" 1
+        # lbl_4 "  $_ci_selected_items" 1
+        for _ci_f_name_rel in $_ci_selected_items; do
+            _ci_f_src="$_ci_d_src/$_ci_f_name_rel"
+            _ci_f_dst="$_ci_d_dst/$_ci_f_name_rel"
+            [ -f "$_ci_f_src" ] || {
+                err_msg "copy_items() - Source not found: $_ci_f_src"
+            }
+            [ -e "$_ci_f_dst" ] && {
+                err_msg "copy_items() - file already exists: $_ci_f_dst"
+            }
+            lbl_4 "  $_ci_f_src -> $_ci_f_dst" 1
+            [ -e "$_ci_f_dst" ] && is_yaml_true "SPD_NO_FILE_COPY_REPLACEMENTS" && {
+                err_msg "copy_items() - file already exists: $_ci_f_dst"
+            }
+            cp -a "$_ci_f_src" "$_ci_f_dst" || {
+                err_msg "copy_items() - Failed to copy $_ci_f_src"
+            }
+            _ci_files_found=1
+        done
+    fi
+    [ "$_ci_files_found" -eq 0 ] && lbl_4 "No files found"
 }
 
 #---------------------------------------------------------------------
@@ -36,9 +91,11 @@ package_install() {
 pe_inform_about_debug_levels() {
     _pe_f_user_warned="$D_REPO"/.user_warned
     [ -f "$_pe_f_user_warned" ] || {
-        printf '\n%s\n%s\n%s\n' \
-            "Unless SPD_DEBUG_LEVEL is at least 1, these tools will be completely silent," \
-            "Only displaying any error messages. (This is only shown first time this is run)" \
+        printf '\n%s %s\n%s %s\n%s\n' \
+            "Unless SPD_DEBUG_LEVEL is at least 1," \
+            "these tools will be completely silent." \
+            "Only displaying any error messages." \
+            "(This is only shown first time this is run)" \
             "For more info see the README.md"
         touch "$_pe_f_user_warned" || {
             # ignore this error
@@ -91,13 +148,10 @@ pe_get_basic_config() {
     # platform related
     is_linux && parse_yaml_config_file "$D_REPO"/configs/platform/linux.yml
     is_macos && parse_yaml_config_file "$D_REPO"/configs/platform/macos.yml
-    if is_ish; then
+    if is_ish_abstract; then
         parse_yaml_config_file "$D_REPO"/configs/platform/ish.yml
         # subcategory for iSH, to allow overrides for AOK vs non-AOK
         is_ish_aok && parse_yaml_config_file "$D_REPO"/configs/platform/ish_aok.yml
-    elif is_chrooted_ish; then
-        # When testing/preparing an iSH FS chrooted
-        parse_yaml_config_file "$D_REPO"/configs/platform/ish.yml
     fi
 
     # [ -n "$_gc_config_file" ] && {
@@ -109,7 +163,8 @@ pe_get_basic_config() {
     parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 
     # hostname specific overrides comes last, to allow per device overrides
-    parse_yaml_config_file "$D_REPO/configs/hostname/$(hostname -s | tr '[:upper:]' '[:lower:]').yml"
+    parse_yaml_config_file "$D_REPO/configs/hostname/$(hostname -s \
+        | tr '[:upper:]' '[:lower:]').yml"
 }
 
 pe_populate_config() {
@@ -232,7 +287,7 @@ ensure_spd_var_defined() {
     expand_yaml_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
-        lbl_4 "$_esvd_variable:   $_esvd_value" 2
+        lbl_4 "$_esvd_variable:   $_esvd_value" 1
         return 0
     else
         lbl_3 "${module_name:-}: Dependency issue - $_esvd_variable no content/undefined"
@@ -248,19 +303,19 @@ expand_show_spd_var() {
 
     expand_yaml_config_var "$_essv_variable"
     eval "_essv_value=\"\${$_essv_variable}\""
-    is_debug_lvl 2 || return
+    is_debug_lvl 1 || return
     if [ -n "$_essv_value" ]; then
         # printf '%s\t\t%s\n' "$_essv_variable" "$_essv_value"
         lbl_4 "$_essv_variable:   $_essv_value"
     else
         [ -n "$_esvf_empy_ok" ]
-        # printf '%s  *unset*\n' "$_essv_variable"
-        lbl_4 "$_essv_variable:   *unset*"
+        lbl_4 "$_essv_variable:   -unset-"
     fi
 }
 
 display_list_content() {
     # Displays content of list variable, with each item on a new line
+    # set param 2 to no_label if the name of the listed variables should not be printed
     _dlc_variable="$1"
 
     is_debug_lvl 1 || return
@@ -492,6 +547,8 @@ app_name="$module_name"
 
 # if set in the env save it before sourcing script-utils
 pe_initial_dbg_lvl="$current_dbg_lvl"
+# shellcheck disable=SC2034 # d_files_base used by caller
+d_files_base="$D_REPO"/files
 
 #
 # iSH-specific initialization guard for core /dev I/O stability.
