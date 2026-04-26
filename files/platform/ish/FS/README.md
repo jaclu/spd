@@ -1,1 +1,1 @@
-# Files for iSH - FileSystem dependant
+# Files for iSH - FileSystem dependent

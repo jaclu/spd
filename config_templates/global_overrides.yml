@@ -10,6 +10,10 @@
 # only using the minim to get the deploy through
 #
 
+# mostly a debug feature, if enabled copy_items() refuses to overwrite existing files
+SPD_FOO: true
+SPD_NO_FILE_COPY_REPLACEMENTS: "{{ SPD_FOO }}"
+
 # SPD_APK_REMOVE:
 SPD_APK_INSTALL:
   # - bash # The GNU Bourne Again shell
@@ -29,6 +33,20 @@ SPD_DEBIAN_APT_INSTALL:
 SPD_DEVUAN_APT_INSTALL:
   - autossh
 
+# SPD_FILES_UNIVERSAL_ULB: myip
+# SPD_FILES_ALPINE_ULB: Mapk
+# SPD_FILES_DEBIAN_ULB: Mapt
+# SPD_FILES_DEVUAN_ULB: Mapt-dummy
+# SPD_FILES_ISH_ULB: logger
+# SPD_FILES_ISH_ULSB: halt
+# SPD_FILES_ISH_AOK_ULB: elock
+# SPD_FILES_ISH_NOT_AOK_ULB: uptime
+# SPD_FILES_ISH_ALPINE_ULB: apk-find-pkg
+# SPD_FILES_ISH_DEBIAN_ULB: idev_ip
+# SPD_FILES_ISH_DEBIAN_ULSB: fake-init
+# SPD_FILES_ISH_DEVUAN_ULB: console-restart
+# SPD_FILES_ISH_DEVUAN_ULSB: kill_tail_logging
+
 # Forced on
 # SPD_PKGS_MAN: true # If set to 1 man pages will be deployed
 # SPD_PKGS_DEVEL: true # If set to 1 development packages will be deployed
@@ -45,4 +63,4 @@ SPD_DEVUAN_APT_INSTALL:
 
 # SPD_ACTIVE_PURGE_DISABLED_PACKAGES: true
 # SPD_ACTIVE_PURGE_DISABLED_PACKAGES:
-# SPD_DEBUG_LEVEL: 2 # no output
+# SPD_DEBUG_LEVEL: 0 # no output

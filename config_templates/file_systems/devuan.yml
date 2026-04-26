@@ -123,3 +123,11 @@ SPD_DEVUAN_APT_LINTING:
 SPD_DEVUAN_APT_PURGE:
 
 SPD_SERVICE_HANDLER: sysv-init
+
+# Decide what to copy from files/universal/usr_local_bin -> /usr/local/sbin
+SPD_FILES_UNIVERSAL_ULB: -all-
+
+# Decides what to copy from files/FS/Debian/usr_local_bin
+# Since Devuan can be seen as equiv of Debian in this context, the same source
+# folder is used, but file selection can be modified
+SPD_FILES_DEVUAN_ULB: -all-

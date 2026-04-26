@@ -59,6 +59,20 @@ and configs/ does not exist config_templates/ are copied there for initial usage
 configs/ is in .gitignore, and if it exists it is never touched. So any changes
 there will never be meddled with if the repo is updated.
 
+### file selection
+
+Not providing a selection when a folder of files, like a recommended content for
+/usr/local/bin needs to be copied is inconclusive, so there are two tags that can be used.
+
+If all content (typically the default) should be copied use: -all-
+If no files should be copied use: -none-
+If a subset of the content in the source should be copied, list the files selected
+without path: myip network-check
+
+Obviusly its up to the user what changes are made, but in general if a minor
+change in what files are deployed is the intended change, it is often simpler to just
+override a file selection like SPD_FILES_ISH_ALPINE_ULB in configs/global_overrides.yml
+
 ## SPD_DEBUG_LEVEL
 
 Standard output selection lower debug levels

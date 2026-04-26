@@ -58,7 +58,7 @@ task_prepare() {
             is_debug_lvl 1 && echo
         fi
     }
-    [ -n "$SPD_APK_DEVEL" ] && {
+    [ -n "$SPD_PKGS_LINTING" ] && {
         # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
         if is_yaml_true "$SPD_PKGS_LINTING"; then
             lbl_3 "Will install linting packages" 1
@@ -98,14 +98,19 @@ task_execute() {
         cmd_wrapper_t apk add $SPD_APK_INSTALL
     }
 
-    # musl doesn't need locale-gen, and it doesn't even have it, so skip this step if musl is used
-    is_musl_lib || locale_gen
+    # # musl doesn't need locale-gen, and it doesn't even have it, so skip this step
+    # # if musl is used
+    # is_musl_lib || locale_gen
 
     #  - name: Generate sshd host keys
     #   command: ssh-keygen -A
     # when:
     #  - use_sshd | default(false)
     #  - ift_alpine_generate_sshd_host_keys | default(false) | bool
+
+    # shellcheck disable=SC2154 # SPD_FILES_ALPINE_ULB vars via config files
+    copy_items "$D_REPO"/files/FS/Alpine/usr_local_bin /usr/local/bin \
+        "$SPD_FILES_ALPINE_ULB"
 }
 
 #=====================================================================
@@ -114,7 +119,7 @@ task_execute() {
 #
 #=====================================================================
 
-# module_name="FileSystem-Alpine"
+# module_name="fileSystem-Alpine"
 
 D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare-env.sh
@@ -125,9 +130,7 @@ fs_is_alpine || err_msg "Rejected, not running on a Alpine FS"
 # Ensure options are valid
 case "$opt_task" in
     install | force | force-install) ;;
-    *)
-        cmd_line_param_error "opt_task must be install / force-install"
-        ;;
+    *) cmd_line_param_error "opt_task must be install / force-install" ;;
 esac
 
 #
@@ -144,6 +147,7 @@ expand_show_spd_var SPD_APK_INSTALL
 expand_show_spd_var SPD_APK_REMOVE
 expand_show_spd_var SPD_APK_DEVEL
 expand_show_spd_var SPD_APK_LINTING
+ensure_spd_var_defined SPD_FILES_ALPINE_ULB
 
 is_musl_lib || expand_yaml_config_var SPD_LOCALES
 

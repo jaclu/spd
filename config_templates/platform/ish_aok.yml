@@ -1,3 +1,10 @@
 ---
+#
 # For example of the FileSystem config needs to be changed for this platform
 # it can be overridden here
+# Since this is a sub-cathegory of ish, this should be read AFTER ish.yml
+# to allow overrides of the general iSH config for this environment
+#
+
+# <spd> files/platform/ish/AOK/usr_local_bin -> /usr/local/bin
+SPD_FILES_ISH_AOK_ULB: -all-

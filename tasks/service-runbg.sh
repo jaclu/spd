@@ -22,10 +22,10 @@ task_prepare() {
     check_for_abort 1 task_prepare
     check_service_env runbg
 
-    # is_ish || { # disabled during deubgging, re-enable once done
-    #     lbl_2 "Dependency issue - Can only be used on iSH"
-    #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
-    # }
+    is_ish_abstract || {
+        lbl_2 "Dependency issue - Can only be used on iSH"
+        [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
+    }
     return "$spd_dependency_issue"
 }
 
@@ -50,11 +50,8 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 
 # Ensure options are valid
 case "$opt_task" in
-    remove | force | force-install) ;;
-    install) ;;
-    *)
-        cmd_line_param_error "opt_task must be install/force-install/remove"
-        ;;
+    install | remove | force | force-install) ;;
+    *) cmd_line_param_error "opt_task must be install / force-install / remove" ;;
 esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_runbg.yml

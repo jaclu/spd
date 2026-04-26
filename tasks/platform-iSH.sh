@@ -29,10 +29,6 @@ reactivate_busybox_uptime() {
     fi
 }
 
-handle_usr_local_bin() {
-    
-}
-
 alpine_use_old_mtr() {
     _auom_mtr_found=0
     if command -v mtr >/dev/null; then
@@ -80,33 +76,45 @@ ish_alpine_tasks() {
 
     [ -d /ish ] && {
         lbl_3 "Removing iSH Alpine auto repository updater" 1
-        rm -rf /ish || {
-            err_msg "Failed to remove /ish directory"
-        }
+        safe_remove /ish
+        # rm -rf /ish || {
+        #     err_msg "Failed to remove /ish directory"
+        # }
     }
-    alpine_release_ge 93.20 && alpine_use_old_mtr # not used ATM
+    # alpine_release_ge 3.20 && alpine_use_old_mtr # not used ATM
     reactivate_busybox_uptime
+
+    # shellcheck disable=SC2154 # SPD_FILES_ISH_ALPINE_ULB vars via config files
+    copy_items "$D_REPO"/files/platform/ish/FS/Alpine/usr_local_bin /usr/local/bin \
+        "$SPD_FILES_ISH_ALPINE_ULB"
 }
 
-ish_aok_tasks() {
-    # iSH-AOK specific tasks
-    is_ish_aok || return 1
-    lbl_3 "Copying iSH-AOK bins to /usr/local/bin" 1
+ish_debian_tasks() {
+    # iSH using Debian FS
+    fs_is_debian || return 1
 
-    # Install iSH AOK specific files
-    cp -a "$D_REPO"/files/platform/ish/AOK/usr_local_bin/* /usr/local/bin/ || {
-        err_msg "Failed to copy iSH AOK files to /usr/local/bin"
+    # shellcheck disable=SC2154 # SPD_FILES_ISH_* vars via config files
+    {
+        copy_items "$D_REPO"/files/platform/ish/FS/Debian/usr_local_bin \
+            /usr/local/bin "$SPD_FILES_ISH_DEBIAN_ULB"
+
+        copy_items "$D_REPO"/files/platform/ish/FS/Debian/usr_local_sbin \
+            /usr/local/sbin "$SPD_FILES_ISH_DEBIAN_ULSB"
     }
 }
 
-ish_not_aok_tasks() {
-    # Should only be done when kernel is not iSH-AOK
-    is_ish_aok && return 1
+ish_devuan_tasks() {
+    # iSH using Devuan FS
+    fs_is_devuan || return 1
 
-    lbl_3 "Only if kernel is not iSH-AOK" 1
-    lbl_4 "Copying custom uptime to /usr/local/bin" 1
-    cp -a "$D_REPO"/files/platform/ish/not-AOK/usr_local_bin/uptime /usr/local/bin/ || {
-        err_msg "Failed to copy custom uptime to /usr/local/bin"
+    # shellcheck disable=SC2154 # SPD_FILES_ISH_* vars via config files
+    {
+        # Since Devuan can be seen as equiv of Debian in this context,
+        # the same source folder is used, but file selection can be modified
+        copy_items "$D_REPO"/files/platform/ish/FS/Debian/usr_local_bin \
+            /usr/local/bin "$SPD_FILES_ISH_DEVUAN_ULB"
+        copy_items "$D_REPO"/files/platform/ish/FS/Debian/usr_local_sbin \
+            /usr/local/sbin "$SPD_FILES_ISH_DEVUAN_ULSB"
     }
 }
 
@@ -125,35 +133,31 @@ task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task" 1
 
-    lbl_3 "Copying iSH bins to /usr/local/bin" 1
-    cp -a "$D_REPO"/files/platform/ish/usr_local_bin/* /usr/local/bin/ || {
-        err_msg "Failed to copy iSH files to /usr/local/bin"
-    }
-
-    fs_is_alpine && ish_alpine_tasks
-
-    if is_ish_aok; then
-        ish_aok_tasks
-    else
-        ish_not_aok_tasks
+    if fs_is_alpine; then
+        ish_alpine_tasks
+    elif fs_is_debian; then
+        ish_debian_tasks
+    elif fs_is_devuan; then
+        ish_devuan_tasks
     fi
 
-    # FS Alpine
+    # shellcheck disable=SC2154 # SPD_FILES_ variables retrieved via config
+    {
+        copy_items "$D_REPO"/files/universal/usr_local_bin /usr/local/bin \
+            "$SPD_FILES_UNIVERSAL_ULB"
+        copy_items "$D_REPO"/files/platform/ish/usr_local_bin /usr/local/bin \
+            "$SPD_FILES_ISH_ULB"
+        copy_items "$D_REPO"/files/platform/ish/usr_local_sbin /usr/local/sbin \
+            "$SPD_FILES_ISH_ULSB"
+        if is_ish_aok; then
+            copy_items "$D_REPO"/files/platform/ish/AOK/usr_local_bin /usr/local/bin \
+                "$SPD_FILES_ISH_AOK_ULB"
+        else
+            copy_items "$D_REPO"/files/platform/ish/not-AOK/usr_local_bin /usr/local/bin \
+                "$SPD_FILES_ISH_NOT_AOK_ULB"
+        fi
+    }
 
-    # Install etc/inittab-alpine
-    # Install extras to /usr/local/bin
-    # Generate sshd host keys
-    # Link the fake init to /sbin/init
-
-    # FS Devuan
-    # Install custom /etc/init.d/rc
-    # Generate required locales
-    # Install etc/inittab-devuan
-
-    # FS Debian, old version 10
-    # Deploy custom_openssh {{ ift_openssh_tgz }}
-    # Install custom /etc/init.d/rc
-    # Link the fake init to /sbin/init
 }
 
 #=====================================================================
@@ -183,7 +187,7 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
 
-if ! is_ish && ! is_ish_aok && ! is_chrooted_ish; then
+if ! is_ish_abstract; then
     err_msg "Rejected, not running on iSH related platform"
 fi
 
@@ -193,10 +197,33 @@ case "$opt_task" in
         lbl_1 "WARNING this task runs other tasks, they will all use force-install - be warned!" 1
         ;;
     install) ;;
-    *)
-        cmd_line_param_error "opt_task must be install / force-install"
-        ;;
+    *) cmd_line_param_error "opt_task must be install / force-install" ;;
 esac
+
+#
+# Expand any variables that need to be expanded
+#
+lbl_2 "Config variables used" 1
+
+# To avoid unintended copying, all used variables must be defined
+fs_is_alpine && ensure_spd_var_defined SPD_FILES_ISH_ALPINE_ULB
+fs_is_debian && {
+    ensure_spd_var_defined SPD_FILES_ISH_DEBIAN_ULB
+    ensure_spd_var_defined SPD_FILES_ISH_DEBIAN_ULSB
+}
+fs_is_devuan && {
+    ensure_spd_var_defined SPD_FILES_ISH_DEVUAN_ULB
+    ensure_spd_var_defined SPD_FILES_ISH_DEVUAN_ULSB
+
+}
+ensure_spd_var_defined SPD_FILES_UNIVERSAL_ULB
+ensure_spd_var_defined SPD_FILES_ISH_ULB
+ensure_spd_var_defined SPD_FILES_ISH_ULSB
+if is_ish_aok; then
+    ensure_spd_var_defined SPD_FILES_ISH_AOK_ULB
+else
+    ensure_spd_var_defined SPD_FILES_ISH_NOT_AOK_ULB
+fi
 
 early_start_runbg
 
@@ -205,28 +232,33 @@ early_start_runbg
 #
 expand_yaml_config_var SPD_PKGS_MAN
 
+cmd_create_output_file # Create it once to reduce overhead
 if fs_is_alpine; then
-    "$D_REPO"/tasks/FileSystem-Alpine.sh "$opt_task" || script_utils_cleanup 1
+    "$D_REPO"/tasks/fileSystem-Alpine.sh "$opt_task" || script_utils_cleanup 1
 elif fs_is_devuan; then
-    "$D_REPO"/tasks/FileSystem-Devuan.sh "$opt_task" || script_utils_cleanup 1
+    "$D_REPO"/tasks/fileSystem-Devuan.sh "$opt_task" || script_utils_cleanup 1
 elif fs_is_debian; then
-    "$D_REPO"/tasks/FileSystem-Debian.sh "$opt_task" || script_utils_cleanup 1
+    "$D_REPO"/tasks/fileSystem-Debian.sh "$opt_task" || script_utils_cleanup 1
 else
-    err_msg "Unrecognized filesystem, cannot continue"
+    "$D_REPO"/tasks/files-universal.sh "$opt_task" || script_utils_cleanup 1
 fi
+cmd_purge_output_file # Clear it to avoid having
 
-# Services
-"$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
-command -v autossh >/dev/null && {
-    "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
-}
+# #
+# # Services
+# #
+# "$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
+# command -v autossh >/dev/null && {
+#     "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
+# }
 
-# "$D_REPO"/tasks/service-runbg.sh "$opt_task"
-# "$D_REPO"/tasks/service-autossh.sh "$opt_task"
+lbl_1 "Back to Module: $module_name" 1
 
-echo # Spacer before this task begins
 task_prepare
 task_execute
+
+set_debug_lvl 9
+# lbl_2 "current_dbg_lvl: $current_dbg_lvl"
 
 # Exit in a controlled manner, cleaning up temp files remaining etc
 script_utils_cleanup 0

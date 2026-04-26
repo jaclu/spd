@@ -8,54 +8,51 @@ task_prepare() {
     lbl_2 "$module_name: Preparing task" 1
     check_for_abort 1 task_prepare
 
-    fs_is_debian || {
-        lbl_3 "$module_name: Dependency issue - This is not running on an Debian FS"
+    fs_is_devuan || {
+        lbl_3 "$module_name: Dependency issue - This is not running on an Devuan FS"
         spd_dependency_issue=1
     }
 
-    [ -n "$SPD_DEBIAN_APT_PURGE" ] && {
-        lbl_3 "Will purge items in SPD_DEBIAN_APT_PURGE" 1
-        display_list_content SPD_DEBIAN_APT_PURGE no_label
-        is_debug_lvl 1 && echo
+    [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
+        lbl_3 "Will remove items in SPD_DEVUAN_APT_PURGE" 1
+        display_list_content SPD_DEVUAN_APT_PURGE no_label
     }
-    lbl_3 "Will install items in SPD_DEBIAN_APT_INSTALL" 1
-    display_list_content SPD_DEBIAN_APT_INSTALL no_label
-    is_debug_lvl 1 && echo
+    lbl_3 "Will install items in SPD_DEVUAN_APT_INSTALL" 1
+    display_list_content SPD_DEVUAN_APT_INSTALL no_label
 
     # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
     if is_yaml_true "$SPD_PKGS_MAN"; then
         lbl_4 "Will install man pages" 1
-        SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL man-db"
+        SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL man-db"
     elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
         lbl_4 "Will purge man pages" 1
-        SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE man-db"
+        SPD_DEVUAN_APT_PURGE="$SPD_DEVUAN_APT_PURGE man-db"
     fi
-
-    [ -n "$SPD_DEBIAN_APT_DEVEL" ] && {
-        # shellcheck disable=SC2154 # SPD_ vars via config files
+    [ -n "$SPD_DEVUAN_APT_DEVEL" ] && {
+        # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
         if is_yaml_true "$SPD_PKGS_DEVEL"; then
             lbl_3 "Will install devel packages" 1
-            display_list_content SPD_DEBIAN_APT_DEVEL no_label
-            SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_DEVEL"
+            SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL $SPD_DEVUAN_APT_DEVEL"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
             is_debug_lvl 1 && echo
         elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will purge devel packages" 1
-            display_list_content SPD_DEBIAN_APT_DEVEL no_label
-            SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_DEVEL"
+            SPD_DEVUAN_APT_PURGE="$SPD_DEVUAN_APT_PURGE $SPD_DEVUAN_APT_DEVEL"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
             is_debug_lvl 1 && echo
         fi
     }
-    [ -n "$SPD_DEBIAN_APT_LINTING" ] && {
-        # shellcheck disable=SC2154 # SPD_ vars via config files
+    # shellcheck disable=SC2154 # SPD_PKGS_LINTING vars via config files
+    [ -n "$SPD_DEVUAN_APT_LINTING" ] && {
         if is_yaml_true "$SPD_PKGS_LINTING"; then
             lbl_3 "Will install linting packages" 1
-            display_list_content SPD_DEBIAN_APT_LINTING no_label
-            SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_LINTING"
+            SPD_DEVUAN_APT_INSTALL="$SPD_DEVUAN_APT_INSTALL $SPD_DEVUAN_APT_LINTING"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
             is_debug_lvl 1 && echo
         elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
             lbl_3 "Will purge linting packages" 1
-            display_list_content SPD_DEBIAN_APT_LINTING no_label
-            SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_LINTING"
+            SPD_DEVUAN_APT_PURGE="$SPD_DEVUAN_APT_PURGE $SPD_DEVUAN_APT_LINTING"
+            display_list_content SPD_DEVUAN_APT_DEVEL no_label
             is_debug_lvl 1 && echo
         fi
     }
@@ -65,9 +62,6 @@ task_prepare() {
 task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task" 1
-    # cmd_create_output_file
-
-    fs_is_ubuntu && err_msg "Rejected, not allowed to run on Ubuntu"
 
     # needed to prevemt for example tzdata to pause the apt install with config
     # questions during a scripted deploy
@@ -80,18 +74,23 @@ task_execute() {
     lbl_4 "Then apt-get -y upgrade" 1
     cmd_wrapper_t apt-get -y upgrade
 
-    [ -n "$SPD_DEBIAN_APT_PURGE" ] && {
-        lbl_3 "Will purge Debian packages in SPD_DEBIAN_APT_PURGE" 1
+    [ -n "$SPD_DEVUAN_APT_PURGE" ] && {
+        lbl_3 "Will purge items in SPD_DEVUAN_APT_PURGE" 1
         # shellcheck disable=SC2086 # expansion intended here
-        cmd_wrapper_t apt-get purge -y $SPD_DEBIAN_APT_PURGE
+        cmd_wrapper_t apt-get -y purge $SPD_DEVUAN_APT_PURGE
     }
 
-    [ -n "$SPD_DEBIAN_APT_INSTALL" ] && {
-        lbl_3 "Installing Debian packages from SPD_DEBIAN_APT_INSTALL" 1
+    [ -n "$SPD_DEVUAN_APT_INSTALL" ] && {
+        lbl_3 "Installing Devuan packages from SPD_DEVUAN_APT_INSTALL" 1
         # shellcheck disable=SC2086 # expansion intended here
-        cmd_wrapper_t apt-get install -y $SPD_DEBIAN_APT_INSTALL
+        cmd_wrapper_t apt-get -y install $SPD_DEVUAN_APT_INSTALL
     }
-    # cmd_purge_output_file
+
+    # Since Devuan can be seen as equiv of Devuan in this context, the same source
+    # folder is used, but file selection can be modified
+    # shellcheck disable=SC2154 # SPD_FILES_DEVUAN_ULB vars via config files
+    copy_items "$D_REPO"/files/FS/Debian/usr_local_bin /usr/local/bin \
+        "$SPD_FILES_DEVUAN_ULB"
 }
 
 #=====================================================================
@@ -100,20 +99,18 @@ task_execute() {
 #
 #=====================================================================
 
-module_name="FileSystem-Debian"
+module_name="fileSystem-Devuan"
 
 D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
 
-fs_is_debian || err_msg "Rejected, not running on a Debian FS"
+fs_is_devuan || err_msg "Rejected, not running on a Devuan FS"
 
 # Ensure options are valid
 case "$opt_task" in
-    install) ;;
-    *)
-        cmd_line_param_error "opt_task must be install"
-        ;;
+    install | force | force-install) ;;
+    *) cmd_line_param_error "opt_task must be install / force-install" ;;
 esac
 
 #
@@ -126,10 +123,11 @@ expand_show_spd_var SPD_PKGS_MAN
 expand_show_spd_var SPD_PKGS_DEVEL
 expand_show_spd_var SPD_PKGS_LINTING
 
-expand_show_spd_var SPD_DEBIAN_APT_INSTALL
-expand_show_spd_var SPD_DEBIAN_APT_PURGE
-expand_show_spd_var SPD_DEBIAN_APT_DEVEL
-expand_show_spd_var SPD_DEBIAN_APT_LINTING
+expand_show_spd_var SPD_DEVUAN_APT_INSTALL
+expand_show_spd_var SPD_DEVUAN_APT_PURGE
+expand_show_spd_var SPD_DEVUAN_APT_DEVEL
+expand_show_spd_var SPD_DEVUAN_APT_LINTING
+ensure_spd_var_defined SPD_FILES_DEVUAN_ULB
 
 task_prepare
 task_execute

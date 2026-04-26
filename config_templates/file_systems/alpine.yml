@@ -188,3 +188,9 @@ SPD_APK_LINTING: # will be installed if SPD_PKGS_LINTING=1
 SPD_APK_REMOVE:
 
 SPD_SERVICE_HANDLER: openrc
+
+# Decide what to copy from files/universal/usr_local_bin -> /usr/local/sbin
+SPD_FILES_UNIVERSAL_ULB: -all-
+
+# Decide what to copy from files/FS/Alpine/usr_local_bin -> /usr/local/bin
+SPD_FILES_ALPINE_ULB: -all-

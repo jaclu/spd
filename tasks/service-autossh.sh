@@ -90,7 +90,7 @@ task_execute() {
 #
 #=====================================================================
 
-module_name="service_auossh.sh"
+module_name="service-auossh"
 # shellcheck disable=SC2034 # service_name used by caller
 service_name=autossh
 
@@ -100,10 +100,8 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 
 # Ensure options are valid
 case "$opt_task" in
-    install | remove) ;;
-    *)
-        cmd_line_param_error "opt_task must be install/remove"
-        ;;
+    install | remove | force | force-install) ;;
+    *) cmd_line_param_error "opt_task must be install / force-install / remove" ;;
 esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_autossh.yml

@@ -1,1 +1,1 @@
-# Files for iSH not useable on iSH-AOK
+# Files for iSH not usable on iSH-AOK
