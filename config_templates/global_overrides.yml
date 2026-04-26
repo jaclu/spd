@@ -10,28 +10,27 @@
 # only using the minim to get the deploy through
 #
 
+# SPD_ABORT: 2
+
 # mostly a debug feature, if enabled copy_items() refuses to overwrite existing files
-SPD_FOO: true
-SPD_NO_FILE_COPY_REPLACEMENTS: "{{ SPD_FOO }}"
+SPD_NO_FILE_COPY_REPLACEMENTS: true
 
 # SPD_APK_REMOVE:
 SPD_APK_INSTALL:
   # - bash # The GNU Bourne Again shell
   - openrc
   - autossh
+  # - procps
+
 # SPD_APK_DEVEL:
 # SPD_APK_LINTING:
 
-# SPD_DEBIAN_APT_PURGE:
-SPD_DEBIAN_APT_INSTALL:
-  - openrc
-  - autossh
-# SPD_DEBIAN_APT_DEVEL:
-# SPD_DEBIAN_APT_LINTING:
+# SPD_APT_PURGE:
+SPD_APT_INSTALL: openrc autossh
+# SPD_APT_DEVEL:
+# SPD_APT_LINTING:
 
-# SPD_DEVUAN_APT_PURGE:
-SPD_DEVUAN_APT_INSTALL:
-  - autossh
+# SPD_APT_PURGE:
 
 # SPD_FILES_UNIVERSAL_ULB: myip
 # SPD_FILES_ALPINE_ULB: Mapk
@@ -51,16 +50,16 @@ SPD_DEVUAN_APT_INSTALL:
 # SPD_PKGS_MAN: true # If set to 1 man pages will be deployed
 # SPD_PKGS_DEVEL: true # If set to 1 development packages will be deployed
 # SPD_PKGS_LINTING: true # If set to 1 linting packages will be deployed
-
 # Forced off
-# SPD_PKGS_MAN:
-# SPD_PKGS_DEVEL:
-# SPD_PKGS_LINTING:
+# SPD_PKGS_MAN: false
+# SPD_PKGS_DEVEL: false
+# SPD_PKGS_LINTING: false
+
+# SPD_ACTIVE_PURGE_DISABLED_PACKAGES: true
+# SPD_ACTIVE_PURGE_DISABLED_PACKAGES: false
 
 # Always use this service handler
 # SPD_SERVICE_HANDLER: openrc
 # # SPD_SERVICE_HANDLER: sysv-init
 
-# SPD_ACTIVE_PURGE_DISABLED_PACKAGES: true
-# SPD_ACTIVE_PURGE_DISABLED_PACKAGES:
 # SPD_DEBUG_LEVEL: 0 # no output

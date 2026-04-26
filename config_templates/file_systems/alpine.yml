@@ -182,6 +182,10 @@ SPD_APK_LINTING: # will be installed if SPD_PKGS_LINTING=1
   # 3.22 - segfaults
   - taplo # linter
 
+SPD_APK_MAN_PAGES:
+  - docs
+  - apk-tools-doc
+
 #
 #  Packages that should be actively removed
 #
