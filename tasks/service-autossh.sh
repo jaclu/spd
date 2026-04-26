@@ -47,9 +47,8 @@ tweak_script_file() {
 }
 
 task_prepare() {
-    # setting up any environmental dependencies in order for task_execute to be executed,
-    # such as installing dependencies if need be etc
-    # is_linux || err_msg "Will not run apt on non-Linux"
+    # In order to get a comprehensive listing of failed dependencies,
+    # this pass just flags issues
 
     [ -z "$service_handler_is_sourced" ] && {
         # Load handler of service tasks
@@ -98,8 +97,10 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
 
-# Ensure options are valid
-case "$opt_task" in
+# Can it run here?
+is_linux || err_msg "This can't run on non-Linux platforms"
+check_for_abort 0 "$0"
+case "$opt_task" in # Ensure options are valid
     install | remove | force | force-install) ;;
     *) cmd_line_param_error "opt_task must be install / force-install / remove" ;;
 esac
