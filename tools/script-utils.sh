@@ -70,6 +70,17 @@ is_int() {
     esac
 }
 
+is_yaml_true() {
+    _yt_s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
+    # [ -z "$_yt_s" ] && err_msg "is_yaml_true() - no param"
+    _yt_result=1 # default
+    case "$_yt_s" in
+        1 | yes | true) _yt_result=0 ;;
+        *) ;;
+    esac
+    return "$_yt_result"
+}
+
 #
 # Platform type identifiers
 #
@@ -79,9 +90,7 @@ is_linux() { # returns true if kernel is Linux, very broad check
 
 is_linux_native() { # Filters out chrooted and various Linux based derivates
     is_linux || return 1
-    if is_ish || is_termux || is_android || is_chrooted; then
-        return 1
-    fi
+    is_ish_abstract || return 1
     return 0
 }
 
@@ -112,14 +121,25 @@ is_chrooted() {
     # this quick and simple check doesn't work on ish
     # so lets pretend for now chroot does not happen on ish
     is_linux || return 1
-    [ ! -f /proc/self/mountinfo ] && return 1
+    [ -f /proc/self/mountinfo ] || return 1
     ! grep -q " / / " /proc/self/mountinfo
 }
 
+is_musl_lib() {
+    ldd /bin/sh 2>&1 | grep -qi musl
+}
+
+#
+#  Mostly for development builds
+#
 is_chrooted_ish() {
     # Relies on /opt/AOK/tools/do_chroot.sh or similar creating/removing this
     # file inside the chrooted env when entering/leaving the chroot
     is_chrooted && [ -f /etc/opt/chrooted_ish ]
+}
+
+is_ish_abstract() {
+    is_ish || is_chrooted_ish
 }
 
 #
@@ -141,21 +161,6 @@ fs_is_ubuntu() {
     grep -qs '^ID=ubuntu$' /etc/os-release
 }
 
-is_musl_lib() {
-    ldd /bin/sh 2>&1 | grep -qi musl
-}
-
-is_yaml_true() {
-    _yt_s="$(echo "$1" | tr '[:upper:]' '[:lower:]')"
-    # [ -z "$_yt_s" ] && err_msg "is_yaml_true() - no param"
-    _yt_result=1 # default
-    case "$_yt_s" in
-        1 | yes | true) _yt_result=0 ;;
-        *) ;;
-    esac
-    return "$_yt_result"
-}
-
 # ---  not currently used
 
 fs_is_gentoo() {
@@ -172,17 +177,18 @@ script_utils_cleanup() {
     _suc_ex_code="$1"
     _suc_no_custom="${2:-}" # if not empty, cleanup_custom() will not be called
     _suc_dont_display_residual_tmp_files="$3"
+
     # Remove all tmp files created by this script,
     # and display content if any, before removing them
     [ -z "$_suc_dont_display_residual_tmp_files" ] && {
         for _sc_f in $tmp_file_list; do
-            [ -s "$_sc_f" ] && {
+            if [ -s "$_sc_f" ]; then
                 # Only display if file has content
                 printf '\n=====   [%s]%s tmp-file %s still remains, displaying content   =====\n' \
                     "$$" "$app_name" "$_sc_f" >&2
                 cat "$_sc_f" >&2
                 printf '\n-----   end of tmp file, will remove it now   -----\n' >&2
-            }
+            fi
             [ -f "$_sc_f" ] && {
                 was_sys_path "$_sc_f" && {
                     printf '\nWARNING: tmp file: is in a sys path, not removing: %s\n' \
