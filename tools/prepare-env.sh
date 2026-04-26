@@ -279,7 +279,7 @@ check_for_abort() {
 #---------------------------------------------------------------------
 
 ensure_spd_var_defined() {
-    # Expands variable, then displays it if is_debug_lvl 3 is true
+    # Expands variable, then displays it if is_debug_lvl >= 3
     # otherwise print dependency warning and set spd_dependency_issue=1
     # to inicate dependency issue for caller
     _esvd_variable="$1"
@@ -287,7 +287,7 @@ ensure_spd_var_defined() {
     expand_yaml_config_var "$_esvd_variable"
     eval "_esvd_value=\"\${$_esvd_variable}\""
     if [ -n "$_esvd_value" ]; then
-        lbl_4 "$_esvd_variable:   $_esvd_value" 1
+        lbl_4 "$_esvd_variable:   $_esvd_value" 3
         return 0
     else
         lbl_3 "${module_name:-}: Dependency issue - $_esvd_variable no content/undefined"
