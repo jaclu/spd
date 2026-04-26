@@ -18,14 +18,24 @@ early_start_runbg() {
 }
 
 reactivate_busybox_uptime() {
+    #
+    # iSH can't use /proc/uptime, simplest fix is to replace any bin uptime
+    # with a symbolic link to busybox
+    # iSH-AOK doesn't have this issue
+    #
+    is_ish_aok && return
     if [ ! -L /usr/bin/uptime ] \
         || [ "$(readlink -f /usr/bin/uptime)" != "/bin/busybox" ]; then
         lbl_3 "Linking /usr/bin/uptime to /bin/busybox" 1
         if [ -e /usr/bin/uptime ]; then
             rm -f /usr/bin/uptime.ORG # only remove .ORG if it will be replaced
-            mv -f /usr/bin/uptime /usr/bin/uptime.ORG || exit 30
+            mv -f /usr/bin/uptime /usr/bin/uptime.ORG || {
+                err_msg "Failed to move /usr/bin/uptime -> /usr/bin/uptime.ORG"
+            }
         fi
-        ln -sf /bin/busybox /usr/bin/uptime || exit 31
+        ln -sf /bin/busybox /usr/bin/uptime || {
+            err_msg "Failed to link /bin/busybox to /usr/bin/uptime"
+        }
     fi
 }
 
@@ -82,7 +92,7 @@ ish_alpine_tasks() {
         # }
     }
     # alpine_release_ge 3.20 && alpine_use_old_mtr # not used ATM
-    reactivate_busybox_uptime
+    is_ish_aok || reactivate_busybox_uptime
 
     # shellcheck disable=SC2154 # SPD_FILES_ISH_ALPINE_ULB vars via config files
     copy_items "$D_REPO"/files/platform/ish/FS/Alpine/usr_local_bin /usr/local/bin \
@@ -118,17 +128,6 @@ ish_devuan_tasks() {
     }
 }
 
-task_prepare() {
-    # setting up any environmental dependencies in order for task_execute to be executed,
-    # such as installing dependencies if need be etc
-    # is_linux || err_msg "Will not run apt on non-Linux"
-
-    lbl_2 "$module_name: Preparing task" 1
-    check_for_abort 1 task_prepare
-
-    return "$spd_dependency_issue"
-}
-
 task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task" 1
@@ -157,7 +156,6 @@ task_execute() {
                 "$SPD_FILES_ISH_NOT_AOK_ULB"
         fi
     }
-
 }
 
 #=====================================================================
@@ -187,12 +185,13 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
 
+# Can it run here?
+is_linux || err_msg "This can't run on non-Linux platforms"
 if ! is_ish_abstract; then
-    err_msg "Rejected, not running on iSH related platform"
+    err_msg "Not running on iSH related platform"
 fi
-
-# Ensure options are valid
-case "$opt_task" in
+check_for_abort 0 "$0"
+case "$opt_task" in # Ensure options are valid
     force | force-install)
         lbl_1 "WARNING this task runs other tasks, they will all use force-install - be warned!" 1
         ;;
@@ -200,32 +199,7 @@ case "$opt_task" in
     *) cmd_line_param_error "opt_task must be install / force-install" ;;
 esac
 
-#
-# Expand any variables that need to be expanded
-#
-lbl_2 "Config variables used" 1
-
-# To avoid unintended copying, all used variables must be defined
-fs_is_alpine && ensure_spd_var_defined SPD_FILES_ISH_ALPINE_ULB
-fs_is_debian && {
-    ensure_spd_var_defined SPD_FILES_ISH_DEBIAN_ULB
-    ensure_spd_var_defined SPD_FILES_ISH_DEBIAN_ULSB
-}
-fs_is_devuan && {
-    ensure_spd_var_defined SPD_FILES_ISH_DEVUAN_ULB
-    ensure_spd_var_defined SPD_FILES_ISH_DEVUAN_ULSB
-
-}
-ensure_spd_var_defined SPD_FILES_UNIVERSAL_ULB
-ensure_spd_var_defined SPD_FILES_ISH_ULB
-ensure_spd_var_defined SPD_FILES_ISH_ULSB
-if is_ish_aok; then
-    ensure_spd_var_defined SPD_FILES_ISH_AOK_ULB
-else
-    ensure_spd_var_defined SPD_FILES_ISH_NOT_AOK_ULB
-fi
-
-early_start_runbg
+early_start_runbg # this allows iSH to continue in the background during this deploy
 
 #
 # Expand any variables that need to be expanded
@@ -244,21 +218,42 @@ else
 fi
 cmd_purge_output_file # Clear it to avoid having
 
-# #
-# # Services
-# #
-# "$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
-# command -v autossh >/dev/null && {
-#     "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
-# }
+#
+# Services
+#
+"$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
+command -v autossh >/dev/null && {
+    "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
+}
 
 lbl_1 "Back to Module: $module_name" 1
 
-task_prepare
-task_execute
+#
+# Expand any variables that need to be expanded
+#
+lbl_2 "Config variables used" 1
 
-set_debug_lvl 9
-# lbl_2 "current_dbg_lvl: $current_dbg_lvl"
+# To avoid unintended copying, all used file variables must be defined
+fs_is_alpine && expand_show_spd_var SPD_FILES_ISH_ALPINE_ULB
+fs_is_debian && {
+    expand_show_spd_var SPD_FILES_ISH_DEBIAN_ULB
+    expand_show_spd_var SPD_FILES_ISH_DEBIAN_ULSB
+}
+fs_is_devuan && {
+    expand_show_spd_var SPD_FILES_ISH_DEVUAN_ULB
+    expand_show_spd_var SPD_FILES_ISH_DEVUAN_ULSB
+
+}
+expand_show_spd_var SPD_FILES_UNIVERSAL_ULB
+expand_show_spd_var SPD_FILES_ISH_ULB
+expand_show_spd_var SPD_FILES_ISH_ULSB
+if is_ish_aok; then
+    expand_show_spd_var SPD_FILES_ISH_AOK_ULB
+else
+    expand_show_spd_var SPD_FILES_ISH_NOT_AOK_ULB
+fi
+
+task_execute
 
 # Exit in a controlled manner, cleaning up temp files remaining etc
 script_utils_cleanup 0

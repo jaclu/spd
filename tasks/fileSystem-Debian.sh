@@ -1,72 +1,41 @@
 #!/bin/sh
 
-task_prepare() {
-    # setting up any environmental dependencies in order for task_execute to be executed,
-    # such as installing dependencies if need be etc
-    # is_linux || err_msg "Will not run apt on non-Linux"
-
-    lbl_2 "$module_name: Preparing task" 1
-    check_for_abort 1 task_prepare
-
-    fs_is_debian || {
-        lbl_3 "$module_name: Dependency issue - This is not running on an Debian FS"
-        spd_dependency_issue=1
-    }
-
-    [ -n "$SPD_DEBIAN_APT_PURGE" ] && {
-        lbl_3 "Will purge items in SPD_DEBIAN_APT_PURGE" 1
-        display_list_content SPD_DEBIAN_APT_PURGE no_label
-        is_debug_lvl 1 && echo
-    }
-    lbl_3 "Will install items in SPD_DEBIAN_APT_INSTALL" 1
-    display_list_content SPD_DEBIAN_APT_INSTALL no_label
-    is_debug_lvl 1 && echo
-
-    # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
-    if is_yaml_true "$SPD_PKGS_MAN"; then
-        lbl_4 "Will install man pages" 1
-        SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL man-db"
-    elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
-        lbl_4 "Will purge man pages" 1
-        SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE man-db"
-    fi
-
-    [ -n "$SPD_DEBIAN_APT_DEVEL" ] && {
-        # shellcheck disable=SC2154 # SPD_ vars via config files
-        if is_yaml_true "$SPD_PKGS_DEVEL"; then
-            lbl_3 "Will install devel packages" 1
-            display_list_content SPD_DEBIAN_APT_DEVEL no_label
-            SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_DEVEL"
-            is_debug_lvl 1 && echo
-        elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
-            lbl_3 "Will purge devel packages" 1
-            display_list_content SPD_DEBIAN_APT_DEVEL no_label
-            SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_DEVEL"
-            is_debug_lvl 1 && echo
-        fi
-    }
-    [ -n "$SPD_DEBIAN_APT_LINTING" ] && {
-        # shellcheck disable=SC2154 # SPD_ vars via config files
-        if is_yaml_true "$SPD_PKGS_LINTING"; then
-            lbl_3 "Will install linting packages" 1
-            display_list_content SPD_DEBIAN_APT_LINTING no_label
-            SPD_DEBIAN_APT_INSTALL="$SPD_DEBIAN_APT_INSTALL $SPD_DEBIAN_APT_LINTING"
-            is_debug_lvl 1 && echo
-        elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
-            lbl_3 "Will purge linting packages" 1
-            display_list_content SPD_DEBIAN_APT_LINTING no_label
-            SPD_DEBIAN_APT_PURGE="$SPD_DEBIAN_APT_PURGE $SPD_DEBIAN_APT_LINTING"
-            is_debug_lvl 1 && echo
-        fi
-    }
-    return "$spd_dependency_issue"
-}
-
 task_execute() {
     check_for_abort 0 task_execute
     lbl_2 "$module_name: Executing task" 1
+    _te_installs="SPD_APT_INSTALL"
+    _te_purges="SPD_APT_PURGE"
 
-    fs_is_ubuntu && err_msg "Rejected, not allowed to run on Ubuntu"
+    # shellcheck disable=SC2154 # SPD_PKGS_MAN vars via config files
+    if is_yaml_true "$SPD_PKGS_MAN"; then
+        lbl_3 "Will install man pages: $SPD_APT_MAN_PAGES" 1
+        SPD_APT_INSTALL="$SPD_APT_INSTALL $SPD_APT_MAN_PAGES"
+        _te_installs="$_te_installs SPD_APT_MAN_PAGES"
+    elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        lbl_3 "Will remove man pages: $SPD_APT_MAN_PAGES" 1
+        SPD_APT_PURGE="$SPD_APT_PURGE $SPD_APT_MAN_PAGES"
+        _te_purges="$_te_purges SPD_APT_MAN_PAGES"
+    fi
+    # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
+    if is_yaml_true "$SPD_PKGS_DEVEL"; then
+        lbl_3 "Will install devel packages: $SPD_APT_DEVEL" 1
+        SPD_APT_INSTALL="$SPD_APT_INSTALL $SPD_APT_DEVEL"
+        _te_installs="$_te_installs SPD_APT_DEVEL"
+    elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        lbl_3 "Will remove devel packages: $SPD_APT_DEVEL" 1
+        SPD_APT_PURGE="$SPD_APT_PURGE $SPD_APT_DEVEL"
+        _te_purges="$_te_purges SPD_APT_DEVEL"
+    fi
+    # shellcheck disable=SC2154 # SPD_PKGS_DEVEL vars via config files
+    if is_yaml_true "$SPD_PKGS_LINTING"; then
+        lbl_3 "Will install linting packages: $SPD_APT_LINTING" 1
+        SPD_APT_INSTALL="$SPD_APT_INSTALL $SPD_APT_LINTING"
+        _te_installs="$_te_installs SPD_APT_LINTING"
+    elif is_yaml_true "$SPD_ACTIVE_PURGE_DISABLED_PACKAGES"; then
+        lbl_3 "Will remove linting packages: $SPD_APT_LINTING" 1
+        SPD_APT_PURGE="$SPD_APT_PURGE $SPD_APT_LINTING"
+        _te_purges="$_te_purges SPD_APT_LINTING"
+    fi
 
     # needed to prevemt for example tzdata to pause the apt install with config
     # questions during a scripted deploy
@@ -79,16 +48,18 @@ task_execute() {
     lbl_4 "Then apt-get -y upgrade" 1
     cmd_wrapper_t apt-get -y upgrade
 
-    [ -n "$SPD_DEBIAN_APT_PURGE" ] && {
-        lbl_3 "Will purge Debian packages in SPD_DEBIAN_APT_PURGE" 1
+    [ -n "$SPD_APT_PURGE" ] && {
+        lbl_3 "Will purge Debian packages based on: $_te_purges" 1
+        display_list_content SPD_APT_PURGE no_label
         # shellcheck disable=SC2086 # expansion intended here
-        cmd_wrapper_t apt-get purge -y $SPD_DEBIAN_APT_PURGE
+        cmd_wrapper_t apt-get purge -y $SPD_APT_PURGE
     }
 
-    [ -n "$SPD_DEBIAN_APT_INSTALL" ] && {
-        lbl_3 "Installing Debian packages from SPD_DEBIAN_APT_INSTALL" 1
+    [ -n "$SPD_APT_INSTALL" ] && {
+        lbl_3 "Installing Debian packages based on: $_te_installs" 1
+        display_list_content SPD_APT_INSTALL no_label
         # shellcheck disable=SC2086 # expansion intended here
-        cmd_wrapper_t apt-get install -y $SPD_DEBIAN_APT_INSTALL
+        cmd_wrapper_t apt-get install -y $SPD_APT_INSTALL
     }
 
     # shellcheck disable=SC2154 # SPD_FILES_DEBIAN_ULB vars via config files
@@ -108,11 +79,18 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # shellcheck source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
 
+# Can it run here?
+echo "fs_is_debian [$(
+    fs_is_debian
+    echo $?
+)] fs_is_ubuntu [$(
+    fs_is_ubuntu
+    echo $?
+)] "
 fs_is_debian || err_msg "Rejected, not running on a Debian FS"
-
-# Ensure options are valid
-case "$opt_task" in
-    install) ;;
+check_for_abort 0 "$0"
+case "$opt_task" in # Ensure options are valid
+    install | force | force-install) ;;
     *) cmd_line_param_error "opt_task must be install / force-install" ;;
 esac
 
@@ -121,18 +99,19 @@ esac
 #
 lbl_2 "Config variables used" 2
 
+expand_show_spd_var SPD_APT_INSTALL
+expand_show_spd_var SPD_APT_PURGE
+
 expand_show_spd_var SPD_ACTIVE_PURGE_DISABLED_PACKAGES
 expand_show_spd_var SPD_PKGS_MAN
 expand_show_spd_var SPD_PKGS_DEVEL
 expand_show_spd_var SPD_PKGS_LINTING
+expand_show_spd_var SPD_FILES_DEBIAN_ULB
 
-expand_show_spd_var SPD_DEBIAN_APT_INSTALL
-expand_show_spd_var SPD_DEBIAN_APT_PURGE
-expand_show_spd_var SPD_DEBIAN_APT_DEVEL
-expand_show_spd_var SPD_DEBIAN_APT_LINTING
-ensure_spd_var_defined SPD_FILES_DEBIAN_ULB
+expand_yaml_config_var SPD_APT_DEVEL
+expand_yaml_config_var SPD_APT_LINTING
+expand_yaml_config_var SPD_APT_MAN_PAGES
 
-task_prepare
 task_execute
 
 # Exit in a controlled manner, cleaning up temp files remaining etc
