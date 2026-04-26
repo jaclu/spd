@@ -222,9 +222,9 @@ cmd_purge_output_file # Clear it to avoid having
 # Services
 #
 "$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
-command -v autossh >/dev/null && {
-    "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
-}
+# command -v autossh >/dev/null && {
+#     "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
+# }
 
 lbl_1 "Back to Module: $module_name" 1
 
