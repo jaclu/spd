@@ -1,62 +1,32 @@
 # Simple Posix Deploy
 
-Deploy tool with minimal dependencies, to run it initially only needs posix any
-dependencies for spd itself is handled from within.
+This is in the process of a total rewrite, last old stable prior to this is tagged
+with `latest-stable` but it's pretty dated...
+
+Deploy tool with minimal dependencies, to run it initially only needs posix shell,
+any dependencies for spd itself is handled from within.
 Suitable for deployment of minimalistic environments, such as iSH/Termux etc.
 Primary purpose is to be used instead of Ansible etc, on limited environments where
 it can't run locally, or the task over head makes it unpractical to run from a
 deploy sever.
 
-advanced tools are not practically usable. Typical reasons:
+If not using git on the target platform, clone this then copy/tar it to external/cloud
+storage, and then either run it directly from there or untar it first.
 
-- Can't be run locally on the target
-- Overhead per remote task is so high, that a deploy "takes for ever"
-- Setting up the target to run the deploy tool is so complex that it in it self
-  becomes a major pain.
-
-spd initially only depends on /bin/sh, any additional tools needed like
-grep/awk/sed etc will be scanned for, if possible be installed, otherwise
-reported as a failed dependency in need of manual handling.
-
-If this is deployed on a mountable file system, be it iCloud, USB-stick etc
-
-All that should be needed is to have this tool-set mounted on the target system
-and run `bin/deploy`
+iCloud on iSH is so slow, that copying this to an iCloud destination is glacial.
+In that scenario taring it to iCloud is almost instant, and the recommended approach.
 
 ## Current status
 
-Far from done, but can be tested on iSH, make sure to remove
+Far from done, but kind of runs now. Can be tested on iSH, make sure to remove
 `config_templates/global_overrides.yml` and/or `configs/global_overrides.yml`
 for simplicity, or edit them accordingly.
 
 Then run `./tasks/platform-iSH.sh`
 
-## SPD modularity
-
-Main workflow is to first set up the env, reading relevant configs and overrides,
-then gathering all tasks in the tasks list and executing them one by one
-
-- Gather defaults
-- Override with custom configs
-- Ensure all listed tasks was found
-- Execute task list one by one
-- Update global state of he deploy
-
-Add a passive option, to just list what tasks would be done
-
-### tasks
-
-- Simple to detect config params needed
-- public functions
-  - task_prepare - setting up any environmental dependencies in order for task_execute
-    to be executed, such as installing dependencies if need be etc
-  - task_execute - perform the actual task
-  - task_cleanup - cleanup of any temp files etc created by the task
-  - task_abort - restoration of all files/changes a task did, if unable to complete
-
 ## spd_dependency_issue
 
-1 - neither install or remove can be done
+1 - neither install nor remove can be done
 2 - remove but not install can be done
 
 ## Config files
@@ -67,23 +37,27 @@ and configs/ does not exist config_templates/ are copied there for initial usage
 configs/ is in .gitignore, and if it exists it is never touched. So any changes
 there will never be meddled with if the repo is updated.
 
-### file selection
+### File selection
 
 Not providing a selection when a folder of files, like a recommended content for
-/usr/local/bin needs to be copied is inconclusive, so there are two tags that can be used.
+/usr/local/bin needs to be copied is inconclusive, and unspecified selections are
+rejected.
+
+There are two tags that can be used.
 
 If all content (typically the default) should be copied use: -all-
 If no files should be copied use: -none-
+
 If a subset of the content in the source should be copied, list the files selected
 without path: myip network-check
 
-Obviusly its up to the user what changes are made, but in general if a minor
+Obviusly its up to each and everyone what changes are made, but in general if a minor
 change in what files are deployed is the intended change, it is often simpler to just
 override a file selection like SPD_FILES_ISH_ALPINE_ULB in configs/global_overrides.yml
 
 ## SPD_DEBUG_LEVEL
 
-Standard output selection lower debug levels
+Standard output selection via lower debug levels
 
 - 0 - Totally quiet, only displaying errors, for integration into other tools
 - 1 - Normal progress displayed, commands run with cmd_wrapper will only display errors
