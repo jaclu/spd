@@ -24,6 +24,8 @@ reactivate_busybox_uptime() {
     # iSH-AOK doesn't have this issue
     #
     is_ish_aok && return
+    ! alpine_release_ge 3.19 && return # not an issue before 3.19
+
     if [ ! -L /usr/bin/uptime ] \
         || [ "$(readlink -f /usr/bin/uptime)" != "/bin/busybox" ]; then
         lbl_3 "Linking /usr/bin/uptime to /bin/busybox" 1

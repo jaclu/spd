@@ -65,3 +65,9 @@ Deploy custom_openssh {{ ift_openssh_tgz }}
 Install custom /etc/init.d/rc
 
 Link the fake init to /sbin/init
+
+## regular uptime ok on Alpine < 3.19
+
+platform-iSH.sh:reactivate_busybox_uptime
+
+double check it actually works on older Alpines
