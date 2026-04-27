@@ -418,17 +418,19 @@ select_safe_now_method() { # local usage by safe_now()
     }
     # log_it "select_safe_now_method()"
 
-    if [ -d /proc ] && [ -f /proc/version ]; then
-        selected_safe_now_mthd="date" # Linux with sub-second precision
-    elif [ "$(uname)" = "Linux" ]; then
-        selected_safe_now_mthd="date" # Termux or other Linux variations
-    elif command -v gdate >/dev/null; then
-        selected_safe_now_mthd="gdate" # macOS, using GNU date if available
-    elif command -v perl >/dev/null; then
-        selected_safe_now_mthd="perl" # Use Perl if date is not available
+    # Probe actual output: %3N is a GNU extension, BusyBox date silently ignores it
+    # and returns seconds only — so test the output length rather than inferring from OS
+    _snm_test="$(date +%s%3N 2>/dev/null)"
+    if [ "${#_snm_test}" -ge 13 ]; then
+        selected_safe_now_mthd="date" # date supports ms precision
+    elif command -v gdate >/dev/null 2>&1; then
+        selected_safe_now_mthd="gdate" # macOS with GNU date
+    elif command -v perl >/dev/null 2>&1; then
+        selected_safe_now_mthd="perl" # fallback via Perl
     else
-        selected_safe_now_mthd="date" # Fallback
+        selected_safe_now_mthd="date" # last resort, seconds-only
     fi
+    unset _snm_test
 }
 
 safe_now() {
