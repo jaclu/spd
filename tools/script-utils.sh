@@ -481,6 +481,19 @@ time_span() { # display_menu() / check_speed_cutoff()
 }
 
 display_time_elapsed() {
+    #
+    # Duration param is assumed to be a timespan in seconds
+    # This displays  a time duration in human readable form
+    #
+    # under a minute- display it as 34s
+    #
+    # a minute or more - display it in hh:mm:ss notation 0:03:21
+    #
+    # t1="$(date +%s)"
+    # do something...
+    # t_duration="$(($(date +%s) - t1))"
+    # s_time_elapsed=$(display_time_elapsed "$t_duration)")
+    #
     _dte_duration="$1"
 
     if [ "$_dte_duration" -gt 59 ]; then
@@ -495,9 +508,10 @@ display_time_elapsed() {
 
 display_app_run_time() {
     # additional notices can be added in $1
-    _dart_msg="${1:-}" # linting safe way to handle "optional" parameters...
-    _dart_app_run_time=$(($(date +%s) - t_start))
-    _dart_te=$(display_time_elapsed "$_dart_app_run_time")
+    _dart_msg="${1:-}"                                     # linting safe way to handle "optional" parameters...
+    _dart_app_run_time=$(($(date +%s) - t_start))          # runtime in seconds
+    _dart_te=$(display_time_elapsed "$_dart_app_run_time") # human readable
+    # _dart_te=$(display_time_elapsed "$(($(date +%s) - t_start))")
     echo
     log_it "Time elapsed: $_dart_te - $app_name $_dart_msg"
 }
