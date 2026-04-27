@@ -10,7 +10,7 @@
 #
 SPD_ABORT: 0
 
-SPD_DEBUG_LEVEL: 1
+SPD_DEBUG_LEVEL: 2
 SPD_ACTIVE_PURGE_DISABLED_PACKAGES: false
 
 # mostly a debug feature, if enabled copy_items() refuses to overwrite existing files
