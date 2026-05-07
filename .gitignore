@@ -19,3 +19,6 @@ Icon
 
 # Local configs
 configs/
+
+.user_warned
+
