@@ -70,9 +70,6 @@ copy_items() {
                 err_msg "copy_items() - file already exists: $_ci_f_dst"
             }
             lbl_4 "  $_ci_f_src -> $_ci_f_dst" 1
-            [ -e "$_ci_f_dst" ] && is_yaml_true "SPD_NO_FILE_COPY_REPLACEMENTS" && {
-                err_msg "copy_items() - file already exists: $_ci_f_dst"
-            }
             cp -a "$_ci_f_src" "$_ci_f_dst" || {
                 err_msg "copy_items() - Failed to copy $_ci_f_src"
             }
