@@ -41,6 +41,34 @@ reactivate_busybox_uptime() {
     fi
 }
 
+service_prepare_alpine() {
+    # On iSH, default OpenRC services don't apply and would cause noise/failures.
+    # Strategy: exclude all stock init.d files, then selectively link back only
+    # the ones this deploy tool manages, giving us full control over what runs.
+    # shellcheck disable=SC2154 # SPD_SVC_DISABLED_DIR sourced from config files
+    mkdir -p "$SPD_SVC_DISABLED_DIR" || err_msg "Failed to create folder $SPD_SVC_DISABLED_DIR"
+    # shellcheck disable=SC2154 # SPD_SVC_MANAGED_DIR sourced from config files
+    mkdir -p "$SPD_SVC_MANAGED_DIR" || err_msg "Failed to create folder $SPD_SVC_MANAGED_DIR"
+
+    # Move all stock services out of init.d — catches new files added by apk upgrade too
+    find /etc/init.d -maxdepth 1 -type f -print0 | xargs -0 -I {} mv {} "$SPD_SVC_DISABLED_DIR"
+
+    # Remove any stale symlinks to SPD-managed services before relinking current ones
+    find /etc/init.d -maxdepth 1 -type l | while read -r link; do
+        target=$(readlink -f "$link")
+        case "$target" in
+            "$SPD_SVC_MANAGED_DIR"/*)
+                rm "$link"
+                ;;
+            *)
+                ;;
+        esac
+    done
+
+    # Link all current curated services into init.d
+    find "$SPD_SVC_MANAGED_DIR" -maxdepth 1 -type f -print0 | xargs -0 -I {} ln -sf {} /etc/init.d
+}
+
 alpine_use_old_mtr() {
     _auom_mtr_found=0
     if command -v mtr >/dev/null; then
@@ -99,6 +127,8 @@ ish_alpine_tasks() {
     # shellcheck disable=SC2154 # SPD_FILES_ISH_ALPINE_ULB vars via config files
     copy_items "$D_REPO"/files/platform/ish/FS/Alpine/usr_local_bin /usr/local/bin \
         "$SPD_FILES_ISH_ALPINE_ULB"
+
+    service_prepare_alpine
 }
 
 ish_debian_tasks() {
