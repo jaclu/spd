@@ -1,12 +1,14 @@
 ---
 #
-# Dont run on this platform. This is to ensure no operations are done
-# on your workstation if you are working on the scripts.
-# Should be overrulled in OS or host dependent startup scripts,
-# for platforms where this should be run.
-# 0 - can run task_prepare & task_execute
-# 1 - can run task_prepare
-# 2 - neither
+# Safety check: prevents accidental execution on unintended platforms (e.g., your
+# workstation). Must be overridden in OS/hostname-specific config files for
+# platforms where deployment should actually run.
+#
+# 0 = proceed with prepare and execute phases
+# 1 = continue prepare phase to collect all issues (don't fail on first issue), but abort
+#     before execute. This allows you to see the complete list of problems instead of
+#     fixing one, re-running, finding another, re-running, etc.
+# 2 = abort immediately (safety block—never proceeds to prepare)
 #
 SPD_ABORT: 0
 
