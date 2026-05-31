@@ -113,7 +113,6 @@ parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml # always do this l
 #
 lbl_2 "Config variables used" 2
 
-ensure_spd_var_defined SPD_SVC_AUTOSSH_REVERSE_PORT # LOOPBACK_DIRECTIVE
 ensure_spd_var_defined SPD_SVC_SSHD_PORT            # LOOPBACK_DIRECTIVE
 expand_show_spd_var SPD_SVC_AUTOSSH_KEY_FILE
 expand_show_spd_var SPD_SVC_AUTOSSH_JUMP_PORT
