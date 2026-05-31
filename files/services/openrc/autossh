@@ -82,6 +82,8 @@ case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
     jacaok) reverse_port=2281 ;;
     pad7 | oldpad) reverse_port=2282 ;;
     pad5) reverse_port=2283 ;;
+    jacmac-ish) reverse_port=2284 ;;
+    jacmac-aok) reverse_port=2285 ;;
 
     # iPhones
     jacphone) reverse_port=2290 ;;
