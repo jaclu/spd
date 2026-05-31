@@ -20,13 +20,6 @@ replace_line_ending_in_tag() {
 
 tweak_script_file() {
     lbl_3 "tweak_script_file() - /etc/init.d/autossh" 1
-    # shellcheck disable=SC2154 # SPD_ variables defined via config
-    # shellcheck disable=SC2154 # SPD_ variables defined via config
-    replace_line_ending_in_tag \
-        "loopback_directive=\"${SPD_SVC_AUTOSSH_REVERSE_PORT}:localhost:$SPD_SVC_SSHD_PORT\"" \
-        "LOOPBACK_DIRECTIVE" \
-        /etc/init.d/autossh
-
     # shellcheck disable=SC2154 # SPD_ vars via config files
     replace_line_ending_in_tag \
         "key_file=\"$SPD_SVC_AUTOSSH_KEY_FILE\"" \
