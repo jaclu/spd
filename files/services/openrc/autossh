@@ -78,14 +78,17 @@ export AUTOSSH_LOGFILE="/var/log/autossh.log"
 # Match vs lowercase hostname
 case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
     # iPads
-    jacpad) reverse_port=2272 ;;
-    oldpad) reverse_port=2273 ;;
-    jacphone) reverse_port=2274 ;;
-    pad5) reverse_port=2276 ;;
-    jacaok) reverse_port=2277 ;;
-    jacdroid) reverse_port=2278 ;;
-    jacold) reverse_port=2280 ;;
-    jacoldsmall) reverse_port=2282 ;;
+    jacpad) reverse_port=2280 ;;
+    jacaok) reverse_port=2281 ;;
+    pad7 | oldpad) reverse_port=2282 ;;
+    pad5) reverse_port=2283 ;;
+
+    # iPhones
+    jacphone) reverse_port=2290 ;;
+    jacold) reverse_port=2291 ;;
+
+    # Android / Termux
+    jacdroid) reverse_port=2278 ;; # should be moved to 2300 when no risk of disconnection
     *)
         msg="ERROR: reverse port not defined - set hostname or inspect /etc/init.d/autossh to fix"
         log_it "$msg"
