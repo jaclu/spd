@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+# Part of https://github.com/jaclu/spd
+#
+# Copyright (c) 2026 Jacob Lundqvist <jacob.lndqvist@gmail.com>
+# License: MIT
+#
 
 task_prepare() {
     # In order to get a comprehensive listing of failed dependencies,

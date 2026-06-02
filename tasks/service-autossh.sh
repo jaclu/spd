@@ -1,4 +1,10 @@
 #!/bin/sh
+#
+# Part of https://github.com/jaclu/spd
+#
+# Copyright (c) 2026 Jacob Lundqvist <jacob.lndqvist@gmail.com>
+# License: MIT
+#
 
 replace_line_ending_in_tag() {
     _rleik_replacement_line="$1"
