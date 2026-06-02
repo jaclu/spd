@@ -124,11 +124,11 @@ parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 #
 lbl_2 "Config variables used" 2
 
-ensure_spd_var_defined SPD_SVC_SSHD_PORT
+expand_show_spd_var SPD_SVC_SSHD_PORT
 expand_show_spd_var SPD_SVC_AUTOSSH_KEY_FILE
 expand_show_spd_var SPD_SVC_AUTOSSH_JUMP_PORT
-ensure_spd_var_defined SPD_UNAME
-ensure_spd_var_defined SPD_SVC_AUTOSSH_JUMP_HOST
+expand_show_spd_var SPD_UNAME
+expand_show_spd_var SPD_SVC_AUTOSSH_JUMP_HOST
 
 task_prepare
 task_execute
