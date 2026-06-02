@@ -76,7 +76,9 @@ export AUTOSSH_LOGFILE="/var/log/autossh.log"
 #  ---  what reverse port to use?  ---
 #
 # Match vs lowercase hostname
-case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
+hostname_s_lower=$(/usr/local/bin/hostname -s | tr '[:upper:]' '[:lower:]')
+# echo "using hostname [$hostname_s_lower]" >/dev/stderr
+case "$hostname_s_lower" in
     # iPads
     jacpad) reverse_port=2280 ;;
     jacaok) reverse_port=2281 ;;
@@ -91,6 +93,10 @@ case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
 
     # Android / Termux
     jacdroid) reverse_port=2278 ;; # should be moved to 2300 when no risk of disconnection
+
+    # chroots
+    kajsa-ish | hetz2-ish) reverse_port=2310 ;;
+
     *)
         msg="ERROR: reverse port not defined - set hostname or inspect /etc/init.d/autossh to fix"
         log_it "$msg"
@@ -101,7 +107,7 @@ case "$(hostname -s | tr '[:upper:]' '[:lower:]')" in
 esac
 
 # Remember that the last item on the line must match your sshd port!
-loopback_directive="$reverse_port:localhost:[SPD_SVC_SSHD_PORT]" # LOOPBACK_DIRECTIVE
+loopback_directive="$reverse_port:localhost:[SPD_SVC_SSHD_PORT]" # SPD_SVC_SSHD_PORT
 
 autossh_opts="-M 0 -f \
     -NT \
