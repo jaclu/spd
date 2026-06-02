@@ -25,31 +25,32 @@ replace_line_ending_in_tag() {
 }
 
 tweak_script_file() {
-    lbl_3 "tweak_script_file() - /etc/init.d/autossh" 1
+    # shellcheck disable=SC2154 # f_service_script defined in service-handler.sh
+    lbl_3 "tweak_script_file() - $f_service_script" 1
 
     # shellcheck disable=SC2154 # SPD_ vars via config files
     replace_line_ending_in_tag \
         "loopback_directive=\"\$reverse_port:localhost:$SPD_SVC_SSHD_PORT\"" \
         "SPD_SVC_SSHD_PORT" \
-        /etc/init.d/autossh
+        "$f_service_script"
 
     # shellcheck disable=SC2154 # SPD_ vars via config files
     replace_line_ending_in_tag \
         "key_file=\"$SPD_SVC_AUTOSSH_KEY_FILE\"" \
         "SPD_SVC_AUTOSSH_KEY_FILE" \
-        /etc/init.d/autossh
+        "$f_service_script"
 
     # shellcheck disable=SC2154 # SPD_ vars via config files
     replace_line_ending_in_tag \
         "jump_port=$SPD_SVC_AUTOSSH_JUMP_PORT" \
         "SPD_SVC_AUTOSSH_JUMP_PORT" \
-        /etc/init.d/autossh
+        "$f_service_script"
 
     # shellcheck disable=SC2154 # SPD_ vars via config files
     replace_line_ending_in_tag \
         "jump_account=\"${SPD_UNAME}@$SPD_SVC_AUTOSSH_JUMP_HOST\"" \
         "SPD_SVC_AUTOSSH_JUMP_HOST" \
-        /etc/init.d/autossh
+        "$f_service_script"
 }
 
 task_prepare() {
