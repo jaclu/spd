@@ -45,6 +45,8 @@ service_prepare_alpine() {
     # On iSH, default OpenRC services don't apply and would cause noise/failures.
     # Strategy: exclude all stock init.d files, then selectively link back only
     # the ones this deploy tool manages, giving us full control over what runs.
+
+    lbl_3 "$module_name: service_prepare_alpine()" 1
     # shellcheck disable=SC2154 # SPD_SVC_DISABLED_DIR sourced from config files
     mkdir -p "$SPD_SVC_DISABLED_DIR" || err_msg "Failed to create folder $SPD_SVC_DISABLED_DIR"
     # shellcheck disable=SC2154 # SPD_SVC_MANAGED_DIR sourced from config files
@@ -111,11 +113,12 @@ alpine_use_old_mtr() {
 }
 
 ish_alpine_tasks() {
+    lbl_3 "$module_name: ish_alpine_tasks()" 1
     # iSH using Alpine FS
     fs_is_alpine || return 1
 
     [ -d /ish ] && {
-        lbl_3 "Removing iSH Alpine auto repository updater" 1
+        lbl_4 "Removing iSH Alpine auto repository updater" 1
         safe_remove /ish
         # rm -rf /ish || {
         #     err_msg "Failed to remove /ish directory"
@@ -250,14 +253,6 @@ else
 fi
 cmd_purge_output_file # Clear it to avoid having
 
-#
-# Services
-#
-"$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
-# command -v autossh >/dev/null && {
-#     "$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
-# }
-
 lbl_1 "Back to Module: $module_name" 1
 
 #
@@ -286,6 +281,13 @@ else
 fi
 
 task_execute
+
+#
+# Services
+#
+# "$D_REPO"/tasks/service-runbg.sh "$opt_task" || script_utils_cleanup 1
+# command -v autossh >/dev/null && {
+"$D_REPO"/tasks/service-autossh.sh "$opt_task" || script_utils_cleanup 1
 
 # Exit in a controlled manner, cleaning up temp files remaining etc
 script_utils_cleanup 0
