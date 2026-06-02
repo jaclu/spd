@@ -5,12 +5,18 @@ replace_line_ending_in_tag() {
     _rleik_tag="$2"
     _rleik_file="$3"
 
+    [ -f "$_rleik_file" ] || {
+        err_msg "replace_line_ending_in_tag() - File not found: $_rleik_file"
+    }
+    _rleik_rp=$(realpath "$_rleik_file") || {
+        err_msg "replace_line_ending_in_tag() - Failed to find realpath for: $_rleik_file"
+    }
     _rleik_f_tmp=$(mktemp "${TMPDIR:-/tmp}/autossh-config.XXXXXX") || {
         err_msg "replace_line_ending_in_tag() - mktemp failed"
     }
     chmod 755 "$_rleik_f_tmp" || err_msg "replace_line_ending_in_tag() - failed to chmod"
-    sed "s|.*# ${_rleik_tag}\$|${_rleik_replacement_line}|" "$_rleik_file" >"$_rleik_f_tmp" \
-        && mv "$_rleik_f_tmp" "$_rleik_file"
+    sed "s|.*# ${_rleik_tag}\$|${_rleik_replacement_line}|" "$_rleik_rp" >"$_rleik_f_tmp" \
+        && mv "$_rleik_f_tmp" "$_rleik_rp"
     _ex_code="$?"
     [ "$_ex_code" -ne 0 ] && {
         rm -f "$_rleik_f_tmp" # ensure tmp file is removed
@@ -20,6 +26,13 @@ replace_line_ending_in_tag() {
 
 tweak_script_file() {
     lbl_3 "tweak_script_file() - /etc/init.d/autossh" 1
+
+    # shellcheck disable=SC2154 # SPD_ vars via config files
+    replace_line_ending_in_tag \
+        "loopback_directive=\"\$reverse_port:localhost:$SPD_SVC_SSHD_PORT\"" \
+        "SPD_SVC_SSHD_PORT" \
+        /etc/init.d/autossh
+
     # shellcheck disable=SC2154 # SPD_ vars via config files
     replace_line_ending_in_tag \
         "key_file=\"$SPD_SVC_AUTOSSH_KEY_FILE\"" \
@@ -51,6 +64,9 @@ task_prepare() {
     lbl_2 "$module_name: Preparing task" 1
     check_for_abort 1 task_prepare
     check_service_env autossh
+
+    # lbl_2 "$module_name: Ensuring sshd service is active" 1
+    # ls -l /etc/init.d/sshd >/dev/null 2>&1 || spd_dependency_issue=1
 
     command -v autossh >/dev/null 2>&1 || {
         package_install autossh || spd_dependency_issue=1
@@ -107,7 +123,7 @@ parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 #
 lbl_2 "Config variables used" 2
 
-ensure_spd_var_defined SPD_SVC_SSHD_PORT            # LOOPBACK_DIRECTIVE
+ensure_spd_var_defined SPD_SVC_SSHD_PORT # LOOPBACK_DIRECTIVE
 expand_show_spd_var SPD_SVC_AUTOSSH_KEY_FILE
 expand_show_spd_var SPD_SVC_AUTOSSH_JUMP_PORT
 ensure_spd_var_defined SPD_UNAME

@@ -20,7 +20,7 @@ sh_handler_openrc() {
     # this is done this is done by removing from all runlevels on file level
 
     # shellcheck disable=SC2154 # service_name defined by caller
-    rm -f /etc/runlevels/*/"$service_name" || echo "rm issue"
+    rm -f /etc/runlevels/*/"$service_name" || err_msg "Failed: to remove $service_name from /etc/runlevels/"
 
     sh_handle_initd_script
     # shellcheck disable=SC2154 # opt_task defined by caller
@@ -150,20 +150,34 @@ sh_handle_initd_script() {
     [ -z "$init_scr_org" ] && {
         err_msg "sh_handle_initd_script() - init_scr_org not defined"
     }
-    service_script="/etc/init.d/$service_name"
+    f_service_script_org=/etc/init.d/spd-services/"$service_name"
+    f_service_script=/etc/init.d/"$service_name"
 
     # shellcheck disable=SC2154 # opt_task defined by caller
     case "$opt_task" in
         install | force | force-install)
-            lbl_2 "Will copy $init_scr_org -> $service_script" 1
-            cp -a "$init_scr_org" "$service_script" || {
+            lbl_2 "Will copy $init_scr_org -> $f_service_script" 1
+            cp -a "$init_scr_org" "$f_service_script_org" || {
                 m="sh_handle_initd_script() - Failed to copy"
-                m="$m $init_scr_org $service_script"
+                m="$m $init_scr_org $f_service_script_org"
                 err_msg "$m"
             }
-            lbl_3 "Copied $service_script" 1
+            lbl_3 "Copied $f_service_script" 1
+            [ -f "$f_service_script" ] && {
+                lbl_3 "Removing prior $f_service_script"
+                rm -f "$f_service_script" || err_msg "Failed to rm $f_service_script"
+            }
+            lbl_3 "Linking service script into place"
+            ln -sf "$f_service_script_org" "$f_service_script" || {
+                err_msg "Failed to softlink $f_service_script_org $f_service_script"
+            }
+            lbl_3 "Service script deployed!"
             ;;
-        remove) safe_remove --ignore-sys-path "$service_script" ;;
+        remove)
+            lbl_2 "Removing service script for: $service_name"
+            safe_remove --ignore-sys-path "$f_service_script"
+            safe_remove --ignore-sys-path "$f_service_script_org"
+            ;;
         *) err_msg "sh_handle_initd_script() - invalid opt_task: [$opt_task]" ;;
     esac
 }
