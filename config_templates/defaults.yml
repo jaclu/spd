@@ -132,7 +132,7 @@ SPD_HOME_DIR_UNPACKED_PTR: "/home/${SPD_UNAME}/git_repos/mine/helpfull_scripts/d
 
 SPD_SERVICE_HANDLER: # Identifies how services are handled openrc/sysv-init
 
-SPD_SVC_DISABLED_DIR: /etc/init.d/services-excluded-on-purpose
+SPD_SVC_DISABLED_DIR: /etc/init.d/builtin-services
 SPD_SVC_MANAGED_DIR: /etc/init.d/spd-services
 
 # ====================================================================
