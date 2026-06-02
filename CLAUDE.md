@@ -35,9 +35,9 @@ On first run, if `configs/` doesn't exist, it is auto-created by copying `config
    - `configs/file_systems/{alpine|debian|devuan}.yml` (detected)
    - `configs/platform/{ish|ish_aok|linux|macos}.yml` (detected)
    - `configs/hostname/{lowercased-hostname}.yml` (if present)
-   - `configs/overrides.yml` (user overrides, always last)
+   - `configs/global_overrides.yml` (user overrides, always last)
 3. Tasks needing task-specific config also load `configs/task/<task>.yml`,
-   then re-load `configs/overrides.yml`
+   then re-load `configs/global_overrides.yml`
 4. Before using a config variable, call `expand_yaml_config_var VARNAME`
    to resolve `{{ OTHER_VAR }}` references
 
