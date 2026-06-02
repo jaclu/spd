@@ -17,15 +17,23 @@ task_prepare() {
 
     lbl_2 "$module_name: Preparing task" 1
     check_for_abort 1 task_prepare
-    check_service_env sshd
 
-    command -v sshd >/dev/null 2>&1 || {
-        if fs_is_alpine || fs_is_devuan || fs_is_debian; then
-            lbl_3 "Installing package: openssh server"
+    # lbl_2 "$module_name: Ensuring $service_name service is active" 1
+    # ls -l /etc/init.d/sshd >/dev/null 2>&1 || spd_dependency_issue=1
+
+    command -v "$service_name" >/dev/null 2>&1 || {
+        if fs_is_alpine || fs_is_debian || fs_is_devuan; then
             package_install openssh-server || spd_dependency_issue=1
         fi
     }
 
+    check_service_env sshd
+
+    # _cmd=/usr/local/bin/logger
+    # [ -x "$_cmd" ] || {
+    #     lbl_2 "Dependency issue - $_cmd not found"
+    #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
+    # }
     return "$spd_dependency_issue"
 }
 
@@ -34,11 +42,6 @@ task_execute() {
     lbl_2 "$module_name: Executing task" 1
 
     process_service
-
-    case "$opt_task" in
-        install | force | force-install) echo "TBD" ;;
-        *) ;;
-    esac
 }
 
 #=====================================================================
@@ -72,7 +75,7 @@ parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 #
 lbl_2 "Config variables used" 2
 
-ensure_spd_var_defined SPD_SVC_SSHD_PORT
+expand_show_spd_var SPD_SVC_SSHD_PORT
 
 task_prepare
 task_execute

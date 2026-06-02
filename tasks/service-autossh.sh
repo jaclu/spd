@@ -68,16 +68,19 @@ task_prepare() {
         source_it "$D_REPO"/tools/service-handler.sh
     }
 
-    lbl_2 "$module_name: Preparing task" 1
+    lbl_2 "Preparing task" 1
     check_for_abort 1 task_prepare
-    check_service_env autossh
 
-    # lbl_2 "$module_name: Ensuring sshd service is active" 1
-    # ls -l /etc/init.d/sshd >/dev/null 2>&1 || spd_dependency_issue=1
-
-    command -v autossh >/dev/null 2>&1 || {
-        package_install autossh || spd_dependency_issue=1
+    ls -l /etc/init.d/sshd >/dev/null 2>&1 || {
+        lbl_3 "Required service not in use: sshd" 1
+        spd_dependency_issue=1
     }
+
+    command -v "$service_name" >/dev/null 2>&1 || {
+        package_install "$service_name" || spd_dependency_issue=1
+    }
+
+    check_service_env "$service_name"
 
     # _cmd=/usr/local/bin/logger
     # [ -x "$_cmd" ] || {
@@ -89,7 +92,7 @@ task_prepare() {
 
 task_execute() {
     check_for_abort 0 task_execute
-    lbl_2 "$module_name: Executing task" 1
+    lbl_2 "Executing task" 1
 
     process_service
 
