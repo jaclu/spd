@@ -73,12 +73,9 @@ export AUTOSSH_LOGFILE="/var/log/autossh.log"
 #
 
 #
-#  ---  what reverse port to use?  ---
+#  ---  what reverse port to use? Get via lowercased hostname at run-time  ---
 #
-# Match vs lowercase hostname
-hostname_s_lower=$(/usr/local/bin/hostname -s | tr '[:upper:]' '[:lower:]')
-# echo "using hostname [$hostname_s_lower]" >/dev/stderr
-case "$hostname_s_lower" in
+case $(/usr/local/bin/hostname -s | tr '[:upper:]' '[:lower:]') in
     # iPads
     jacpad) reverse_port=2280 ;;
     jacaok) reverse_port=2281 ;;
