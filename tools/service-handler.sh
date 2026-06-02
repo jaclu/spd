@@ -1,4 +1,11 @@
 #!/bin/sh
+# Fake shebang, this is always sourced. Intended to hint file-type for  linters/editors
+#
+# Part of https://github.com/jaclu/spd
+#
+# Copyright (c) 2026 Jacob Lundqvist <jacob.lndqvist@gmail.com>
+# License: MIT
+#
 
 #---------------------------------------------------------------------
 #
@@ -248,5 +255,8 @@ process_service() {
     err_msg "service-handler.sh: service_name must be defined before sourcing this"
 }
 
+#
+#  Hint to indicate this has been sourced
+#
 # shellcheck disable=SC2034 # indicates this has been sourced, used by caller
 service_handler_is_sourced=1

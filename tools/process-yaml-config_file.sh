@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# Fake shebang, this is always sourced. Intended to hint file-type for  linters/editors
 #
 # Part of https://github.com/jaclu/spd
 #
@@ -290,9 +290,3 @@ expand_yaml_config_var() {
 }
 
 pycf_expansion_steps_max=50
-
-# D_REPO is set by $0 to give the path to the repository
-[ -z "$D_REPO" ] && {
-    printf '\n\nERROR: tools/process-yaml-config_file.sh must be sourced.\n' >&2
-    exit 1
-}

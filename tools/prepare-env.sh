@@ -1,5 +1,10 @@
 #!/bin/sh
-
+# Fake shebang, this is always sourced. Intended to hint file-type for  linters/editors
+#
+# Part of https://github.com/jaclu/spd
+#
+# Copyright (c) 2026 Jacob Lundqvist <jacob.lndqvist@gmail.com>
+# License: MIT
 #
 # Variable naming strategy
 #
@@ -550,11 +555,11 @@ pe_initial_dbg_lvl="$current_dbg_lvl"
 # shellcheck disable=SC2034 # d_files_base used by caller
 d_files_base="$D_REPO"/files
 
-#
-# iSH-specific initialization guard for core /dev I/O stability.
-# Only relevant on iSH; has no effect on other platforms.
-#
 [ -d /proc/ish ] && {
+    #
+    # iSH-specific initialization ensures all core /dev I/O devices are correct.
+    # Only relevant on iSH; has no effect on other platforms.
+    #
     "$D_REPO"/tools/validate-core-io.sh || {
         printf '%s\n' "validate-core-io failed (iSH environment)" >&2
         exit 1

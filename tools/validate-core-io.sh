@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# Fake shebang, this is always sourced. Intended to hint file-type for  linters/editors
 #
 # Part of https://github.com/jaclu/spd
 #
@@ -29,6 +29,7 @@ failed_to_fix_dev_err_msg() {
         >&2
 
     exit 1
+
 }
 
 dev_fixed_notification() {
@@ -91,6 +92,15 @@ verify_fd() {
 #   Main
 #
 #=====================================================================
+
+[ -n "$D_REPO" ] || {
+    printf '\n%s[%s] ERROR: This can not be run directly, should be sourced.\n' "$0" "$$" >&2
+    exit 1
+}
+
+is_ish || {
+    err_msg "validate-core-io.sh should only be sourced on actual iSH nodes"
+}
 
 validate_dev_null
 
