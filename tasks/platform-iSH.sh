@@ -282,6 +282,16 @@ fi
 
 task_execute
 
+# is_ish_abstract && {
+#     # Ensure this is never run on native platforms by mistake
+#     grep -q openrc /etc/inittab && command -v openrc >/dev/null && {
+#         # Fake openrc was used to boot system in order to allow services to start
+#         rc-status
+#         lbl_2 "Faking this was booted using openrc" 1
+#         touch /run/openrc/softlevel
+#     }
+# }
+
 #
 # Services
 #
