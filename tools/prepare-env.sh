@@ -569,8 +569,6 @@ d_files_base="$D_REPO"/files
 pe_source_script_utils
 pe_populate_config
 
-lbl_1 "Module: $module_name" 1
-
 pe_cmd_line_param_parse "$@"
 
 # Provides parse_yaml_config_file & expand_yaml_config_var
@@ -593,5 +591,7 @@ pe_get_basic_config
     [ -z "$SPD_DEBUG_LEVEL" ] && SPD_DEBUG_LEVEL=1 # global default
     set_debug_lvl "$SPD_DEBUG_LEVEL"
 }
+
+lbl_1 "Module: $module_name" 1
 
 # err_msg "current_dbg_lvl [$current_dbg_lvl]"
