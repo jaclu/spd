@@ -2,6 +2,50 @@
 
 #---------------------------------------------------------------------
 #
+#   common service handler tasks
+#
+#---------------------------------------------------------------------
+
+sh_handle_initd_script() {
+    [ -z "$service_name" ] && {
+        err_msg "sh_handle_initd_script() - service_name not defined"
+    }
+    [ -z "$init_scr_org" ] && {
+        err_msg "sh_handle_initd_script() - init_scr_org not defined"
+    }
+    # shellcheck disable=SC2154 # SPD_SVC_MANAGED_DIR defined in configs
+    f_service_script_org="$SPD_SVC_MANAGED_DIR/$service_name"
+
+    # shellcheck disable=SC2154 # opt_task defined by caller
+    case "$opt_task" in
+        install | force | force-install)
+            lbl_2 "Will copy $init_scr_org -> $f_service_script_org" 1
+            cp -a "$init_scr_org" "$f_service_script_org" || {
+                m="sh_handle_initd_script() - Failed to copy"
+                m="$m $init_scr_org $f_service_script_org"
+                err_msg "$m"
+            }
+            [ -f "$f_service_script" ] && {
+                lbl_3 "Removing prior $f_service_script"
+                rm -f "$f_service_script" || err_msg "Failed to rm $f_service_script"
+            }
+            lbl_3 "Linking service script into place"
+            ln -sf "$f_service_script_org" "$f_service_script" || {
+                err_msg "Failed to softlink $f_service_script_org $f_service_script"
+            }
+            lbl_3 "Service script deployed!"
+            ;;
+        remove)
+            lbl_2 "Removing service script for: $service_name"
+            safe_remove --ignore-sys-path "$f_service_script"
+            safe_remove --ignore-sys-path "$f_service_script_org"
+            ;;
+        *) err_msg "sh_handle_initd_script() - invalid opt_task: [$opt_task]" ;;
+    esac
+}
+
+#---------------------------------------------------------------------
+#
 #   Service handler openrc
 #
 #---------------------------------------------------------------------
@@ -53,7 +97,7 @@ sh_handler_openrc() {
             [ -e "/etc/runlevels/$(rc-status -r)/$service_name" ] && {
                 # should be running in this runlevl
                 lbl_3 "Manually starting service, since it should run in this runlevel" 1
-                /etc/init.d/"$service_name" start
+                "$f_service_script" start
             }
         else
             lbl_3 "Will not auto start service installed with force-install" 1
@@ -139,51 +183,6 @@ sh_handler_sysv_init() {
 
 #---------------------------------------------------------------------
 #
-#   common service handler tasks
-#
-#---------------------------------------------------------------------
-
-sh_handle_initd_script() {
-    [ -z "$service_name" ] && {
-        err_msg "sh_handle_initd_script() - service_name not defined"
-    }
-    [ -z "$init_scr_org" ] && {
-        err_msg "sh_handle_initd_script() - init_scr_org not defined"
-    }
-    f_service_script_org=/etc/init.d/spd-services/"$service_name"
-    f_service_script=/etc/init.d/"$service_name"
-
-    # shellcheck disable=SC2154 # opt_task defined by caller
-    case "$opt_task" in
-        install | force | force-install)
-            lbl_2 "Will copy $init_scr_org -> $f_service_script" 1
-            cp -a "$init_scr_org" "$f_service_script_org" || {
-                m="sh_handle_initd_script() - Failed to copy"
-                m="$m $init_scr_org $f_service_script_org"
-                err_msg "$m"
-            }
-            lbl_3 "Copied $f_service_script" 1
-            [ -f "$f_service_script" ] && {
-                lbl_3 "Removing prior $f_service_script"
-                rm -f "$f_service_script" || err_msg "Failed to rm $f_service_script"
-            }
-            lbl_3 "Linking service script into place"
-            ln -sf "$f_service_script_org" "$f_service_script" || {
-                err_msg "Failed to softlink $f_service_script_org $f_service_script"
-            }
-            lbl_3 "Service script deployed!"
-            ;;
-        remove)
-            lbl_2 "Removing service script for: $service_name"
-            safe_remove --ignore-sys-path "$f_service_script"
-            safe_remove --ignore-sys-path "$f_service_script_org"
-            ;;
-        *) err_msg "sh_handle_initd_script() - invalid opt_task: [$opt_task]" ;;
-    esac
-}
-
-#---------------------------------------------------------------------
-#
 #   Public methods
 #
 #---------------------------------------------------------------------
@@ -220,6 +219,8 @@ check_service_env() {
 }
 
 process_service() {
+    f_service_script=/etc/init.d/"$service_name"
+
     # attach service to handler
     case "$SPD_SERVICE_HANDLER" in
         'openrc') sh_handler_openrc ;;
