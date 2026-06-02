@@ -18,6 +18,7 @@ Icon
 .cache.olint
 
 # Local configs
+config_templates/global_overrides*
 configs/
 
 .user_warned

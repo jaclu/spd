@@ -157,11 +157,14 @@ pe_get_basic_config() {
     # }
 
     # user overrides
-    parse_yaml_config_file "$D_REPO"/configs/overrides.yml
+    parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 
     # hostname specific overrides comes last, to allow per device overrides
     parse_yaml_config_file "$D_REPO/configs/hostname/$(hostname -s \
         | tr '[:upper:]' '[:lower:]').yml"
+
+    # always do this last, after any other config files parsed!
+    parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 }
 
 pe_populate_config() {

@@ -99,7 +99,8 @@ case "$opt_task" in # Ensure options are valid
 esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_autossh.yml
-parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml # always do this last!
+# always do this last, after any other config files parsed!
+parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 
 #
 # Expand any variables that need to be expanded
