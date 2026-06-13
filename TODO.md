@@ -1,5 +1,9 @@
 # TODO
 
+## check_for_abort()
+
+needs cleanup seems to check for multiple conditions
+
 ## settings scan order
 
 Think this is better but remains to be seen

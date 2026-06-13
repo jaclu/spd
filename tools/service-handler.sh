@@ -14,49 +14,45 @@
 #---------------------------------------------------------------------
 
 sh_init_d_script_install() {
-    # shellcheck disable=SC2154 # SPD_SVC_DISABLED_DIR defined in configs
-    f_sys_init="$SPD_SVC_DISABLED_DIR/$service_name"
-    if [ -f "$init_scr_org" ]; then
-        lbl_2 "Will copy $init_scr_org -> $f_service_script_spd" 1
-        cp -a "$init_scr_org" "$f_service_script_spd" || {
+    if [ -f "$f_spd_init_scr_org" ]; then
+        lbl_3 "Will copy $f_spd_init_scr_org -> $f_spd_init_scr" 1
+        cp -a "$f_spd_init_scr_org" "$f_spd_init_scr" || {
             m="sh_init_d_script_install() - Failed to copy"
-            m="$m $init_scr_org $f_service_script_spd"
+            m="$m $f_spd_init_scr_org $f_spd_init_scr"
             err_msg "$m"
         }
         [ -f "$f_service_script" ] && {
-            lbl_3 "Removing prior $f_service_script"
+            lbl_4 "Removing prior $f_service_script" 1
             rm -f "$f_service_script" || err_msg "Failed to rm $f_service_script"
         }
-        lbl_3 "Linking spd service script into place"
-        ln -sf "$f_service_script_spd" "$f_service_script" || {
-            err_msg "Failed to softlink $f_service_script_spd $f_service_script"
+        lbl_3 "Linking spd service script into place" 1
+        ln -sf "$f_spd_init_scr" "$f_service_script" || {
+            err_msg "Failed to softlink $f_spd_init_scr $f_service_script"
         }
-    elif [ -f "$f_sys_init" ]; then
-        lbl_3 "Linking system service script into place"
-        ln -sf "$f_sys_init" "$f_service_script" || {
-            err_msg "Failed to softlink $f_sys_init $f_service_script"
+    elif [ -f "$f_sys_init_scr" ]; then
+        lbl_3 "Linking system service script into place" 1
+        ln -sf "$f_sys_init_scr" "$f_service_script" || {
+            err_msg "Failed to softlink $f_sys_init_scr $f_service_script"
         }
     else
         err_msg "Unable to find service init script"
     fi
-    lbl_3 "Service script deployed!"
+    lbl_3 "Service script deployed!" 1
 }
 
 sh_init_d_script_remove() {
-    lbl_2 "Removing service script for: $service_name"
+    lbl_3 "Removing service script for: $service_name" 1
     safe_remove --ignore-sys-path "$f_service_script"
-    [ -f "$f_service_script_spd" ] && safe_remove --ignore-sys-path "$f_service_script_spd"
+    [ -f "$f_spd_init_scr" ] && safe_remove --ignore-sys-path "$f_spd_init_scr"
 }
 
 sh_initd_script_handle() {
     [ -z "$service_name" ] && {
         err_msg "sh_initd_script_handle() - service_name not defined"
     }
-    [ -z "$init_scr_org" ] && {
-        err_msg "sh_initd_script_handle() - init_scr_org not defined"
+    [ -z "$f_spd_init_scr_org" ] && {
+        err_msg "sh_initd_script_handle() - f_spd_init_scr_org not defined"
     }
-    # shellcheck disable=SC2154 # SPD_SVC_MANAGED_DIR defined in configs
-    f_service_script_spd="$SPD_SVC_MANAGED_DIR/$service_name"
 
     # shellcheck disable=SC2154 # opt_task defined by caller
     case "$opt_task" in
@@ -76,7 +72,11 @@ sh_openrc_dependency_check() {
     ensure_spd_var_defined SPD_SVC_OPENRC_RUNLVLS # || return # no need to continue
 
     command -v openrc >/dev/null 2>&1 || {
-        package_install openrc || spd_dependency_issue=1
+        _sodc_pkg=openrc
+        package_install "$_sodc_pkg" || {
+            lbl_1 "Failed to install: $_sodc_pkg"
+            spd_dependency_issue=1
+        }
     }
 }
 
@@ -144,8 +144,7 @@ sh_sysv_dependency_check() {
     # [ "$spd_dependency_issue" -ge 1 ] && return 1
 
     [ -d /etc/init.d ] || {
-        lbl_2 "Dependency issue - /etc/init.d not found"
-        # shellcheck disable=SC2034 # spd_dependency_issue used by caller
+        lbl_1 "Dependency issue - /etc/init.d not found"
         spd_dependency_issue=1
     }
 
@@ -154,7 +153,7 @@ sh_sysv_dependency_check() {
     for _ssdc_rl in 0 1 2 3 4 5 6; do
         _ssdc_d="/etc/rc${_ssdc_rl}.d"
         [ -d "$_ssdc_d" ] || {
-            lbl_2 "Dependency issue - $_ssdc_d/ not found"
+            lbl_1 "Dependency issue - $_ssdc_d/ not found"
             # shellcheck disable=SC2034 # spd_dependency_issue used by caller
             spd_dependency_issue=1
         }
@@ -232,17 +231,13 @@ check_service_env() {
             ;;
     esac
 
-    # shellcheck disable=SC2154 # D_REPO  defined by caller
-    init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
-    # [ -f "$init_scr_org" ] || {
-    #     lbl_2 "check_service_env() - Service script not found: [$init_scr_org]"
+    # [ -f "$f_spd_init_scr_org" ] || {
+    #     lbl_1 "check_service_env() - Service script not found: [$f_spd_init_scr_org]"
     #     spd_dependency_issue=1
     # }
 }
 
 process_service() {
-    f_service_script=/etc/init.d/"$service_name"
-
     # attach service to handler
     case "$SPD_SERVICE_HANDLER" in
         'openrc') sh_handler_openrc ;;
@@ -268,6 +263,15 @@ process_service() {
 
 [ -z "$service_name" ] && {
     err_msg "service-handler.sh: service_name must be defined before sourcing this"
+}
+
+f_service_script=/etc/init.d/"$service_name"
+
+# shellcheck disable=SC2154 # variables defined in configs
+{
+    f_spd_init_scr_org="$D_REPO/files/services/$SPD_SERVICE_HANDLER/$service_name"
+    f_sys_init_scr="$SPD_SVC_DISABLED_DIR/$service_name"
+    f_spd_init_scr="$SPD_SVC_MANAGED_DIR/$service_name"
 }
 
 #

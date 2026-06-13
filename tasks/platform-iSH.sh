@@ -231,7 +231,7 @@ case "$opt_task" in # Ensure options are valid
         lbl_1 "WARNING this task runs other tasks, they will all use force-install - be warned!" 1
         ;;
     install) ;;
-    *) cmd_line_param_error "opt_task must be install / force-install" ;;
+    *) err_msg "Valid options: install / force-install" ;;
 esac
 
 early_start_runbg # this allows iSH to continue in the background during this deploy

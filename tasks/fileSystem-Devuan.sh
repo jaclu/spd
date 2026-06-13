@@ -137,7 +137,7 @@ fs_is_devuan || err_msg "Rejected, not running on a Devuan FS"
 check_for_abort 0 "$0"
 case "$opt_task" in # Ensure options are valid
     install | force | force-install) ;;
-    *) cmd_line_param_error "opt_task must be install / force-install" ;;
+    *) err_msg "Valid options: install / force-install" ;;
 esac
 
 #

@@ -179,7 +179,7 @@ pe_populate_config() {
     _pc_d_conf="$D_REPO"/configs
     [ -n "$(ls -A "$_pc_d_conf" 2>/dev/null)" ] || {
         _pc_d_templates="$D_REPO"/config_templates
-        lbl_1 "No configs found, populating $_pc_d_conf from templates"
+        lbl_1 "No configs found, populating $_pc_d_conf from $_pc_d_templates"
         mkdir -p "$_pc_d_conf"
         cp -a "$_pc_d_templates"/* "$_pc_d_conf" || {
             error_msg "Failed to copy templates"
@@ -200,13 +200,6 @@ pe_indicate_unset() {
     esac
 }
 
-pe_cmd_line_param_list() {
-    is_debug_lvl 1 || return
-    _pclpl_lbl="${1:-Listing of cmd line options}"
-    lbl_2 "$_pclpl_lbl"
-    lbl_4 "  opt_task    $(pe_indicate_unset "$opt_task")"
-}
-
 pe_cmd_line_param_parse() {
     opt_task=install # defaults to install
     while [ -n "$1" ]; do
@@ -219,20 +212,10 @@ pe_cmd_line_param_parse() {
                 # the used platform
                 opt_task=force-install
                 ;;
-            *)
-                pe_cmd_line_param_list
-                err_msg "Unrecognized major option: $1"
-                ;;
+            *) err_msg "Valid options: install / force-install / remove - got: $1" ;;
         esac
         shift
     done
-    pe_cmd_line_param_list
-}
-
-cmd_line_param_error() {
-    lbl_1 "Invalid command-line param"
-    # pe_cmd_line_param_list "Processed options"
-    err_msg "$1"
 }
 
 #---------------------------------------------------------------------
@@ -258,6 +241,7 @@ check_for_abort() {
     expand_yaml_config_var SPD_ABORT
     lbl_4 "check_for_abort() SPD_ABORT: $SPD_ABORT" 4
     [ -n "$SPD_ABORT" ] || err_msg "required config variable SPD_ABORT undefined"
+
     {
         dbg_msg "check_for_abort() ${SPD_ABORT:-0}  max: $_cfa_max" 9
         [ "$SPD_ABORT" -gt "$_cfa_max" ] && {
@@ -295,7 +279,7 @@ ensure_spd_var_defined() {
         lbl_4 "$_esvd_variable:   $_esvd_value" 3
         return 0
     else
-        lbl_3 "${module_name:-}: Dependency issue - $_esvd_variable no content/undefined"
+        lbl_1 "${module_name:-}: Dependency issue - $_esvd_variable no content/undefined"
         # shellcheck disable=SC2034 # spd_dependency_issue used by caller
         spd_dependency_issue=1
         return 1
@@ -592,6 +576,6 @@ pe_get_basic_config
     set_debug_lvl "$SPD_DEBUG_LEVEL"
 }
 
-lbl_1 "Module: $module_name" 1
+lbl_1 "Module: $module_name $opt_task" 1
 
 # err_msg "current_dbg_lvl [$current_dbg_lvl]"
