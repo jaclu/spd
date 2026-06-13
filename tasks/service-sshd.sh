@@ -18,22 +18,32 @@ task_prepare() {
     lbl_2 "$module_name: Preparing task" 1
     check_for_abort 1 task_prepare
 
-    # lbl_2 "$module_name: Ensuring $service_name service is active" 1
-    # ls -l /etc/init.d/sshd >/dev/null 2>&1 || spd_dependency_issue=1
-
     command -v "$service_name" >/dev/null 2>&1 || {
-        if fs_is_alpine || fs_is_debian || fs_is_devuan; then
-            package_install openssh-server || spd_dependency_issue=1
-        fi
+        case "$opt_task" in
+            force | force-install)
+                if fs_is_alpine || fs_is_debian || fs_is_devuan; then
+                    _tp_pkg_name=openssh-server
+                    package_install "$_tp_pkg_name" || {
+                        lbl_1 "Failed to install: $_tp_pkg_name"
+                        spd_dependency_issue=1
+                    }
+                fi
+                ;;
+            remove) ;; # For remove cmd missing is irrelevant
+            *)
+                lbl_1 "Command 'sshd' not found"
+                spd_dependency_issue=1
+                ;;
+        esac
     }
-
-    check_service_env sshd
 
     # _cmd=/usr/local/bin/logger
     # [ -x "$_cmd" ] || {
-    #     lbl_2 "Dependency issue - $_cmd not found"
-    #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
+    #     lbl_1 "Dependency issue - $_cmd not found"
+    #     spd_dependency_issue=1
     # }
+
+    check_service_env "$service_name"
     return "$spd_dependency_issue"
 }
 
@@ -61,10 +71,6 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # Can it run here?
 is_linux || err_msg "This can't run on non-Linux platforms"
 check_for_abort 0 "$0"
-case "$opt_task" in # Ensure options are valid
-    install | remove | force | force-install) ;;
-    *) cmd_line_param_error "opt_task must be install / force-install / remove" ;;
-esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_sshd.yml
 # always do this last, after any other config files parsed!

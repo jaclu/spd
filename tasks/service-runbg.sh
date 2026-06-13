@@ -28,7 +28,7 @@ task_prepare() {
     check_service_env runbg
 
     is_ish_abstract || {
-        lbl_2 "Dependency issue - Can only be used on iSH"
+        lbl_1 "Dependency issue - Can only be used on iSH"
         [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
     }
     return "$spd_dependency_issue"
@@ -56,10 +56,6 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # Can it run here?
 is_linux || err_msg "This can't run on non-Linux platforms"
 check_for_abort 0 "$0"
-case "$opt_task" in # Ensure options are valid
-    install | remove | force | force-install) ;;
-    *) cmd_line_param_error "opt_task must be install / force-install / remove" ;;
-esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_runbg.yml
 # always do this last, after any other config files parsed!

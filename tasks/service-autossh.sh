@@ -71,22 +71,43 @@ task_prepare() {
     lbl_2 "Preparing task" 1
     check_for_abort 1 task_prepare
 
+    [ "$opt_task" = "remove" ] && return "$spd_dependency_issue"
+
     ls -l /etc/init.d/sshd >/dev/null 2>&1 || {
-        lbl_3 "Required service not in use: sshd" 1
-        spd_dependency_issue=1
+        lbl_1 "Required service not in use: sshd"
+        spd_dependency_issue=2
     }
 
     command -v "$service_name" >/dev/null 2>&1 || {
-        package_install "$service_name" || spd_dependency_issue=1
-    }
+        [ "$spd_dependency_issue" -ne 0 ] && {
+            # Don't install packages if dependency issue already found
+            return "$spd_dependency_issue"
+        }
 
-    check_service_env "$service_name"
+        case "$opt_task" in
+            force | force-install)
+                if fs_is_alpine || fs_is_debian || fs_is_devuan; then
+                    package_install "$service_name" || {
+                        lbl_1 "Failed to install: $service_name"
+                        spd_dependency_issue=1
+                    }
+                fi
+                ;;
+            remove) ;; # For remove cmd missing is irrelevant
+            *)
+                lbl_1 "Command '$service_name' not found"
+                spd_dependency_issue=1
+                ;;
+        esac
+    }
 
     # _cmd=/usr/local/bin/logger
     # [ -x "$_cmd" ] || {
-    #     lbl_2 "Dependency issue - $_cmd not found"
-    #     [ "$spd_dependency_issue" = 0 ] && spd_dependency_issue=2
+    #     lbl_1 "Dependency issue - $_cmd not found"
+    #     spd_dependency_issue=1
     # }
+
+    check_service_env "$service_name"
     return "$spd_dependency_issue"
 }
 
@@ -119,10 +140,6 @@ D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
 # Can it run here?
 is_linux || err_msg "This can't run on non-Linux platforms"
 check_for_abort 0 "$0"
-case "$opt_task" in # Ensure options are valid
-    install | remove | force | force-install) ;;
-    *) cmd_line_param_error "opt_task must be install / force-install / remove" ;;
-esac
 
 parse_yaml_config_file "$D_REPO"/configs/task/service_autossh.yml
 # always do this last, after any other config files parsed!
@@ -131,7 +148,7 @@ parse_yaml_config_file "$D_REPO"/configs/global_overrides.yml
 #
 # Expand any variables that need to be expanded
 #
-lbl_2 "Config variables used" 2
+lbl_2 "Config variables found" 2
 
 expand_show_spd_var SPD_SVC_SSHD_PORT
 expand_show_spd_var SPD_SVC_AUTOSSH_KEY_FILE
