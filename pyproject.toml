@@ -1,0 +1,3 @@
+[tool.pymarkdown]
+plugins.line-length.enabled = true
+plugins.line-length.line_length = 92

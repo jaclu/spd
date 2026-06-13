@@ -81,6 +81,17 @@ is_yaml_true() {
     return "$_yt_result"
 }
 
+posix_get_char() {
+    #
+    #  Configure terminal to read a single character without echoing,
+    #  restoring the terminal and returning the char
+    #
+    _pgc_old_stty_cfg=$(stty -g)
+    stty raw -echo
+    dd bs=1 count=1 2>/dev/null
+    stty "$_pgc_old_stty_cfg"
+}
+
 #
 # Platform type identifiers
 #
