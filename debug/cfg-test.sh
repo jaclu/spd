@@ -137,7 +137,7 @@ test_tmp_file_handling() {
 
 # skip_auto_process_config_hierarchy=yes
 
-D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+D_REPO=$(cd "${0%/*}" && pwd)
 # shellcheck source=tools/prepare-env.sh
 . "$D_REPO"/tools/prepare-env.sh
 

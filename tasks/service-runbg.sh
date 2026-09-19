@@ -50,7 +50,7 @@ module_name="service_runbg.sh"
 # shellcheck disable=SC2034 # service_name used by caller
 service_name=runbg
 
-D_REPO=$(cd -- "$(dirname -- "$0")/.." && pwd)
+D_REPO=$(cd "${0%/*}" && pwd)
 . "$D_REPO"/tools/prepare-env.sh
 
 # Can it run here?
