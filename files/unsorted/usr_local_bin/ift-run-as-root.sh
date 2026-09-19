@@ -14,7 +14,7 @@
 #  soucring run_as_root.sh
 #
 #   #  Allowing the script to be run from anywhere using path
-#   current_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+#   current_dir=$(cd "${0%/*}" && pwd)
 #   . "$current_dir"/tools/run_as_root.sh
 #
 #  Simplest usage case, assume caller of the initial script is in
